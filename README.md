@@ -1,8 +1,11 @@
 # SDIR 2020 Controler
 This code repository consists of two parts: the ctrl and the sim part. The ctrl folder contains all necessary code files for your controler. The sim folder contains the [VREP](https://www.coppeliarobotics.com/) .ttt file with all necessary implementation for your simulation.
-For the implementation, you are free to add any additional files. Please, however, do not change the given interfaces without highlight the cahnges to the course supervisors. This is, because we will come back on your generated libraries for testing and evaluation purposes. In case you change the interfaces, automated testing might not work propper.
+For the implementation, you are free to add any additional files. Please, however, do not change the given interfaces without highlight the chnges to the course supervisors. This is, because we will come back on your generated libraries for testing and evaluation purposes. In case you change the interfaces, automated testing might not work propper.
+
+
 ## Build
 For building your code, please use the contained [cmake](https://cmake.org/) files.
+
 
 ## Some git and bibucket hints for you
 
