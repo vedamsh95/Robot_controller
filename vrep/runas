@@ -1,0 +1,11 @@
+#!/bin/sh
+useradd -m -u $UID docker
+ln -s /mnt/.Xauthority /home/docker/.Xauthority
+export HOME=/home/docker
+export USER=docker
+export XDG_RUNTIME_DIR=/home/docker
+
+printf "Starting command: "
+printf "'%s' " "$@"
+echo
+exec su -c 'exec "$@"' -m docker -- - "$@"

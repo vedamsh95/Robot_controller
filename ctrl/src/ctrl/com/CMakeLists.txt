@@ -3,7 +3,7 @@ add_library(Com
             jsoncpp.cpp
         )
 
-add_subdirectory(remoteAPI)
+add_subdirectory(remoteApi)
 add_dependencies(Com RemoteAPI)
 
 target_include_directories(Com

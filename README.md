@@ -1,56 +1,43 @@
 # SDIR 2020 Controler
-This code repository consists of two parts: the ctrl and the sim part. The ctrl folder contains all necessary code files for your controler. The sim folder contains the [VREP](https://www.coppeliarobotics.com/) .ttt file with all necessary implementation for your simulation.
+This code repository consists of two parts: the ctrl and the sim part. The ctrl folder contains all necessary code files for your controler. The sim folder contains the [V-REP](https://www.coppeliarobotics.com/) .ttt file with all necessary implementation for your simulation.
 For the implementation, you are free to add any additional files. Please, however, do not change the given interfaces without highlight the changes to the course supervisors. This is, because we will come back on your generated libraries for testing and evaluation purposes. In case you change the interfaces, automated testing might not work propper.
 
+## Prerequisites
+- Linux (or [Git Bash](https://git-scm.com/downloads) on Windows) with Git, GNU Make & wget (those are probably installed by default)
+- [Docker](https://docs.docker.com/engine/install/) (ideally [with WSL 2](https://docs.docker.com/docker-for-windows/wsl/) on Windows)
+- on Windows: [Xming](https://sourceforge.net/projects/xming/files/Xming/6.9.0.31/Xming-6-9-0-31-setup.exe/download)
+
+**On Windows: all commands must be run inside the Git Bash!**
+
+## Working with Git
+A good friendly GUI for Git is [GitFiend](https://gitfiend.com/).
+
+You will have to clone the repository first using the Git Bash though, and set the required config parameter so GitFiend can access your credentials:
+```bash
+git config --global credential.helper store
+git clone -b group-6 --recurse-submodules https://YOUR_BITBUCKET_USERNAME@bitbucket.org/cse_admin/sdir_2020.git ~/Desktop/sdir_2020
+```
+
+You can now start GitFiend, and in the three-dot-menu in the upper left corner, uncheck "Repo" → "Use built-in Git". **Important:** after installing Git, you have to restart your computer; otherwise this step won't work!
+
+Then, "Open a repo" and select the folder where you cloned the repository to (`sdir_2020` on the Desktop in this case).
 
 ## Build
-For building your code, please use the contained [cmake](https://cmake.org/) files.
+For building your code, please use the contained [cmake](https://cmake.org/) files with Docker and the provided Makefile:
 
+```bash
+make ctrl
+```
 
-## Some git and bibucket hints for you
+## Run
+**TODO: On Windows, the X server is missing! Hence, starting the application won't work currently.**
 
-**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**
-
-When you're done, you can delete the content in this README and update the file with details for others getting started with your repository.
-
-*We recommend that you open this README in another tab as you perform the tasks below. You can [watch our video](https://youtu.be/0ocf7u76WSo) for a full demo of all the steps in this tutorial. Open the video in a new tab to avoid leaving Bitbucket.*
-
----
-
-## Edit a file
-
-You’ll start by editing this README file to learn how to edit a file in Bitbucket.
-
-1. Click **Source** on the left side.
-2. Click the README.md link from the list of files.
-3. Click the **Edit** button.
-4. Delete the following text: *Delete this line to make a change to the README from Bitbucket.*
-5. After making your change, click **Commit** and then **Commit** again in the dialog. The commit page will open and you’ll see the change you just made.
-6. Go back to the **Source** page.
-
----
-
-## Create a file
-
-Next, you’ll add a new file to this repository.
-
-1. Click the **New file** button at the top of the **Source** page.
-2. Give the file a filename of **contributors.txt**.
-3. Enter your name in the empty file space.
-4. Click **Commit** and then **Commit** again in the dialog.
-5. Go back to the **Source** page.
-
-Before you move on, go ahead and explore the repository. You've already seen the **Source** page, but check out the **Commits**, **Branches**, and **Settings** pages.
-
----
-
-## Clone a repository
-
-Use these steps to clone from SourceTree, our client for using the repository command-line free. Cloning allows you to work on your files locally. If you don't yet have SourceTree, [download and install first](https://www.sourcetreeapp.com/). If you prefer to clone from the command line, see [Clone a repository](https://confluence.atlassian.com/x/4whODQ).
-
-1. You’ll see the clone button under the **Source** heading. Click that button.
-2. Now click **Check out in SourceTree**. You may need to create a SourceTree account or log in.
-3. When you see the **Clone New** dialog in SourceTree, update the destination path and name if you’d like to and then click **Clone**.
-4. Open the directory you just created to see your repository’s files.
-
-Now that you're more familiar with your Bitbucket repository, go ahead and add a new file locally. You can [push your change back to Bitbucket with SourceTree](https://confluence.atlassian.com/x/iqyBMg), or you can [add, commit,](https://confluence.atlassian.com/x/8QhODQ) and [push from the command line](https://confluence.atlassian.com/x/NQ0zDQ).
+1. Start V-REP/CoppeliaSim with the following command:
+   ```bash
+   make start-vrep
+   ```
+2. In CoppeliaSim, start the simulation by clicking the "play" button.
+3. Start the controller software:
+   ```bash
+   make start-ctrl
+   ```
