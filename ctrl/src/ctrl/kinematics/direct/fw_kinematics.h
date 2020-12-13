@@ -17,6 +17,30 @@ public:
      * @return computed {@ref SixDPos}
      */
     SixDPos* get_fw_kinematics(Configuration* _cfg);
+
+private:
+
+    /**
+    * Creates the transformation matrix for a given set of DNH parameters
+    *
+    * @param theta [rad]
+    * @param alpha [rad]
+    * @param r [mm]
+    * @param d [mm]
+    * @return Transformation matrix {TMatrix}
+    */
+    TMatrix create_single_t_matrix(double theta, double alpha, double r, double d);
+
+
+    /**
+    * Calculates the Roll-Pitch-Yaw Euler angles for a given homogeneous
+    * transformation matrix.
+    *
+    * @param Homogeneous transformation matrix
+    * @return Set of Euler Angles denoting Roll, Pitch, and Yaw [rad]
+    */
+    vector<double> get_euler_angles(TMatrix& tMatrix);
+
 };
 
 

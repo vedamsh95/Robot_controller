@@ -1,5 +1,6 @@
 #include "TMatrix.h"
 #include <math.h>
+#include <cassert>
 
 //TODO implement your transformation type for the orientation (xyz, zyx, zyz)!
 
@@ -33,4 +34,48 @@ TMatrix::TMatrix(double _trans[6]) {
 TMatrix::TMatrix(double _rot_x, double _rot_y, double _rot_z, double _trans_x, double _trans_y, double _trans_z) {
 	m_transformation[0][0] = cos(_rot_x) * cos(_rot_y);
 //TODO implement
+}
+
+double TMatrix::get(int row, int col) const
+{
+  assert(row >= 0 && row < 4);
+  assert(col >= 0 && col < 4);
+  return m_transformation[row][col];
+}
+
+TMatrix TMatrix::multiply(TMatrix& right)
+{
+  const int N = 4;
+
+  auto& A = m_transformation;
+  auto& B = right.m_transformation;
+  double C[N][N];
+
+  for(int r = 0; r < N; r++) {
+    for(int c = 0; c < N; c++) {
+      double sum = 0;
+      for(int i = 0; i < N; i++) {
+        sum += A[r][i] * B[i][c];
+      }
+      C[r][c] = sum;
+    }
+  }
+
+  return {
+          C[0][0], C[0][1], C[0][2], C[0][3],
+          C[1][0], C[1][1], C[1][2], C[1][3],
+          C[2][0], C[2][1], C[2][2], C[2][3],
+          C[3][0], C[3][1], C[3][2], C[3][3],
+  };
+}
+
+std::ostream& operator<<(std::ostream &out, const TMatrix& mat)
+{
+  // TODO Make the output look nice -> Equal size columns
+  auto& m = mat.m_transformation;
+  out << "|" << m[0][0] << ", " << m[0][1] << ", " << m[0][2] << ", " << m[0][3] << "|" << std::endl;
+  out << "|" << m[1][0] << ", " << m[1][1] << ", " << m[1][2] << ", " << m[1][3] << "|" << std::endl;
+  out << "|" << m[2][0] << ", " << m[2][1] << ", " << m[2][2] << ", " << m[2][3] << "|" << std::endl;
+  out << "|" << m[3][0] << ", " << m[3][1] << ", " << m[3][2] << ", " << m[3][3] << "|" << std::endl;
+  return out;
 }
