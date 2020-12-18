@@ -18,7 +18,6 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
 
 
 
-
 double** calculation(double **mat1, double **mat2){
 
     double** array = 0;
