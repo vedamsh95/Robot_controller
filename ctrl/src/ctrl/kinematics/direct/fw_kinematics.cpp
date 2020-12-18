@@ -11,6 +11,7 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
 
 
 
+
     return new SixDPos(1.757, 0.0, 1.91, 0, M_PI, 0);
 }
 
