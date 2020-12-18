@@ -26,7 +26,7 @@ public:
 	 *
 	 * @param _trans array containing rotation and position values
 	 */
-	TMatrix(double _trans[6]);
+    TMatrix(double _trans[6]) : TMatrix(_trans[3], _trans[4], _trans[5], _trans[0], _trans[1], _trans[2]) {};
 
 	/**
 	 * Constructor for the the TMatrix set up with the rotation and translation of a position.
