@@ -15,6 +15,7 @@ dist/
 
 # binaries and build files
 bin/
+cmake-build-debug/
 # Unit test reports
 TEST*.xml
 
