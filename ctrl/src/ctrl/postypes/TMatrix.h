@@ -40,7 +40,7 @@ public:
 
 	/**
 	 * Constructor of TMatrix with all given entries of the matrix
-	 * @param _one idx_0_0
+	 * @param _one idx0_0_
 	 * @param _two idx_0_1
 	 * @param _three idx_0_2
 	 * @param _four idx_0_3

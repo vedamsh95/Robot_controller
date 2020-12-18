@@ -48,8 +48,8 @@ simxInt Initial()
     simxInt clientID = -1;
     simxFinish(-1);
 
-//    clientID = simxStart("127.0.0.1", portNb, true, true, 5000, 5);
-    clientID = simxStart("141.44.29.96", portNb, true, true, 5000, 5);
+    clientID = simxStart("127.0.0.1", portNb, true, true, 5000, 5);
+    //clientID = simxStart("141.44.29.96", portNb, true, true, 5000, 5);
 
     if (clientID > -1)
     {

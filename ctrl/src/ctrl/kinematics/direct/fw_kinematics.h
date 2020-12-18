@@ -11,6 +11,7 @@
  */
 class FwKinematics {
 public:
+    FwKinematics(){}                    //Default Constructor
     /**
      * Computes the forward kinematic from a given {@Configuration}
      * @param _cfg {@Configuration} to compute the forward kinematic from
