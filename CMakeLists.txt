@@ -19,4 +19,7 @@ add_subdirectory(ctrl/src/ctrl)
 add_executable(sdir_ctrl2020 ctrl/src/main.cpp)
 
 add_dependencies(sdir_ctrl2020 Ctrl)
+if (MINGW)
+    target_link_libraries(Ctrl winmm ws2_32)
+endif()
 target_link_libraries(sdir_ctrl2020 Ctrl)
