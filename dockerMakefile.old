@@ -21,7 +21,7 @@ start-vrep: vrep
 vrep:
 	docker build -t bitbucket.org/cse_admin/sdir_2020/vrep ./vrep
 
-start-ctrl: build-ctrl
+start-ctrl: ctrl
 	docker run --rm -it --name sdir-ctrl \
 	  -e "DISPLAY=:0" \
 	  -e "UID=$$(id -u)" \
