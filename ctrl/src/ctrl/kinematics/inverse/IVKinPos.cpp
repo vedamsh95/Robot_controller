@@ -303,6 +303,7 @@ std::vector<std::array<double, 3>*>* IVKinPos::specialcase1(Position _P)
 			ans.push_back(sol);
 
 	}
+	return nullptr;
 }
 
 std::vector<std::array<double, 3>*>* IVKinPos::specialcase2(Position _P)
@@ -347,6 +348,7 @@ std::vector<std::array<double, 3>*>* IVKinPos::specialcase2(Position _P)
 			ans.push_back(sol);
 
 	}
+	return nullptr;
 }
 
 

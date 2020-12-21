@@ -64,11 +64,23 @@ public:
           260 / 180.0 * M_PI,
   };
 
+  /**
+   * Maximum acceleration for the six axes (Just some values, not the correct ones!!!)
+   */
+   const double accelerations[6] = {
+           360 / 180.0 * M_PI,
+           360 / 180.0 * M_PI,
+           360 / 180.0 * M_PI,
+           360 / 180.0 * M_PI,
+           360 / 180.0 * M_PI,
+           360 / 180.0 * M_PI
+   };
+
 private:
   /**
    * Private constructor to prevent initialization
    */
-  Robot() {}
+  Robot() = default;
 };
 
 

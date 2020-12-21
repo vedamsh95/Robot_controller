@@ -1,6 +1,6 @@
 add_library(Ctrl
             sdir_ctrl.cpp
-        Robot.h)
+        postypes/Robot.h)
 
 add_subdirectory(com)
 add_dependencies(Ctrl Com)
