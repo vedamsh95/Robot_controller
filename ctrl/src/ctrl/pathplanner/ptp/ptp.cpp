@@ -2,21 +2,16 @@
 
 // TODO check for the case that qf == qi
 
-template <typename T> int sgn(T val) {
-  return (T(0) < val) - (val < T(0));
-}
-
 Robot* Ptp::robot = &Robot::getInstance();
 
 Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg)
 {
   // Perform the feasibility checks for the two configurations,
   // i.e. that all joint angles are within the possible range.
-  if (!isFeasible(_start_cfg) || !isFeasible(_end_cfg)) {
-    // TODO throw error
-    std::cout << "Not feasible configuration!" << std::endl;
-    return nullptr;
-  }
+  // If they are not, change the end configuration to the limits
+  // so that the motion can still be performed
+  makeFeasible(_start_cfg);
+  makeFeasible(_end_cfg);
 
   std::array<Single_trajectory*, NUM_JOINTS> single_trajectories{};
 
@@ -26,16 +21,13 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
 
     // Distance to be covered
     double diff = (*_end_cfg)[i] - (*_start_cfg)[i];
-    std::cout << "Difference in joint " << i << " is " << diff << std::endl;
     // Maximum distance that can be covered with a maximum
     // velocity profile given the maximal velocity of the joint.
     double comp = robot->velocities[i] * robot->velocities[i] / robot->accelerations[i];
 
     if(diff-comp < 0) {
-      std::cout << "Joint: " << i << " is a max bel traj" << std::endl;
       single_trajectories[i] = new Max_vel_trajectory(i, (*_start_cfg)[i], (*_end_cfg)[i]);
     } else {
-      std::cout << "Joint: " << i << " is a trapezoidal traj" << std::endl;
       single_trajectories[i] = new Trapezoidal_trajectory(i, (*_start_cfg)[i], (*_end_cfg)[i]);
     }
   }
@@ -48,11 +40,7 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
     }
   }
 
-  std::cout << "Max time: " << t_max << std::endl;
-
   size_t cycles = roundf(t_max / 0.050);
-
-  std::cout << "Number of cycles: " << cycles << endl;
 
   vector<Configuration*> configs;
   double t = 0;
@@ -60,21 +48,16 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
     std::array<double,NUM_JOINTS> joint_values{};
     for ( int i = 0; i < NUM_JOINTS; i++ ) {
       joint_values[i] = single_trajectories[i]->eval(t);
-      if(i==0) {
-        std::cout << joint_values[i] << std::endl;
-      }
     }
     configs.push_back(new Configuration(joint_values));
     t += 0.05;
   }
 
-  std::cout << "Number of samples: " << configs.size() << std::endl;
-
-  Trajectory* trajectory = new Trajectory();
+  auto* trajectory = new Trajectory();
   trajectory->set_trajectory(configs);
 
-  for ( auto t : single_trajectories ) {
-    delete t;
+  for ( auto tra : single_trajectories ) {
+    delete tra; // TODO solve
   }
 
   // TODO Trajectory as member to take care of delete
@@ -89,79 +72,16 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
   return trajectory;
 }
 
-bool Ptp::isFeasible(Configuration* cfg)
+void Ptp::makeFeasible(Configuration* cfg)
 {
   for(int i = 0; i < NUM_JOINTS; i++) {
     if((*cfg)[i] < robot->limits[i].min) {
-      return false;
+      std::cout << "[PTP] Joint " << i+1 << " is out of range!" << std::endl;
+      (*cfg)[i] = robot->limits[i].min;
     }
     if((*cfg)[i] > robot->limits[i].max) {
-      return false;
+      std::cout << "[PTP] Joint " << i+1 << " is out of range!" << std::endl;
+      (*cfg)[i] = robot->limits[i].max;
     }
-  }
-  return true;
-}
-
-Ptp::Single_trajectory::Single_trajectory(int joint, double qi, double qf)
-    : joint(joint), qi(qi), qf(qf) {}
-
-double Ptp::Single_trajectory::get_duration()
-{
-  return tf;
-}
-
-Ptp::Max_vel_trajectory::Max_vel_trajectory(int joint, double qi, double qf)
-    : Single_trajectory(joint, qi, qf)
-{
-  double a_max = robot->accelerations[joint];
-  qm = (qf-qi) * 0.5;
-  tf = 2 * sqrt((2*abs(qm)/a_max));
-  std::cout << a_max << std::endl;
-  std::cout << qm << std::endl;
-  std::cout << tf << std::endl;
-}
-
-double Ptp::Max_vel_trajectory::eval( double t )
-{
-  if ( t < 0) {
-    return qi;
-  } else if (t < tf/2) {
-    return qi + 2 * pow(t/tf, 2) * (qf-qi);
-  } else if ( t < tf) {
-    return qi + ( -1 + 4 * (t/tf) - 2 * pow(t/tf, 2)) * (qf-qi);
-  } else {
-    return qf;
-  }
-}
-
-Ptp::Trapezoidal_trajectory::Trapezoidal_trajectory(int joint, double qi, double qf)
-        : Single_trajectory(joint, qi, qf)
-{
-  double a_max = robot->accelerations[joint];
-  double v_max = robot->velocities[joint];
-  tc = v_max / a_max;
-  tf = tc + (abs((qf - qi)) / (v_max));
-}
-
-double Ptp::Trapezoidal_trajectory::eval( double t )
-{
-  double a_max = robot->accelerations[joint];
-
-  if ( t < 0) {
-    std::cout << "Phase 1" << std::endl;
-    return qi;
-  } else if (t < tc) {
-    std::cout << "Phase 2" << std::endl;
-    return qi + 0.5 * a_max * t * t * sgn(qf-qi);
-  } else if ( t < tf - tc) {
-    std::cout << "Phase 3" << std::endl;
-    //return qi + (0.5*a_max*tc*tc + a_max*tc*(t-tc)) * sgn(qf-qi);
-    return qi + a_max * tc * (t-tc/2)* sgn(qf-qi);
-  } else if ( t < tf ) {
-    std::cout << "Phase 4" << std::endl;
-    return qf - 0.5 * a_max * (tf - t) * (tf- t) * sgn(qf-qi);
-  } else {
-    std::cout << "Phase 5" << std::endl;
-    return qf;
   }
 }

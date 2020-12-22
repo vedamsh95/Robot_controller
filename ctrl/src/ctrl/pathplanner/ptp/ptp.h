@@ -7,6 +7,9 @@
 #include <functional>
 #include <math.h>
 #include <iostream>
+#include "Single_trajectory.h"
+#include "Max_vel_trajectory.h"
+#include "Trapezoidal_trajectory.h"
 
 /**
  * This class implements the ptp movement from to given {@ref Configuration}, one for the start configuration and one
@@ -21,41 +24,6 @@ private:
 
   static Robot* robot;
 
-  /**
-   * Classes that represents an individual trajectory for a single joint.
-   */
-  class Single_trajectory {
-  protected:
-    double qi;
-    double qf;
-    double tf;
-    int joint;
-  public:
-    virtual double eval(double t) = 0;
-    double get_duration();
-    Single_trajectory(int joint, double qi, double qf);
-  };
-
-  class Max_vel_trajectory : public Single_trajectory {
-  private:
-    double qm;
-  public:
-    Max_vel_trajectory(int joint, double qi, double qf);
-    double eval(double t);
-  };
-
-  class Trapezoidal_trajectory : public Single_trajectory {
-  private:
-    double tc;
-  public:
-    Trapezoidal_trajectory(int joint, double qi, double qf);
-    double eval(double t);
-  };
-
-  /**
-   * End of the classes that represents an individual trajectory for a single joint
-   */
-
 public:
 
   /**
@@ -67,7 +35,13 @@ public:
    */
   Trajectory* get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg);
 
-  bool isFeasible(Configuration* cfg);
+  /**
+   * Checks for a given configuration whether it is feasible and if not,
+   * it changes the values to the limits of the robot.
+   *
+   * @param cfg Configuration to check and change
+   */
+  void makeFeasible(Configuration* cfg);
 
 };
 
