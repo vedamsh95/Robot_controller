@@ -118,14 +118,15 @@ double convertToEulerAngles(double one, double two, double three, double four, d
     // initialize the euler angles
     double phi, theta, psi;
     double a[3];
+    double u = 0.1;
 
     // Error case
-    if ( one == 0 && five == 0) {
+    if ( one == 0 + u && one == 0 - u && five == 0 + u && five == 0 - u) {
         phi = asinh( - two );
         theta = - nine * M_PI/2;
         psi = 0;
     }
-    else {  //normal case
+    else {  // normal case
         phi = atan2(five, one);
         theta = atan2(-nine, sqrt( ten*ten + eleven*eleven ));
         psi = atan2(ten, eleven);
@@ -137,7 +138,6 @@ double convertToEulerAngles(double one, double two, double three, double four, d
 
     return a[0], a[1], a[2];
 }
-
 
 
 int main(){
