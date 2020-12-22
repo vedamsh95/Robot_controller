@@ -4,7 +4,7 @@
 
 Robot* Ptp::robot = &Robot::getInstance();
 
-Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg)
+Trajectory* Ptp::get_ptp_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, bool sync)
 {
   // Perform the feasibility checks for the two configurations,
   // i.e. that all joint angles are within the possible range.
@@ -32,16 +32,34 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
     }
   }
 
-  // Sample the final trajectory
+  // Determine the total runtime
   double t_max = 0;
-  for ( int i = 0; i < NUM_JOINTS; i++) {
+  int    joint = 0;
+  for ( int i = 0; i < NUM_JOINTS; i++ ) {
     if ( single_trajectories[i]->get_duration() > t_max ) {
       t_max = single_trajectories[i]->get_duration();
+      joint = i;
     }
   }
 
-  size_t cycles = roundf(t_max / 0.050);
+  // In case of a synchronous movement, adjust the other joints
+  if ( sync ) {
+    for ( int i = 0; i < NUM_JOINTS; i++ ) {
+      // Skip the joint that already has the highest duration
+      if ( i == joint ) {
+        continue;
+      }
+      // The slowed down version of the original trajectory must always be
+      // a trapezoidal trajectory, since a max-velocity trajectory cannot be
+      // slowed down.
+      delete single_trajectories[i]; // TODO solve
+      single_trajectories[i] = new Trapezoidal_trajectory(i, (*_start_cfg)[i], (*_end_cfg)[i], t_max);
+    }
+  }
 
+  // Sample the values
+  auto tmp = static_cast<float>(t_max / 0.05);
+  size_t cycles = roundf(tmp);
   vector<Configuration*> configs;
   double t = 0;
   for ( size_t c = 0; c < cycles; c++ ) {

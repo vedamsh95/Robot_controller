@@ -1,5 +1,7 @@
 #include "Trapezoidal_trajectory.h"
 
+#include <iostream>
+
 Trapezoidal_trajectory::Trapezoidal_trajectory(int joint, double qi, double qf)
     : Single_trajectory(joint, qi, qf)
 {
@@ -7,6 +9,14 @@ Trapezoidal_trajectory::Trapezoidal_trajectory(int joint, double qi, double qf)
   double v_max = robot->velocities[joint];
   tc = v_max / a_max;
   tf = tc + (abs((qf - qi)) / (v_max));
+}
+
+Trapezoidal_trajectory::Trapezoidal_trajectory(int joint, double qi, double qf, double tf)
+    : Single_trajectory(joint, qi, qf)
+{
+  double a_max = robot->accelerations[joint];
+  this->tf = tf;
+  tc = 0.5 * ( tf - sqrt(tf*tf-4*abs(qf-qi)/a_max));
 }
 
 template <typename T> int sgn(T val) {

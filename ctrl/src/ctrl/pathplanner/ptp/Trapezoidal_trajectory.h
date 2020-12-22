@@ -15,7 +15,7 @@ class Trapezoidal_trajectory : public Single_trajectory {
 
 public:
   /**
-   * Constructor - calculates the necessary values that describe the trajectory
+   * Constructor - Calculates the fastest trajectory
    *
    * @param joint   Joint index
    * @param qi      Initial joint angle
@@ -24,12 +24,23 @@ public:
   Trapezoidal_trajectory(int joint, double qi, double qf);
 
   /**
+   * Constructor - Calculates a trajectory with the given duration
+   *               The duration must be larger than the smallest possible
+   *               duration.
+   * @param joint   Joint index
+   * @param qi      Initial joint angle
+   * @param qf      Final joint angle
+   * @param tf      Desired final time
+   */
+  Trapezoidal_trajectory(int joint, double qi, double qf, double tf);
+
+  /**
    * Evaluates the calculated Trajectory at the given time step.
    *
    * @param t Time at which the trajectory should be evaluated
    * @return  Joint angle at the given time.
    */
-  double eval(double t);
+  double eval(double t) override;
 
 private:
 

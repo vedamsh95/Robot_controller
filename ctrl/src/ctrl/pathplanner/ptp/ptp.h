@@ -31,9 +31,10 @@ public:
    *
    * @param _start_cfg {@ref Configuration} of the starting point of the path
    * @param _end_cfg {@ref Configuration} of the target point of the path
+   * @param sync Whether the motion should be synchronous
    * @return {@ref Trajectory} for the movement of the robot
    */
-  Trajectory* get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg);
+  Trajectory* get_ptp_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, bool sync);
 
   /**
    * Checks for a given configuration whether it is feasible and if not,
@@ -41,7 +42,7 @@ public:
    *
    * @param cfg Configuration to check and change
    */
-  void makeFeasible(Configuration* cfg);
+  static void makeFeasible(Configuration* cfg);
 
 };
 

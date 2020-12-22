@@ -29,7 +29,7 @@ public:
    * @param t Time at which the trajectory should be evaluated
    * @return  Joint angle at the given time.
    */
-  double eval(double t);
+  double eval(double t) override;
 
 private:
 
