@@ -1,7 +1,7 @@
 #include "ptp.h"
 
 
-Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg)
+Trajectory* Ptp::get_ptp_trajectory(Configuration* _start_cfg, Configuration* _end_cfg)
 {
     //TODO: IMPLEMENT! implement the computation of a ptp trajectory with the corresponding velocity profile
     Trajectory* trajectory = new Trajectory();

@@ -36,7 +36,7 @@ Trajectory* SdirCtrl::move_robot_ptp(Configuration* start, Configuration* end)
 {
     //ToDo: IMPLEMENT!
     Ptp ptp;
-    return ptp.get_ptp_trajectoy(start, end);
+    return ptp.get_ptp_trajectory(start, end);
 }
 
 
@@ -51,5 +51,5 @@ Trajectory* SdirCtrl::move_robot_lin(Configuration* start, Configuration* end)
 {
     //ToDo: IMPLEMENT!
     Lin lin;
-    return lin.get_lin_trajectoy(start, end);
+    return lin.get_lin_trajectory(start, end);
 }

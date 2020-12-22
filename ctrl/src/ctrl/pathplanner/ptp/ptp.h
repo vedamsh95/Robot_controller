@@ -20,7 +20,7 @@ public:
      * @param _end_cfg {@ref Configruation} of the target point of the path
      * @return {@ref Trajectoy} for the movement of the robot
      */
-    Trajectory* get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg);
+    Trajectory* get_ptp_trajectory(Configuration* _start_cfg, Configuration* _end_cfg);
 };
 
 

@@ -1,0 +1,26 @@
+version: "3"
+services:
+  vrep:
+    build: ./vrep
+    command: ["/opt/vrep/vrep.sh", "kuka-kr120-2700-2-sdir.ttt", "-s"]
+    privileged: true
+    environment:
+      DISPLAY: ":0"
+      UID: "${UID}"
+      QT_SCALE_FACTOR: 2
+    volumes:
+      - "${HOME}/.Xauthority:/mnt/.Xauthority"
+      - "./sim:/mnt/sim"
+    working_dir: "/mnt/sim"
+    network_mode: host
+
+  ctrl:
+    build: .
+    privileged: true
+    depends_on: ["vrep"]
+    environment:
+      DISPLAY: ":0"
+      UID: "${UID}"
+    volumes:
+      - "${HOME}/.Xauthority:/mnt/.Xauthority"
+    network_mode: host
