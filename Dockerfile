@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y build-essential cmake inetutils-ping
 COPY vrep/runas /usr/local/bin/
 
 COPY ctrl ~/ctrl
-WORKDIR ~/ctrl
+COPY CMakeLists.txt ~/
+WORKDIR ~
 
 RUN rm -rf "bin" && mkdir "bin" && cd "bin"
 WORKDIR bin
