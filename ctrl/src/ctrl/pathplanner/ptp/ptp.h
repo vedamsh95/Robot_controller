@@ -22,9 +22,15 @@ class Ptp {
 
 private:
 
-  static Robot* robot;
+  Robot* robot;
+  Trajectory* trajectory;
 
 public:
+
+  /**
+   * Default constructor
+   */
+  Ptp();
 
   /**
    * Example function computing the trajectory for a given path (defined by two configurations) as ptp movement.
@@ -42,7 +48,7 @@ public:
    *
    * @param cfg Configuration to check and change
    */
-  static void makeFeasible(Configuration* cfg);
+  void makeFeasible(Configuration* cfg);
 
 };
 

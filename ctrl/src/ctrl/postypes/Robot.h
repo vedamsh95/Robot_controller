@@ -33,6 +33,12 @@ public:
   void operator=(Robot const&) = delete;
 
   /**
+   * The sleep times used for ptp and lin movement
+   * 50 ms -> 20 Hz
+   */
+   double time_interval = 0.05;
+
+  /**
    * Structure that holds a range
    */
   struct Range {

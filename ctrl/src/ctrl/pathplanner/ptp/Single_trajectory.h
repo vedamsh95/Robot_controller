@@ -24,6 +24,8 @@ public:
    */
   Single_trajectory(int joint, double qi, double qf);
 
+  virtual ~Single_trajectory() = default;
+
   /**
    * Evaluates the calculated Trajectory at the given time step.
    *

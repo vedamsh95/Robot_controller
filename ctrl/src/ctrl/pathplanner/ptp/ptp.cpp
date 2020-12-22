@@ -1,8 +1,9 @@
 #include "ptp.h"
 
-// TODO check for the case that qf == qi
-
-Robot* Ptp::robot = &Robot::getInstance();
+Ptp::Ptp() {
+  robot = &Robot::getInstance();
+  trajectory = new Trajectory();
+}
 
 Trajectory* Ptp::get_ptp_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, bool sync)
 {
@@ -52,13 +53,13 @@ Trajectory* Ptp::get_ptp_trajectory(Configuration* _start_cfg, Configuration* _e
       // The slowed down version of the original trajectory must always be
       // a trapezoidal trajectory, since a max-velocity trajectory cannot be
       // slowed down.
-      delete single_trajectories[i]; // TODO solve
+      delete single_trajectories[i];
       single_trajectories[i] = new Trapezoidal_trajectory(i, (*_start_cfg)[i], (*_end_cfg)[i], t_max);
     }
   }
 
   // Sample the values
-  auto tmp = static_cast<float>(t_max / 0.05);
+  auto tmp = static_cast<float>(t_max / robot->time_interval);
   size_t cycles = roundf(tmp);
   vector<Configuration*> configs;
   double t = 0;
@@ -68,17 +69,14 @@ Trajectory* Ptp::get_ptp_trajectory(Configuration* _start_cfg, Configuration* _e
       joint_values[i] = single_trajectories[i]->eval(t);
     }
     configs.push_back(new Configuration(joint_values));
-    t += 0.05;
+    t += robot->time_interval;
   }
 
-  auto* trajectory = new Trajectory();
   trajectory->set_trajectory(configs);
 
   for ( auto tra : single_trajectories ) {
-    delete tra; // TODO solve
+    delete tra;
   }
-
-  // TODO Trajectory as member to take care of delete
 
   /*
   //Dummy trajectory
