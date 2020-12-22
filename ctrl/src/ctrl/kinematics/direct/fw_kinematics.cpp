@@ -18,7 +18,6 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
 
 
 
-
 double** calculation(double **mat1, double **mat2){
 
     double** array = 0;
@@ -112,6 +111,32 @@ double** create(double theta_n, double alpha_n, double r_n, double d_n){
     return array;
 }
 
+// Euler Angles
+double convertToEulerAngles(double one, double two, double three, double four, double five, double six,
+                                      double seven, double eight, double nine, double ten, double eleven, double twelve,
+                                      double thirteen, double fourteen, double fifteen, double sixteen){
+    // initialize the euler angles
+    double phi, theta, psi;
+    double a[3];
+
+    // Error case
+    if ( one == 0 && five == 0) {
+        phi = asinh( - two );
+        theta = - nine * M_PI/2;
+        psi = 0;
+    }
+    else {  //normal case
+        phi = atan2(five, one);
+        theta = atan2(-nine, sqrt( ten*ten + eleven*eleven ));
+        psi = atan2(ten, eleven);
+    }
+    // add values to array
+    a[0] = phi;
+    a[1] = theta;
+    a[2] = psi;
+
+    return a[0], a[1], a[2];
+}
 
 
 
