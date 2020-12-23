@@ -5,6 +5,7 @@
 #include <SixDPos.h>
 #include <TMatrix.h>
 #include <Configuration.h>
+#include "IVKinPos.h"
 
 /** \brief computes the inverse kinematics
  * This class is intended to handle the computation of the inverse kinematics. This includes both the computation of the
