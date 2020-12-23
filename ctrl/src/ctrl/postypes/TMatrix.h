@@ -85,6 +85,13 @@ public:
 	 */
 	 TMatrix multiply(TMatrix& right);
 
+    /**
+     * Transposes the given matrix.
+     * @return: the transposed matrix.
+     */
+     TMatrix transpose();
+    
+
 	 /**
 	  * Allows the operator << access to the private variables of this class
 	  */

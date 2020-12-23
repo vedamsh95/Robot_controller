@@ -78,6 +78,27 @@ TMatrix TMatrix::multiply(TMatrix& right)
   };
 }
 
+TMatrix TMatrix::transpose()
+{
+    auto& A = m_transformation;
+    const int N = 4;
+    double C[N][N];
+    
+    for(int r = 0; r < N; r++){
+        for(int c = 0; c < N; c++){
+            C[c][r] = A[r][c];
+        }
+    }
+    
+    return {
+            C[0][0], C[0][1], C[0][2], C[0][3],
+            C[1][0], C[1][1], C[1][2], C[1][3],
+            C[2][0], C[2][1], C[2][2], C[2][3],
+            C[3][0], C[3][1], C[3][2], C[3][3],
+    };
+    
+}
+
 std::ostream& operator<<(std::ostream &out, const TMatrix& mat)
 {
   // TODO Make the output look nice -> Equal size columns

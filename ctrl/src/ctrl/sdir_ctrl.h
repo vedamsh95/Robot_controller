@@ -40,9 +40,10 @@ public:
      *
      * @param start start {@ref Configuration}
      * @param end   target {@ref Configuration}
+     * @param sync  Whether the motion is synchronous, default = False
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_ptp(Configuration* start, Configuration* end);
+    Trajectory* move_robot_ptp(Configuration* start, Configuration* end, bool sync = false);
 
     /**
      * Computes a trajectory for a lin movement from a start and target position
