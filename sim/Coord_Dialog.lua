@@ -91,6 +91,12 @@ function applyDummy(ui,id)
             end
         end
         setConfigEndPoint(ui,new_jp)
+        -- We want to only send data in the radiant format!
+        for i = 1,6 do
+            if simUI.getRadiobuttonValue(ui, 2007)==1 then
+                new_jp[i] = math.rad(new_jp[i])
+            end
+        end
         js = {
             op = 0,
             data = {{
@@ -108,7 +114,7 @@ function applyDummy(ui,id)
     local ret = sim.getStringSignal("returnsignal")
     if ret then
         local obj, pos, err = json.decode (ret, 1, nil)
-        print(#obj.data)
+        --print(#obj.data)
         if err then
             sim.addStatusbarMessage("Error:", err)
         else
@@ -226,7 +232,12 @@ function CalculateIK(ui,id)
         curr_c[i] = sim.getJointPosition(jh[i])
     end
     for i=1,#joints do
-        tar_c[i] = simUI.getEditValue(ui,i+1999)
+        -- We want to only send data in the radiant format!
+        if simUI.getRadiobuttonValue(ui, 2007)==1 then
+            tar_c[i] = math.rad(simUI.getEditValue(ui,i+1999))
+        else
+            tar_c[i] = simUI.getEditValue(ui,i+1999)
+        end
     end
     if (simUI.getRadiobuttonValue(ui,1007) == 1) then
         if (simUI.getRadiobuttonValue(ui,1010) == 1) then
