@@ -17,6 +17,11 @@ public:
      * @return computed {@ref SixDPos}
      */
     SixDPos* get_fw_kinematics(Configuration* _cfg);
+
+    double* D_H_matrix(double angle, double a, double r, double d);
+
+    double* matrix_mult(double* mat_a, double* mat_b);
+
 };
 
 
