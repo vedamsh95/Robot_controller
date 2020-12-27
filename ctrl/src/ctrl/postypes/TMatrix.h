@@ -13,6 +13,10 @@ private:
 	double tip_cam_trans[4][4];
 
 public:
+
+    TMatrix();
+    TMatrix(double theta_n, double alpha_n, double r_n, double d_n);
+
 	/**
 	 * Constructor for the the TMatrix set up with the passed array containing the rotation and translation of a position.
 	 *  - _trans[0]: rotation around x-axis
@@ -64,6 +68,17 @@ public:
 	 * @return reference of the internal matrix representation
 	 */
 	double* get_matrix() { return &m_transformation[0][0]; };
+
+	double get_element(unsigned int row, unsigned int column);
+
+	void output();
+
+	TMatrix operator*(const TMatrix& mat1);
+
+
+
+
+
 };
 
 

@@ -17,6 +17,10 @@ public:
      * @param _cfg {@Configuration} to compute the forward kinematic from
      * @return computed {@ref SixDPos}
      */
+
+
+
+
     SixDPos* get_fw_kinematics(Configuration* _cfg);
 };
 

@@ -2,6 +2,8 @@
 
 #include <math.h>
 #include "fw_kinematics.h"
+#include<iostream>
+
 
 
 SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
@@ -9,107 +11,49 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     //TODO: IMPLEMENT the computation of the forward kinematics and derive position and euler angles. Keep in mind your
     //                definition of the rotations and whether you are working in deg or rad as well as in m or cm.
 
+/*
+    double theta1 = _cfg->operator[](0);    //getting theta 0
+    std::cout << "Theta 1 from config: " <<  theta1<< std::endl;
+    double theta2 = _cfg->operator[](1);    //getting theta 1
+    std::cout << "Theta 2 from config: " << theta2<< std::endl;
+    double theta3 = _cfg->operator[](2);    //getting theta 2
+    std::cout << "Theta 3 from config: " <<  theta3<< std::endl;
+    double theta4 = _cfg->operator[](3);    //getting theta 3
+    std::cout << "Theta 4 from config: " << theta4<< std::endl;
+    double theta5 = _cfg->operator[](4);    //getting theta 4
+    std::cout << "Theta 5 from config: " << theta5<< std::endl;
+    double theta6 = _cfg->operator[](5);    //getting theta 5
+    std::cout << "Theta 6 from config: " << theta6<< std::endl;
+
+*/
+
+    double theta1 = 0;
+    double theta2 = 0;
+    double theta3 = 0;
+    double theta4 = 0;
+    double theta5 = 0;
+    double theta6 = 0;
 
 
+    TMatrix mat1(0, 180, 0, 645);
+    TMatrix mat2((0 + theta1), 90, 330, 0);
+    TMatrix mat3((0 + theta2), 0, 1150, 0);
+    TMatrix mat4((-90 + theta3), 90, 115, 0);
+    TMatrix mat5((0 + theta4),-90 ,0, -1220);
+    TMatrix mat6((0 + theta5),90 ,0, 0);
+    TMatrix mat7((180+theta6),180, 0, -215);
+
+    TMatrix res;
+    res = mat1 * mat2 * mat3 * mat4 * mat5 *mat6 * mat7;
+
+    res.output();
 
     return new SixDPos(1.757, 0.0, 1.91, 0, M_PI, 0);
+    //return new SixDPos(res.get_element(0,3), res.get_element(1,3), res.get_element(2,3), 0, M_PI, 0);
 }
 
 
 
-
-double** calculation(double **mat1, double **mat2){
-
-    double** array = 0;
-    array = new double*[4];                         //width
-
-    for(int j =0; j<4; j++){                        // j is height of matrix
-        array[j] = new double[4];
-
-        for(int i =0; i< 4; i++)                    //i is width of matrix
-        {
-            double temp = 0.0;
-            for(int k =0; k<4; k++)
-            {
-                temp += mat1[j][k] * mat2[k][i];
-            }
-            array[j][i] = temp;
-            //std::cout << temp << " ";
-        }
-        //std::cout << std::endl;
-    }
-
-    return array;
-}
-
-
-double** create(double theta_n, double alpha_n, double r_n, double d_n){
-
-    double const fa = M_PI/180.0;
-
-    double** array = 0;
-    array = new double*[4];
-
-    for (int h = 0; h < 4; h++)
-    {
-        array[h] = new double[4];
-
-        for (int w = 0; w < 4; w++)
-        {
-            if(h == 0 && w == 0){
-                array[h][w] = cos(theta_n*fa);
-            }
-            else if (h==0 && w == 1){
-                array[h][w] = -sin(theta_n*fa)*cos(alpha_n*fa);
-            }
-            else if (h==0 && w == 2){
-                array[h][w] = sin(theta_n*fa)*sin(alpha_n*fa);
-            }
-            else if (h==0 && w == 3){
-                array[h][w] = r_n*cos(theta_n*fa);
-            }
-            else if(h == 1 && w == 0){
-                array[h][w] = sin(theta_n*fa);
-            }
-            else if (h==1 && w == 1){
-                array[h][w] = cos(theta_n*fa)*cos(alpha_n*fa);
-            }
-            else if (h==1 && w == 2){
-                array[h][w] = -cos(theta_n*fa)*sin(alpha_n*fa);
-            }
-            else if (h==1 && w == 3){
-                array[h][w] = r_n*sin(theta_n*fa);
-            }
-            else if(h == 2 && w == 0){
-                array[h][w] = 0;
-            }
-            else if (h==2 && w == 1){
-                array[h][w] = sin(alpha_n*fa);
-            }
-            else if (h==2 && w == 2){
-                array[h][w] = cos(alpha_n*fa);
-            }
-            else if (h==2 && w == 3){
-                array[h][w] = d_n;
-            }
-            else if(h == 3 && w == 0){
-                array[h][w] = 0;
-            }
-            else if (h==3 && w == 1){
-                array[h][w] = 0;
-            }
-            else if (h==3 && w == 2){
-                array[h][w] = 0;
-            }
-            else if (h==3 && w == 3){
-                array[h][w] = 1;
-            }
-
-        }
-    }
-
-    return array;
-}
 
 // Euler Angles
 double convertToEulerAngles(double one, double two, double three, double four, double five, double six,
@@ -140,33 +84,3 @@ double convertToEulerAngles(double one, double two, double three, double four, d
 }
 
 
-int main(){
-    std::cout << "Test started..."<< std::endl;
-
-    enum theta {theta1 = 0, theta2=0, theta3 =0, theta4=0, theta5=0, theta6=0};
-
-    double** m1 = create(0, 180, 0, 645);
-    double** m2 = create((0 + theta1), 90, 330, 0);
-    double** m3 = create((0 + theta2), 0, 1150, 0);
-    double** m4 = create((-90 + theta3), 90, 115, 0);
-    double** m5 = create((0 + theta4),-90 ,0, -1220);
-    double** m6 = create((0 + theta5),90 ,0, 0);
-    double** m7 = create((180+theta6),180, 0, -215);
-
-
-    double** result = calculation(calculation(calculation(calculation(calculation(calculation(m1,m2),m3),m4),m5),m6),m7);
-
-    printf("Array contents: \n");
-
-    for (int h = 0; h < 4; h++)
-    {
-        for (int w = 0; w < 4; w++)
-        {
-            printf("%f,", result[h][w]);
-        }
-        printf("\n");
-    }
-
-    return 0;
-
-}

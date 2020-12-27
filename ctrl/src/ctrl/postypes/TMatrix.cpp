@@ -1,7 +1,69 @@
 #include "TMatrix.h"
 #include <math.h>
+#include<iostream>
 
 //TODO implement your transformation type for the orientation (xyz, zyx, zyz)!
+TMatrix::TMatrix() {}
+
+TMatrix::TMatrix(double theta_n, double alpha_n, double r_n, double d_n) {
+    double const fa = M_PI/180.0;
+
+
+    for (int h = 0; h < 4; h++)
+    {
+        for (int w = 0; w < 4; w++)
+        {
+            if(h == 0 && w == 0){
+               m_transformation[h][w] = cos(theta_n*fa);                           //element one of hartenberg transformation matrix
+            }
+            else if (h==0 && w == 1){
+                m_transformation[h][w] = -sin(theta_n*fa)*cos(alpha_n*fa);          //element two of hartenberg transformation matrix
+            }
+            else if (h==0 && w == 2){
+                m_transformation[h][w] = sin(theta_n*fa)*sin(alpha_n*fa);           //element three of hartenberg transformation matrix
+            }
+            else if (h==0 && w == 3){
+                m_transformation[h][w] = r_n*cos(theta_n*fa);                       //element four of hartenberg transformation matrix
+            }
+            else if(h == 1 && w == 0){
+                m_transformation[h][w] = sin(theta_n*fa);                           //element five of hartenberg transformation matrix
+            }
+            else if (h==1 && w == 1){
+                m_transformation[h][w] = cos(theta_n*fa)*cos(alpha_n*fa);           //element six of hartenberg transformation matrix
+            }
+            else if (h==1 && w == 2){
+                m_transformation[h][w] = -cos(theta_n*fa)*sin(alpha_n*fa);          //element seven of hartenberg transformation matrix
+            }
+            else if (h==1 && w == 3){
+                m_transformation[h][w] = r_n*sin(theta_n*fa);                       //element eight of hartenberg transformation matrix
+            }
+            else if(h == 2 && w == 0){
+                m_transformation[h][w] = 0;                                         //element nine of hartenberg transformation matrix
+            }
+            else if (h==2 && w == 1){
+                m_transformation[h][w] = sin(alpha_n*fa);                           //element ten of hartenberg transformation matrix
+            }
+            else if (h==2 && w == 2){
+                m_transformation[h][w] = cos(alpha_n*fa);                           //element eleven of hartenberg transformation matrix
+            }
+            else if (h==2 && w == 3){
+                m_transformation[h][w] = d_n;                                       //element twelve of hartenberg transformation matrix
+            }
+            else if(h == 3 && w == 0){
+                m_transformation[h][w] = 0;                                         //element thirteen of hartenberg transformation matrix
+            }
+            else if (h==3 && w == 1){
+                m_transformation[h][w] = 0;                                         //element fourteen of hartenberg transformation matrix
+            }
+            else if (h==3 && w == 2){
+                m_transformation[h][w] = 0;                                         //element fifeteen of hartenberg transformation matrix
+            }
+            else if (h==3 && w == 3){
+                m_transformation[h][w] = 1;                                         //element sixteen of hartenberg transformation matrix
+            }
+        }
+    }
+}
 
 TMatrix::TMatrix(double _one, double _two, double _three, double _four, double _five, double _six, double _seven, double _eight, double _nine, double _ten, double _eleven, double _twelve, double _thirteen, double _fourteen, double _fifteen, double _sixteen) {
 	m_transformation[0][0] = _one;
@@ -33,4 +95,43 @@ TMatrix::TMatrix(double _trans[6]) {
 TMatrix::TMatrix(double _rot_x, double _rot_y, double _rot_z, double _trans_x, double _trans_y, double _trans_z) {
 	m_transformation[0][0] = cos(_rot_x) * cos(_rot_y);
 //TODO implement
+
+}
+
+double TMatrix::get_element(unsigned int row,  unsigned int column)
+{
+//returns the element on position
+return m_transformation[row][column];
+}
+
+void TMatrix::output() {
+    printf("Array contents: \n");
+
+    for (int h = 0; h < 4; h++)
+    {
+        for (int w = 0; w < 4; w++)
+        {
+            printf("%f,", this->m_transformation[h][w]);
+        }
+        printf("\n");
+    }
+}
+
+TMatrix TMatrix::operator*(const TMatrix &mat1) {
+
+    TMatrix result;
+
+    for(int j =0; j<4; j++){                        // j is height of matrix
+        for(int i =0; i< 4; i++)                    //i is width of matrix
+        {
+            double temp = 0.0;
+            for(int k =0; k<4; k++)
+            {
+                temp += this->m_transformation[j][k] * mat1.m_transformation[k][i];
+            }
+            result.m_transformation[j][i] = temp;
+        }
+    }
+
+    return result;
 }
