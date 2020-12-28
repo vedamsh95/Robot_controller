@@ -8,7 +8,7 @@
 TMatrix::TMatrix() {}
 
 TMatrix::TMatrix(double theta_n, double alpha_n, double r_n, double d_n) {
-    double const fa = 3.14/180.0;
+    double const fa = M_PI/180.0;
 
 
     for (int h = 0; h < 4; h++)
@@ -148,7 +148,7 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
     if ( this->m_transformation[0][0] == 0 + u && this->m_transformation[0][0] == 0 - u
     && this->m_transformation[1][0] == 0 + u && this->m_transformation[1][0] == 0 - u) {
         phi = asinh( - this->m_transformation[0][1] );
-        theta = - this->m_transformation[2][0] * 3.14/2;
+        theta = - this->m_transformation[2][0] * M_PI/2;
         psi = 0;
     }
     else {  // normal case
