@@ -163,7 +163,11 @@ function changeEnabled(ui,enabled)
     simUI.setEnabled(ui,1008,enabled)
     simUI.setEnabled(ui,1009,enabled)
     simUI.setEnabled(ui,1010,enabled)
+    if (simUI.getRadiobuttonValue(ui,1021)==1) then
+        simUI.setEnabled(ui,1019,enabled)
+    end
     simUI.setEnabled(ui,1011,enabled)
+    movement_allowed = true
 end
 
 --[[
@@ -363,6 +367,27 @@ function switchOPMode(ui,id)
 end
 
 --[[
+Change between Normal movements or Spline movement.
+Input:
+    ui = UI Handler Value
+    id = as Number of the Button
+--]]
+function switchSplineMode(ui,id)
+    if (id==1021) then
+        if (movement_allowed) then
+            simUI.setEnabled(ui,1019,true)
+        else
+            simUI.setEnabled(ui,1011,false)
+        end
+        simUI.setEnabled(ui,1020,false)
+    else
+        simUI.setEnabled(ui,1019,false)
+        simUI.setEnabled(ui,1020,true)
+        simUI.setEnabled(ui,1011,true)
+    end
+end
+
+--[[
 Change between Radian and Degrees in the right handside Editfields.
 Input:
     ui = UI Handler Value
@@ -492,10 +517,10 @@ if (sim_call_type==sim.syscb_init) then
     <group layout="vbox">
         <label text="Please select an operation mode."></label>
         <group layout="hbox">
-            <radiobutton text="Normal" checked="true"  on-click="switchNSMode" id="1021" />
-            <radiobutton text="Spline" checked="false" on-click="switchNSMode" id="1022" />
+            <radiobutton text="Normal" checked="true"  on-click="switchSplineMode" id="1021" />
+            <radiobutton text="Spline" checked="false" on-click="switchSplineMode" id="1022" />
         </group>
-        <group layout="vbox" enabled="true">
+        <group layout="vbox" enabled="true" id="1019">
             <label text="Normal movements:"></label>
             <group layout="hbox">
                 <radiobutton text="PTP" enabled="false" checked="true" on-click="switchMVMode" id="1007" />
@@ -506,7 +531,7 @@ if (sim_call_type==sim.syscb_init) then
                 <radiobutton text="async" enabled="false" on-click="" id="1010" />
             </group>
         </group>
-        <group layout="vbox">
+        <group layout="vbox" id="1020" enabled="false">
             <label text="Spline functionality:"></label>
             <combobox id="3000" on-change="splineSwitchPoint"></combobox>
             <group layout="hbox">
@@ -540,6 +565,9 @@ if (sim_call_type==sim.syscb_init) then
 	<label text="For the Values entered, is no path available."></label>
 	<button text="OK" onclick="buttonok"></button>
 </ui>]]
+
+    movement_allowed = false    -- Whether apply has been pressed once
+                                -- and the normal movement is allowed
 
     edit_ids = {}
     editvalues = {}
