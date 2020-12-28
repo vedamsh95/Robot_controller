@@ -406,94 +406,131 @@ end
 --Initialize the UI
 if (sim_call_type==sim.syscb_init) then
 
-    coord_dialog = [[<ui closeable="true" on-close="closeEventHandler" layout="vbox" title="Coordinates" resizable="true">
-    <label text="Choose Operation Mode for the Robot Manipulator."></label>
-    <group layout="hbox">
-        <radiobutton text="By Cartisian Coordinates" checked="true" on-click="switchOPMode" id="1015" />
-        <radiobutton text="By Joint Angles" on-click="switchOPMode" id="1016" />
-    </group>
-    <group layout="hbox">
-        <group layout="vbox" id="1017">
-            <label text="Please enter coordinates(in Meter) and orientation(in Degree)."></label>
-            <group layout="hbox">
-                <group>
-                    <label text="X:"></label>
-                    <edit id="1000" value="0" on-editing-finished="editcart"></edit>
+    coord_dialog = [[<ui closeable="true" on-close="closeEventHandler" layout="hbox" title="Coordinates" resizable="true">
+    <group layout="vbox">
+        <label text="Choose Operation Mode for the Robot Manipulator."></label>
+        <group layout="hbox">
+            <radiobutton text="By Cartisian Coordinates" checked="true" on-click="switchOPMode" id="1015" />
+            <radiobutton text="By Joint Angles" on-click="switchOPMode" id="1016" />
+        </group>
+        <group layout="hbox">
+            <group layout="vbox" id="1017">
+                <label text="Please enter coordinates(in Meter) and orientation(in Degree)."></label>
+                <group layout="hbox">
+                    <group>
+                        <label text="X:"></label>
+                        <edit id="1000" value="0" on-editing-finished="editcart"></edit>
+                    </group>
+                    <group>
+                        <label text="Y:"></label>
+                        <edit id="1001" value="0" on-editing-finished="editcart"></edit>
+                    </group>
+                    <group>
+                        <label text="Z:"></label>
+                        <edit id="1002" value="0" on-editing-finished="editcart"></edit>
+                    </group>
                 </group>
-                <group>
-                    <label text="Y:"></label>
-                    <edit id="1001" value="0" on-editing-finished="editcart"></edit>
-                </group>
-                <group>
-                    <label text="Z:"></label>
-                    <edit id="1002" value="0" on-editing-finished="editcart"></edit>
+                <group layout="hbox">
+                    <group>
+                        <label text="A:"></label>
+                        <edit id="1003" value="0" on-editing-finished="editcart"></edit>
+                    </group>
+                    <group>
+                        <label text="B:"></label>
+                        <edit id="1004" value="0" on-editing-finished="editcart"></edit>
+                    </group>
+                    <group>
+                        <label text="C:"></label>
+                        <edit id="1005" value="0" on-editing-finished="editcart"></edit>
+                    </group>
                 </group>
             </group>
-            <group layout="hbox">
-                <group>
-                    <label text="A:"></label>
-                    <edit id="1003" value="0" on-editing-finished="editcart"></edit>
+            <group layout="vbox">
+                <label text="Please enter the Joint Angles you want to change. You could either use Radian or Degree as Input."></label>
+                <group layout="hbox">
+                    <radiobutton text="Degree" on-click="radiobuttonClick" id="2007" />
+                    <radiobutton text="Radian" on-click="radiobuttonClick" id="2008" />
                 </group>
-                <group>
-                    <label text="B:"></label>
-                    <edit id="1004" value="0" on-editing-finished="editcart"></edit>
+                <group layout="vbox" enabled="false" id="1018">
+                    <group layout="hbox">
+                        <group layout="vbox">
+                            <label text="Theta 1:"></label>
+                            <edit id="2000" value="0" on-editing-finished="editjp"></edit>
+                        </group>
+                        <group layout="vbox">
+                            <label text="Theta 2:"></label>
+                            <edit id="2001" value="0" on-editing-finished="editjp"></edit>
+                        </group>
+                        <group layout="vbox">
+                            <label text="Theta 3:"></label>
+                            <edit id="2002" value="0" on-editing-finished="editjp"></edit>
+                        </group>
+                    </group>
+                    <group layout="hbox">
+                        <group layout="vbox">
+                            <label text="Theta 4:"></label>
+                            <edit id="2003" value="0" on-editing-finished="editjp"></edit>
+                        </group>
+                        <group layout="vbox">
+                            <label text="Theta 5:"></label>
+                            <edit id="2004" value="0" on-editing-finished="editjp"></edit>
+                        </group>
+                        <group layout="vbox">
+                            <label text="Theta 6:"></label>
+                            <edit id="2005" value="0" on-editing-finished="editjp"></edit>
+                        </group>
+                    </group>
                 </group>
-                <group>
-                    <label text="C:"></label>
-                    <edit id="1005" value="0" on-editing-finished="editcart"></edit>
-                </group>
+                <label text="Please select the Configuration of the Endeffector."></label>
+                <combobox id="1013" on-change="switchConfig"></combobox>
             </group>
         </group>
-        <group layout="vbox">
-            <label text="Please enter the Joint Angles you want to change. You could either use Radian or Degree as Input."></label>
-            <group layout="hbox">
-                <radiobutton text="Degree" on-click="radiobuttonClick" id="2007" />
-                <radiobutton text="Radian" on-click="radiobuttonClick" id="2008" />
-            </group>
-            <group layout="vbox" enabled="false" id="1018">
-                <group layout="hbox">
-                    <group layout="vbox">
-                        <label text="Theta 1:"></label>
-                        <edit id="2000" value="0" on-editing-finished="editjp"></edit>
-                    </group>
-                    <group layout="vbox">
-                        <label text="Theta 2:"></label>
-                        <edit id="2001" value="0" on-editing-finished="editjp"></edit>
-                    </group>
-                    <group layout="vbox">
-                        <label text="Theta 3:"></label>
-                        <edit id="2002" value="0" on-editing-finished="editjp"></edit>
-                    </group>
-                </group>
-                <group layout="hbox">
-                    <group layout="vbox">
-                        <label text="Theta 4:"></label>
-                        <edit id="2003" value="0" on-editing-finished="editjp"></edit>
-                    </group>
-                    <group layout="vbox">
-                        <label text="Theta 5:"></label>
-                        <edit id="2004" value="0" on-editing-finished="editjp"></edit>
-                    </group>
-                    <group layout="vbox">
-                        <label text="Theta 6:"></label>
-                        <edit id="2005" value="0" on-editing-finished="editjp"></edit>
-                    </group>
-                </group>
-            </group>
-            <label text="Please select the Configuration of the Endeffector."></label>
-            <combobox id="1013" on-change="switchConfig"></combobox>
+        <group layout = "vbox">
+            <button text="Apply" id="1006" onclick="applyDummy"></button>
         </group>
     </group>
     <group layout="vbox">
-        <button text="Apply" id="1006" onclick="applyDummy"></button>
         <label text="Please select an operation mode."></label>
         <group layout="hbox">
-            <radiobutton text="PTP" enabled="false" checked="true" on-click="switchMVMode" id="1007" />
-            <radiobutton text="LIN" enabled="false" on-click="switchMVMode" id="1008" />
+            <radiobutton text="Normal" checked="true"  on-click="switchNSMode" id="1021" />
+            <radiobutton text="Spline" checked="false" on-click="switchNSMode" id="1022" />
         </group>
-        <group layout="hbox">
-            <radiobutton text="sync" checked="true" enabled="false" on-click="" id="1009" />
-            <radiobutton text="async" enabled="false" on-click="" id="1010" />
+        <group layout="vbox" enabled="true">
+            <label text="Normal movements:"></label>
+            <group layout="hbox">
+                <radiobutton text="PTP" enabled="false" checked="true" on-click="switchMVMode" id="1007" />
+                <radiobutton text="LIN" enabled="false" on-click="switchMVMode" id="1008" />
+            </group>
+            <group layout="hbox">
+                <radiobutton text="sync" checked="true" enabled="false" on-click="" id="1009" />
+                <radiobutton text="async" enabled="false" on-click="" id="1010" />
+            </group>
+        </group>
+        <group layout="vbox">
+            <label text="Spline functionality:"></label>
+            <combobox id="3000" on-change="splineSwitchPoint"></combobox>
+            <group layout="hbox">
+                <group>
+                    <label text="X:"></label>
+                    <edit id="3001" value="0"></edit>
+                </group>
+                <group>
+                    <label text="Y:"></label>
+                    <edit id="3002" value="0"></edit>
+                </group>
+                <group>
+                    <label text="Z:"></label>
+                    <edit id="3003" value="0"></edit>
+                </group>
+            </group>
+            <group layout="hbox">
+                <button text="Cancel" id="3004" onclick="splineApply"></button>
+                <button text="Delete" id="3005" onclick="splineDelte"></button>
+            </group>
+            <group layout="hbox">
+                <button text="Apply" id="3006" onclick="splineApply"></button>
+                <button text="Insert" id="3007" onclick="splineDelte"></button>
+            </group>
         </group>
         <button text="Calculate and Move" id="1011" enabled="false" onclick="CalculateIK"></button>
     </group>
