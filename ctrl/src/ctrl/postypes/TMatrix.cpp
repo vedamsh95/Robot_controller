@@ -1,12 +1,14 @@
 #include "TMatrix.h"
 #include <math.h>
 #include<iostream>
+#include <array>
+
 
 //TODO implement your transformation type for the orientation (xyz, zyx, zyz)!
 TMatrix::TMatrix() {}
 
 TMatrix::TMatrix(double theta_n, double alpha_n, double r_n, double d_n) {
-    double const fa = M_PI/180.0;
+    double const fa = 3.14/180.0;
 
 
     for (int h = 0; h < 4; h++)
@@ -134,4 +136,30 @@ TMatrix TMatrix::operator*(const TMatrix &mat1) {
     }
 
     return result;
+}
+
+std::array<double, 3> TMatrix::convertToEulerAngles() {
+    // initialize the euler angles
+    double phi, theta, psi;
+    std::array<double, 3> a;
+    double u = 0.1;
+
+    // Error case
+    if ( this->m_transformation[0][0] == 0 + u && this->m_transformation[0][0] == 0 - u
+    && this->m_transformation[1][0] == 0 + u && this->m_transformation[1][0] == 0 - u) {
+        phi = asinh( - this->m_transformation[0][1] );
+        theta = - this->m_transformation[2][0] * 3.14/2;
+        psi = 0;
+    }
+    else {  // normal case
+        phi = atan2(this->m_transformation[1][0], this->m_transformation[0][0]);
+        theta = atan2(- this->m_transformation[2][0], sqrt( this->m_transformation[2][1]*this->m_transformation[2][1]
+        + this->m_transformation[2][2]*this->m_transformation[2][2] ));
+        psi = atan2(this->m_transformation[2][0], this->m_transformation[2][2]);
+    }
+    // add values to array
+    a[0] = phi;
+    a[1] = theta;
+    a[2] = psi;
+    return a;
 }

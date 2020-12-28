@@ -3,6 +3,7 @@
 #include <math.h>
 #include "fw_kinematics.h"
 #include<iostream>
+#include <array>
 
 
 
@@ -11,7 +12,7 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     //TODO: IMPLEMENT the computation of the forward kinematics and derive position and euler angles. Keep in mind your
     //                definition of the rotations and whether you are working in deg or rad as well as in m or cm.
 
-/*
+
     double theta1 = _cfg->operator[](0);    //getting theta 0
     std::cout << "Theta 1 from config: " <<  theta1<< std::endl;
     double theta2 = _cfg->operator[](1);    //getting theta 1
@@ -25,14 +26,15 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     double theta6 = _cfg->operator[](5);    //getting theta 5
     std::cout << "Theta 6 from config: " << theta6<< std::endl;
 
-*/
 
-    double theta1 = 0;
-    double theta2 = 0;
-    double theta3 = 0;
-    double theta4 = 0;
-    double theta5 = 0;
-    double theta6 = 0;
+    std::array<double, 3> a;
+
+//    double theta1 = 0;
+//    double theta2 = 0;
+//    double theta3 = 0;
+//    double theta4 = 0;
+//    double theta5 = 0;
+//    double theta6 = 0;
 
 
     TMatrix mat1(0, 180, 0, 645);
@@ -47,40 +49,12 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     res = mat1 * mat2 * mat3 * mat4 * mat5 *mat6 * mat7;
 
     res.output();
+    a = res.convertToEulerAngles();
 
-    return new SixDPos(1.757, 0.0, 1.91, 0, M_PI, 0);
-    //return new SixDPos(res.get_element(0,3), res.get_element(1,3), res.get_element(2,3), 0, M_PI, 0);
+    std::cout << "Phi " << a[0]<< std::endl;
+    std::cout << "Theta " << a[1]<< std::endl;
+    std::cout << "Psi " << a[2]<< std::endl;
+
+    // return new SixDPos(1.757, 0.0, 1.91, 0, M_PI, 0);
+     return new SixDPos(res.get_element(0,3), res.get_element(1,3), res.get_element(2,3), a[0], a[1], a[2]);
 }
-
-
-
-
-// Euler Angles
-double convertToEulerAngles(double one, double two, double three, double four, double five, double six,
-                                      double seven, double eight, double nine, double ten, double eleven, double twelve,
-                                      double thirteen, double fourteen, double fifteen, double sixteen){
-    // initialize the euler angles
-    double phi, theta, psi;
-    double a[3];
-    double u = 0.1;
-
-    // Error case
-    if ( one == 0 + u && one == 0 - u && five == 0 + u && five == 0 - u) {
-        phi = asinh( - two );
-        theta = - nine * M_PI/2;
-        psi = 0;
-    }
-    else {  // normal case
-        phi = atan2(five, one);
-        theta = atan2(-nine, sqrt( ten*ten + eleven*eleven ));
-        psi = atan2(ten, eleven);
-    }
-    // add values to array
-    a[0] = phi;
-    a[1] = theta;
-    a[2] = psi;
-
-    return a[0], a[1], a[2];
-}
-
-
