@@ -145,8 +145,8 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
     double u = 0.1;
 
     // Error case
-    if ( this->m_transformation[0][0] == 0 + u && this->m_transformation[0][0] == 0 - u
-    && this->m_transformation[1][0] == 0 + u && this->m_transformation[1][0] == 0 - u) {
+    if ( (this->m_transformation[0][0] <= 0 + u || this->m_transformation[0][0] >= 0 - u)
+    && (this->m_transformation[1][0] <= 0 + u || this->m_transformation[1][0] >= 0 - u)) {
         phi = asinh( - this->m_transformation[0][1] );
         theta = - this->m_transformation[2][0] * M_PI/2;
         psi = 0;

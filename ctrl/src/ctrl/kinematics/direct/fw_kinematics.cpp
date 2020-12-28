@@ -36,7 +36,6 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
 //    double theta5 = 0;
 //    double theta6 = 0;
 
-
     TMatrix mat1(0, 180, 0, 645);
     TMatrix mat2((0 + theta1), 90, 330, 0);
     TMatrix mat3((0 + theta2), 0, 1150, 0);
