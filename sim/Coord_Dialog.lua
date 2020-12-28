@@ -407,6 +407,115 @@ function radiobuttonClick(ui,id)
     end
 end
 
+--[[
+Handle the combobox for the spline functionality
+Input:
+    ui      = UI Handler value
+    id      = as Number of the combobox
+    value   = the index of the selected value starting at 0!
+--]]
+function splineSwitchPoint(ui,id,value)
+    splineCancel(ui,3004)
+end
+
+--[[
+Converts the stored points to texts and shows them in the combobox
+Input:
+    ui      = UI Handler value
+    id      = as Number of the combobox
+    selected_index = The index that should be selected afterwards in range [1..N]
+--]]
+function createSplinePointsText(ui,id,selected_index)
+    local size = #spline_points_raw
+    local texts = {}
+
+    for i=1,size do
+        local coords = spline_points_raw[i]
+        local text = string.format("%s: %f, %f, %f", string.char(64+i), coords[1], coords[2], coords[3])
+        texts[i] = text
+    end
+
+    simUI.setComboboxItems(ui,id,texts,selected_index-1)
+    splineCancel(ui,3004)
+end
+
+--[[
+Shows the current spline point in the edit fields
+Input:
+    ui      = UI Handler value
+    id      = as Number of the combobox
+--]]
+function splineCancel(ui,id)
+    local index = simUI.getComboboxSelectedIndex(ui,3000) + 1
+    local coords = spline_points_raw[index]
+    for i=1,3 do
+        simUI.setEditValue(ui,3000+i, tostring(coords[i]))
+    end
+end
+
+--[[
+Changes the currently selected spline point to the values in the edit fields
+Input:
+    ui      = UI Handler value
+    id      = as Number of the combobox
+--]]
+function splineApply(ui,id)
+    local index = simUI.getComboboxSelectedIndex(ui,3000) + 1
+    local coords = {}
+    for i=1,3 do
+       coords[i] = math.round(simUI.getEditValue(ui,3000+i), 3)
+    end
+    spline_points_raw[index] = coords
+    createSplinePointsText(ui,3000,index)
+end
+
+--[[
+Inserts a new point after the currently selected one with the values in the
+edit fields.
+Input:
+    ui      = UI Handler value
+    id      = as Number of the combobox
+--]]
+function splineInsert(ui,id)
+    local size = #spline_points_raw
+    local index = simUI.getComboboxSelectedIndex(ui,3000) + 1
+    local coords = {}
+    for i=1,3 do
+        coords[i] = math.round(simUI.getEditValue(ui,3000+i), 3)
+    end
+    -- Move all further entries by one and insert the new point
+    if (index<size) then
+        for i=size,index+1,-1 do
+            spline_points_raw[i+1] = spline_points_raw[i]
+        end
+        spline_points_raw[index+1] = coords
+    else
+        spline_points_raw[size+1] = coords
+    end
+    createSplinePointsText(ui,3000,index+1)
+end
+
+--[[
+Deletes the currently selected spline point
+Input:
+    ui      = UI Handler value
+    id      = as Number of the Button
+--]]
+function splineDelete(ui,id)
+    local size = #spline_points_raw
+    local index = simUI.getComboboxSelectedIndex(ui,3000) + 1
+    local selected = index
+    if (index==size) then
+        selected = index-1
+    else
+        for i=index,size-1 do
+            spline_points_raw[i] = spline_points_raw[i+1]
+        end
+    end
+    spline_points_raw[size] = nil
+    createSplinePointsText(ui,3000,selected)
+end
+
 ---------------------------------------------
 
 --Close the UI
@@ -471,7 +580,8 @@ if (sim_call_type==sim.syscb_init) then
                 </group>
             </group>
             <group layout="vbox">
-                <label text="Please enter the Joint Angles you want to change. You could either use Radian or Degree as Input."></label>
+                <label text="Please enter the Joint Angles you want to change.
+You could either use Radian or Degree as Input."></label>
                 <group layout="hbox">
                     <radiobutton text="Degree" on-click="radiobuttonClick" id="2007" />
                     <radiobutton text="Radian" on-click="radiobuttonClick" id="2008" />
@@ -549,12 +659,12 @@ if (sim_call_type==sim.syscb_init) then
                 </group>
             </group>
             <group layout="hbox">
-                <button text="Cancel" id="3004" onclick="splineApply"></button>
-                <button text="Delete" id="3005" onclick="splineDelte"></button>
+                <button text="Cancel" id="3004" onclick="splineCancel"></button>
+                <button text="Delete" id="3005" onclick="splineDelete"></button>
             </group>
             <group layout="hbox">
                 <button text="Apply" id="3006" onclick="splineApply"></button>
-                <button text="Insert" id="3007" onclick="splineDelte"></button>
+                <button text="Insert" id="3007" onclick="splineInsert"></button>
             </group>
         </group>
         <button text="Calculate and Move" id="1011" enabled="false" onclick="CalculateIK"></button>
@@ -568,6 +678,8 @@ if (sim_call_type==sim.syscb_init) then
 
     movement_allowed = false    -- Whether apply has been pressed once
                                 -- and the normal movement is allowed
+
+    spline_points_raw = {{0.1, 0.3, 0.4}, {0.5,0.6,0.0}}
 
     edit_ids = {}
     editvalues = {}
@@ -583,6 +695,9 @@ if (sim_call_type==sim.syscb_init) then
 
     local myuis = {ui_1,ui_2}
     sim.setStringSignal("uisignal",sim.packTable(myuis))
+
+   -- Spline Zeug
+    createSplinePointsText(ui_1,3000,1)
 
     ik_dummy = sim.getObjectHandle('ik_target')
     ik_target = sim.getObjectHandle('testTarget1')
