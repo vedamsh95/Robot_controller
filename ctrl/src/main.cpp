@@ -98,7 +98,7 @@ int main() {
         // if data via signal "callsignal" has been received
         if(length > 0)
         {
-			// cast vrep data to string
+            // cast vrep data to string
             string t = string(reinterpret_cast<const char*>(value), length);
 //            cout << t << endl;
             // deserialize the json input
@@ -154,29 +154,29 @@ int main() {
                 }
             }
 
-			/*
-			 * Compute a PTP trajectory and move the robot synchronous in VREP
-			 */
-			if (jsonHandler.get_op_mode() == OpMode::PTPSYNC) {
-				Configuration start_cfg((jsonHandler.get_data())[0]);
-				Configuration end_cfg((jsonHandler.get_data())[1]);
-				//                cout << "Path Configuration" << endl;
-				//                cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
-				//                cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
+           /*
+            * Compute a PTP trajectory and move the robot synchronous in VREP
+            */
+           if (jsonHandler.get_op_mode() == OpMode::PTPSYNC) {
+            Configuration start_cfg((jsonHandler.get_data())[0]);
+            Configuration end_cfg((jsonHandler.get_data())[1]);
+            //                cout << "Path Configuration" << endl;
+            //                cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
+            //                cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
 
-				Trajectory* trajectory = ctrl.move_robot_ptp(&start_cfg, &end_cfg, true);
-				for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
-					c[0] = (*cur_cfg)[0];
-					c[1] = (*cur_cfg)[1];
-					c[2] = (*cur_cfg)[2];
-					c[3] = (*cur_cfg)[3];
-					c[4] = (*cur_cfg)[4];
-					c[5] = (*cur_cfg)[5];
-					simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL, 6, c, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, simx_opmode_oneshot_wait);
-					// synchronize with vrep simulation environment
-					this_thread::sleep_for(std::chrono::milliseconds(50));
-				}
-			}
+            Trajectory* trajectory = ctrl.move_robot_ptp(&start_cfg, &end_cfg, true);
+            for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
+             c[0] = (*cur_cfg)[0];
+             c[1] = (*cur_cfg)[1];
+             c[2] = (*cur_cfg)[2];
+             c[3] = (*cur_cfg)[3];
+             c[4] = (*cur_cfg)[4];
+             c[5] = (*cur_cfg)[5];
+             simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL, 6, c, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, simx_opmode_oneshot_wait);
+             // synchronize with vrep simulation environment
+             this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
+           }
 
             /*
              * Compute a LIN trajectory and move the robot in VREP
@@ -200,6 +200,31 @@ int main() {
                     // synchronize with vrep simulation environment
                     this_thread::sleep_for(std::chrono::milliseconds(50));
                 }
+            }
+
+            /*
+             * Compute a spline trajectory and move the robot accordingly
+             */
+            if(jsonHandler.get_op_mode() == OpMode::SPLINE) {
+              vector<SixDPos*> points;
+              size_t count = jsonHandler.get_data().size();
+              for(size_t i = 0; i < count; i++) {
+                auto *pos = new SixDPos( jsonHandler.get_data()[i]);
+                points.push_back(pos);
+              }
+              Trajectory* trajectory = ctrl.move_robot_spline(points);
+              for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
+                c[0] = (*cur_cfg)[0];
+                c[1] = (*cur_cfg)[1];
+                c[2] = (*cur_cfg)[2];
+                c[3] = (*cur_cfg)[3];
+                c[4] = (*cur_cfg)[4];
+                c[5] = (*cur_cfg)[5];
+                simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL, 6, c, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, simx_opmode_oneshot_wait);
+                // synchronize with vrep simulation environment
+                this_thread::sleep_for(std::chrono::milliseconds(50));
+              }
+              points.clear();
             }
 
             simxClearStringSignal(ID, "callsignal", simx_opmode_blocking);

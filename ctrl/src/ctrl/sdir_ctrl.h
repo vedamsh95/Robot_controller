@@ -62,6 +62,15 @@ public:
      * @return reference of a {@ref Trajectory} for the movement
      */
     Trajectory* move_robot_lin(Configuration* start, Configuration* end);
+
+    /**
+     * Computes a spline that starts at the first given point and ends
+     * at the last one while passing through the other ones in the given order.
+     *
+     * @param points The points the robot should move to using a spline
+     * @return reference of a {@ref Trajectory} for the movement
+     */
+    Trajectory* move_robot_spline(vector<SixDPos*> &points);
 };
 
 

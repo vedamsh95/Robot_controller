@@ -216,6 +216,12 @@ Input:
     id = as Number of the Button
 --]]
 function CalculateIK(ui,id)
+
+    if (simUI.getRadiobuttonValue(ui,1015)==1) then
+        sendSplineData()
+        return
+    end
+
     local new_pos = sim.getObjectPosition(ik_test,robot)
     local new_ori = sim.getObjectOrientation(ik_test, robot)
 
@@ -308,6 +314,48 @@ function CalculateIK(ui,id)
     end
     local str = json.encode (js, { indent = true })
     sim.setStringSignal("callsignal",str)
+end
+
+--[[
+This function sends the points for the spline movement to the controller.
+The first point is the current position of the robot. The follwoing points
+are from the combobox. The orientation is constant and stays the same during
+the movement.
+--]]
+function sendSplineData()
+
+    tip_pos = sim.getObjectPosition(tip,robot)
+    tip_ori = sim.getObjectOrientation(tip,robot)
+
+    data_arr = {{
+        m_a = tip_ori[1],
+        m_b = tip_ori[2],
+        m_c = tip_ori[3],
+        m_x = tip_pos[1],
+        m_y = tip_pos[2],
+        m_z = tip_pos[3]
+    } }
+
+    local points = #spline_points_raw
+    for i=1,points do
+        data_arr[i+1] = {
+            m_a = tip_ori[1],
+            m_b = tip_ori[2],
+            m_c = tip_ori[3],
+            m_x = spline_points_raw[i][1],
+            m_y = spline_points_raw[i][2],
+            m_z = spline_points_raw[i][3]
+        }
+    end
+
+    js = {
+        op = 5,
+        data = data_arr
+    }
+
+    local str = json.encode (js, { indent = true })
+    sim.setStringSignal("callsignal",str)
+
 end
 
 --[[
@@ -679,7 +727,7 @@ You could either use Radian or Degree as Input."></label>
     movement_allowed = false    -- Whether apply has been pressed once
                                 -- and the normal movement is allowed
 
-    spline_points_raw = {{0.1, 0.3, 0.4}, {0.5,0.6,0.0}}
+    spline_points_raw = {{0.1, 0.3, 0.4}, {0.5,0.6,0.0}, {0.6, 0.9, 1.0}}
 
     edit_ids = {}
     editvalues = {}
