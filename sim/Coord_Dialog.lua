@@ -1,5 +1,4 @@
 --------------------Content of the UI--------------------
-
 --[[
 Save the values which are written in the left handside Editfields.
 Input:
@@ -496,6 +495,9 @@ Input:
 function splineCancel(ui,id)
     local index = simUI.getComboboxSelectedIndex(ui,3000) + 1
     local coords = spline_points_raw[index]
+    if (#spline_points_raw == 0) then
+        coords = {0, 0, 0}
+    end
     for i=1,3 do
         simUI.setEditValue(ui,3000+i, tostring(coords[i]))
     end
@@ -562,6 +564,130 @@ function splineDelete(ui,id)
     end
     spline_points_raw[size] = nil
     createSplinePointsText(ui,3000,selected)
+end
+
+--[[
+Exorts the current spline points to a csv file with the given name. If the file
+already exists, it will be overriden.
+Input:
+    filename    = Name of the file without the ending!
+--]]
+function exportSplineCSV(filename)
+    local text = "x,y,z\n"
+    local rows = {}
+    for i=1,#spline_points_raw do
+        rows[i] = string.format("%f,%f,%f", spline_points_raw[i][1], spline_points_raw[i][2], spline_points_raw[i][3])
+    end
+    text = text .. table.concat(rows, "\n")
+
+    local scenePath = sim.getStringParameter(sim.stringparam_scene_path)
+    local file = io.open(scenePath .. "/" .. filename .. ".csv", "w")
+    file:write(text)
+    file:close()
+end
+
+--[[
+Splits the given string at the given seperator and returns the substring
+as a table.
+Input:
+    inputStr    = The string to split
+    sep         = The separator string
+--]]
+function splitString(inputstr, sep)
+    local parts = {}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        table.insert(parts, str)
+    end
+    return parts
+end
+
+--[[
+Imports a csv file and stores the result in the spline_points_raw table.
+Input:
+    filename    = The name of the file to import (Without ending!)
+--]]
+function importSplineCSV(filename)
+    local scenePath = sim.getStringParameter(sim.stringparam_scene_path)
+    local file = io.open(scenePath .. "/" .. filename .. ".csv", "r")
+    local raw_points = {}
+    for line in file:lines() do
+        local slices = splitString(line, ",")
+        table.insert(raw_points, slices)
+    end
+
+    for k in pairs(spline_points_raw) do
+        spline_points_raw[k] = nil
+    end
+
+    for i=2,#raw_points do
+        table.insert(spline_points_raw, {
+            tonumber(raw_points[i][1]),
+            tonumber(raw_points[i][2]),
+            tonumber(raw_points[i][3])
+        })
+    end
+
+    file:close()
+
+    createSplinePointsText(ui_1, 3000, #spline_points_raw)
+end
+
+--[[
+This functions handles the ui events of the csv functionality window.
+Input:
+    ui      = UI Handler value
+    id      = as Number of the Button
+--]]
+function splineIO(ui, id)
+
+    -- CSV functionality button
+    if (id == 3008) then
+        local directory = sim.getStringParameter(sim.stringparam_scene_path) .."/"
+        local i, names, popen = 0, {}, io.popen
+        local pfile = popen('dir "'..directory..'" /b')
+        for filename in pfile:lines() do
+            local parts = splitString(filename, ".")
+            if (parts[2] == "csv") then
+                i = i + 1
+                names[i] = parts[1]
+            end
+        end
+        if (#names > 0) then
+            simUI.setComboboxItems(ui_3,5000,names,0)
+        end
+        pfile:close()
+        simUI.show(ui_3)
+        return
+    end
+
+    -- Import button
+    if (id == 5001) then
+        local selected = simUI.getComboboxSelectedIndex(ui,5000)
+        if (selected >= 0) then -- ui indices start at 0
+           local name = simUI.getComboboxItemText(ui,5000,selected)
+            importSplineCSV(name)
+        end
+        --local name = simUI.get
+        simUI.hide(ui_3)
+        return
+    end
+
+    -- Export button
+    if (id == 5003) then
+        local filename = simUI.getEditValue(ui, 5002)
+        filename = filename:match'^%s*(.*%S)' or '' -- trim
+        if (#filename > 0) then
+            filename = splitString(filename, ".")[1]
+            exportSplineCSV(filename)
+            simUI.hide(ui_3)
+        end
+        return
+    end
+
+    -- Cancel button
+    if (id == 5004) then
+        simUI.hide(ui_3)
+    end
 end
 
 ---------------------------------------------
@@ -706,14 +832,17 @@ You could either use Radian or Degree as Input."></label>
                     <edit id="3003" value="0"></edit>
                 </group>
             </group>
-            <group layout="hbox">
+            <group layout="grid">
                 <button text="Cancel" id="3004" onclick="splineCancel"></button>
                 <button text="Delete" id="3005" onclick="splineDelete"></button>
-            </group>
-            <group layout="hbox">
+                <br />
                 <button text="Apply" id="3006" onclick="splineApply"></button>
                 <button text="Insert" id="3007" onclick="splineInsert"></button>
             </group>
+            <group>
+                <button text="CSV functionality" id="3008" onclick="splineIO"></button>
+            </group>
+
         </group>
         <button text="Calculate and Move" id="1011" enabled="false" onclick="CalculateIK"></button>
     </group>
@@ -724,10 +853,29 @@ You could either use Radian or Degree as Input."></label>
 	<button text="OK" onclick="buttonok"></button>
 </ui>]]
 
+    splineIO = [[<ui closeable="false" on-close="splineIO" layout="vbox" title="CSV functionality">
+     <label text="You can either import spline points from a vsc file
+or export the current points to a file."></label>
+    <group layout="hbox">
+        <group layout="vbox">
+            <label text="Import"></label>
+            <combobox id="5000" on-change="splineIO"></combobox>
+            <button text="Import" onclick="splineIO" id="5001"></button>
+        </group>
+        <group layout="vbox">
+            <label text="Export"></label>
+            <edit id="5002" value=""></edit>
+            <button text="Export" onclick="splineIO" id="5003"></button>
+        </group>
+    </group>
+    <button text="Cancel" onclick="splineIO" id="5004"></button>
+</ui>]]
+
     movement_allowed = false    -- Whether apply has been pressed once
                                 -- and the normal movement is allowed
 
-    spline_points_raw = {{0.1, 0.3, 0.4}, {0.5,0.6,0.0}, {0.6, 0.9, 1.0}}
+    --spline_points_raw = {{0.1, 0.3, 0.4}, {0.5,0.6,0.0}, {0.6, 0.9, 1.0}, {0.33, 0.33, 0.33}}
+    spline_points_raw = {}
 
     edit_ids = {}
     editvalues = {}
@@ -740,12 +888,13 @@ You could either use Radian or Degree as Input."></label>
 
     ui_1=simUI.create(coord_dialog)
     ui_2=simUI.create(error)
+    ui_3=simUI.create(splineIO)
 
-    local myuis = {ui_1,ui_2}
+    local myuis = {ui_1,ui_2,ui_3}
     sim.setStringSignal("uisignal",sim.packTable(myuis))
 
    -- Spline Zeug
-    createSplinePointsText(ui_1,3000,1)
+    --createSplinePointsText(ui_1,3000,1)
 
     ik_dummy = sim.getObjectHandle('ik_target')
     ik_target = sim.getObjectHandle('testTarget1')
@@ -768,6 +917,7 @@ You could either use Radian or Degree as Input."></label>
     sim.setObjectPosition(ik_target, robot, tip_pos)
     sim.setObjectOrientation(ik_target, robot, tip_ori)
     simUI.hide(ui_2)
+    simUI.hide(ui_3)
     simUI.setRadiobuttonValue(ui_1,2008,1)
 
     for i=1,6 do
@@ -790,5 +940,6 @@ end
 if (sim_call_type==sim.syscb_cleanup) then
     simUI.destroy(ui_1)
     simUI.destroy(ui_2)
+    simUI.destroy(ui_3)
     sim.removeObjectFromSelection(sim.handle_single, ik_test)
 end
