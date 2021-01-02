@@ -21,7 +21,10 @@ public:
      * @return {@ref Trajectoy} for the movement of the robot
      */
     Trajectory* get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg);
+
+    double trap_prof(double max_velo, double max_acc, double in_angle, double fin_angle, double time, double t_c);
 };
 
 
 #endif //SDRI_CTRL2019_PTP_H
+
