@@ -110,11 +110,6 @@ TMatrix::TMatrix(double _trans[6]) {
     m_transformation[3][2] = 0;
     m_transformation[3][3] = 1;
 
-
-
-
-//TODO implement
-
 }
 
 

@@ -24,24 +24,12 @@ public:
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
-
-// test-Code for inverse kinematics
-std::array<double, 6> TMatrix::inverse() {
-  double o = 115;
-  double m = 330;
-  double n = 645;
-  double a = 1150;
-  double b = 1220;
-  double phi1, phi2, phi3;
+/*
 
 
 
-  std::array<double, 4> wcp;
-  wcp=Transformationmatrix*dTCP;
 
- wcp[3]= 0;
 
-  std::array<double, 6> solution;
 
 
   double d1=sqrt(wcp[0]*wcp[0]+wcp[1]*wcp[1]);
@@ -140,4 +128,6 @@ std::array<double, 6> TMatrix::inverse() {
    else if(wcp[0]==0 && wcp[1]<0)
    {
    }
+
   }
+*/
