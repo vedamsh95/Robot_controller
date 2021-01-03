@@ -88,7 +88,31 @@ TMatrix::TMatrix(double _one, double _two, double _three, double _four, double _
 
 
 TMatrix::TMatrix(double _trans[6]) {
-	m_transformation[0][0] = cos(_trans[3]) * cos(_trans[4]);
+	m_transformation[0][0] = cos(_trans[3]) * cos(_trans[4]);                   //phi is first rot [3]// theta second rot [4]// psi third rot [5]
+    m_transformation[0][1] = (-1)*sin(_trans[3]) * cos(_trans[5]) + cos(_trans[3]) * sin(_trans[4]) * sin(_trans[5]);
+    m_transformation[0][2] = sin(_trans[3]) * sin(_trans[5]) + cos(_trans[3])*sin(_trans[4])*cos(_trans[5]);
+    m_transformation[0][3] = 0;
+
+
+    m_transformation[1][0] = sin(_trans[3]) * cos(_trans[4]);
+    m_transformation[1][1] = cos(_trans[3]) * cos(_trans[5]) + sin(_trans[3])*sin(_trans[4])*sin(_trans[5]);
+    m_transformation[1][2] = (-1)*cos(_trans[3]) * sin(_trans[5]) + sin(_trans[3])*sin(_trans[4]) * sin(_trans[5]);
+    m_transformation[1][3] = 0;
+
+
+    m_transformation[2][0] = sin(_trans[4]);
+    m_transformation[2][1] = cos(_trans[4]) * sin(_trans[5]);
+    m_transformation[2][2] = cos(_trans[4]) * cos(_trans[5]);
+    m_transformation[2][3] = 0;
+
+    m_transformation[3][0] = 0;
+    m_transformation[3][1] = 0;
+    m_transformation[3][2] = 0;
+    m_transformation[3][3] = 0;
+
+
+
+
 //TODO implement
 
 }
@@ -137,6 +161,24 @@ TMatrix TMatrix::operator*(const TMatrix &mat1) {
 
     return result;
 }
+
+std::array<double, 4> TMatrix::operator*(const std::array<double, 4> &arr) {
+
+    std::array<double, 4> result;
+
+    for (int row = 0; row < 4; row++) {
+        double sum = 0;
+        for (int column = 0; column < 4; column++) {
+
+            sum += this->m_transformation[row][column] * arr[column];
+        }
+        result[row] = sum;
+    }
+
+    return result;
+}
+
+
 
 std::array<double, 3> TMatrix::convertToEulerAngles() {
     // initialize the euler angles
