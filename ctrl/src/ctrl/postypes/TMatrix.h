@@ -80,7 +80,7 @@ public:
 
 	std::array<double,4> operator*(const std::array<double, 4>&vec);
 
-
+    std::array<double, 6> inverse();
 
 
 
