@@ -57,7 +57,7 @@ std::array<double, 6> TMatrix::inverse() {
            if(d1>m && wcp[2]>n && -175<phi1<175)               //calculating all the forward cases
            {
                double dpx = d1 - m;                              //calculating the x and y components of the
-               double dpy = wcp[2] - n;                          //distnance between the second joint and wcp
+               double dpy = wcp[2] - n;                          //distance between the second joint and wcp
 
                double d3 = sqrt(dpx * dpx + dpy + dpy);              //direct distance between joint and wcp
                double d2 = sqrt(o * o + b * b);
