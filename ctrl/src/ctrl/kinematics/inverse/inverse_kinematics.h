@@ -24,7 +24,7 @@ public:
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
-/*
+
 
 
 
@@ -129,5 +129,3 @@ public:
    {
    }
 
-  }
-*/
