@@ -11,6 +11,8 @@
  * TODO: ensure that you always stay within the physical limits of the robot, i.e., accelaration, verlocity, and rotation
  *       values of the physical joints.
  */
+//  double q_d_d = 100;     // maximum acceleration of the robot
+
 class Ptp {
 public:
     /**
