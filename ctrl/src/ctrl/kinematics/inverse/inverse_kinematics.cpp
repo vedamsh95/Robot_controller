@@ -17,6 +17,10 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     std::cout << "B of sixDPos" <<_pos->get_B() << std::endl;
     std::cout << "C of sixDPos" <<_pos->get_C() << std::endl;
 
+    std::array<double, 4> dTCP = {0,0,-215,1};                       //Vector of the distance from TCP to WCP
+    TMatrix TCP(_pos->get_A(),_pos->get_B(),_pos->get_C(),_pos->get_X(),_pos->get_Y(),_pos->get_Z());   //Transformation Matrix for the TCP inside of the global coordinate system
+    std::array<double, 4> wcp = TCP*dTCP;                                                               //Calculation of wrist center point
+
 
     vector<Configuration*>* solutions = new vector<Configuration*>();
     solutions->push_back(new Configuration({0,0,1,0,0,0}));

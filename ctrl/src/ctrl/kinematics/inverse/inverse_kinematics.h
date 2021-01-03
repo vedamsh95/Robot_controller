@@ -35,12 +35,6 @@ std::array<double, 6> TMatrix::inverse() {
   double phi1, phi2, phi3;
 
 
-  std::array<double, 4> dTCP;
-  dTCP[0] = 0;
-  dTCP[1] = 0;
-  dTCP[2] = -215;
-  dTCP[3] = 1;
-
 
   std::array<double, 4> wcp;
   wcp=Transformationmatrix*dTCP;
@@ -65,11 +59,11 @@ std::array<double, 6> TMatrix::inverse() {
                double alpha1 = asin(sinh(beta) * (d2 / d3));
                double alpha2 = asin(dpy / d3);
 
-               double phi2_f_u = -1 * (alpha1 + alpha2);           //for forward elbow up
-               double phi2_f_d = -1 * (alpha2 - alpha1);           //for forward elbow down
+               double phi2_f_u = -1 * (alpha1 + alpha2);                        //for forward elbow up
+               double phi2_f_d = -1 * (alpha2 - alpha1);                     //for forward elbow down
 
-               double phi3_f_u = 360 - beta - asin(b / d2) - 90;       //for forward elbow up
-               double phi3_f_d = beta - asin(b / d2) - 90;           //for forward elbow down
+               double phi3_f_u = 360 - beta - asin(b / d2) - 90;         //for forward elbow up
+               double phi3_f_d = beta - asin(b / d2) - 90;               //for forward elbow down
 
                if (-185 < phi1 < 185) {
                    if (-140 < phi2_f_u < -5) {
