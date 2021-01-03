@@ -26,6 +26,11 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     double theta6 = _cfg->operator[](5);    //getting theta 5
     std::cout << "Theta 6 from config: " << theta6<< std::endl;
 
+    //std::array<double, 4> test1 = {2,2,2,2};
+    //std::array<double, 4> test2;
+    //TMatrix maTest(2,2,2,0,4,4,4,0,5,5,5,0,0,0,0,0);
+    //test2 = maTest*test1;
+
 
     std::array<double, 3> a;
 

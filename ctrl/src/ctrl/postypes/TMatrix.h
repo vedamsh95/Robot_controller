@@ -78,6 +78,8 @@ public:
 
 	std::array<double, 3> convertToEulerAngles();
 
+	std::array<double,4> operator*(const std::array<double, 4>&vec);
+
 
 
 
