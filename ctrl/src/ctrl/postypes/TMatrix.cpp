@@ -1,5 +1,6 @@
 #include "TMatrix.h"
 #include <math.h>
+#include <cstdio>
 
 //TODO implement your transformation type for the orientation (xyz, zyx, zyz)!
 
@@ -52,7 +53,7 @@ TMatrix::TMatrix(double _rot_x, double _rot_y, double _rot_z, double _trans_x, d
 }
 
 // Denavit Hartenberg constructor
-TMatrix::TMatrix(double _rot_alpha, double _rot_theta, double _trans_rx, double _trans_dz) {
+TMatrix::TMatrix(double _rot_theta, double _rot_alpha, double _trans_rx, double _trans_dz) {
     m_transformation[0][0] = cos(_rot_theta);
     m_transformation[0][1] = sin(_rot_theta);
     m_transformation[0][2] = 0;
@@ -73,6 +74,18 @@ TMatrix::TMatrix(double _rot_alpha, double _rot_theta, double _trans_rx, double 
     m_transformation[1][3] = 0;
     m_transformation[2][3] = 0;
     m_transformation[3][3] = 1;
+}
+
+TMatrix TMatrix::print() {
+    for (int i = 0; i < 4; i++) {
+        printf(
+                "%8.2f %8.2f %8.2f %8.2f\n",
+                m_transformation[i][0],
+                m_transformation[i][1],
+                m_transformation[i][2],
+                m_transformation[i][3]
+        );
+    }
 }
 
 TMatrix TMatrix::multiply(TMatrix b) {
