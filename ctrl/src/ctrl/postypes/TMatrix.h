@@ -83,7 +83,7 @@ public:
 
     TMatrix multiply(TMatrix m2);
 
-    TMatrix print();
+    void print();
 };
 
 

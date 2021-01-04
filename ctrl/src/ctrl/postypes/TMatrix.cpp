@@ -76,7 +76,7 @@ TMatrix::TMatrix(double _rot_theta, double _rot_alpha, double _trans_rx, double 
     m_transformation[3][3] = 1;
 }
 
-TMatrix TMatrix::print() {
+void TMatrix::print() {
     for (int i = 0; i < 4; i++) {
         printf(
                 "%8.2f %8.2f %8.2f %8.2f\n",
