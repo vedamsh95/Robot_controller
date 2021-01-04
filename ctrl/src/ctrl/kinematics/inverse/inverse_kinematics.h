@@ -23,8 +23,10 @@ public:
      */
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
 
-std::array<double, 6> inv_solution(double phi1, double d1);
-
+std::array<double, 6> inv_standardcase(double phi1, double d1);
+std::array<double, 5> inv_forwardcase(double dpx, double dpy);
+std::array<double, 5> inv_backwardcase(double dpx, double dpy);
+std::array<double, 6> inv_checklimits(double phi1);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
 
