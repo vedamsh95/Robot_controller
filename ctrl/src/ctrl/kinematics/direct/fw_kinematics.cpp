@@ -24,7 +24,7 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
             {1 * M_PI + config[0],    1 * M_PI,    0,    -215},
     };
 
-    TMatrix* transformationMatrix = new TMatrix(
+    TMatrix *transformationMatrix = new TMatrix(
             denavitHartenbergTable[0][0],
             denavitHartenbergTable[0][1],
             denavitHartenbergTable[0][2],
@@ -40,13 +40,33 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
     }
 
     transformationMatrix->print();
+    double x = transformationMatrix->get(0, 3);
+    double y = transformationMatrix->get(1, 3);
+    double z = transformationMatrix->get(2, 3);
 
     // Euler Angles: can be used to get the rotation of the end effector
+    // TODO:
+
+    double roll = 0; // phi
+    double pitch = 0; // theta
+    double yaw = 0; // psi
+    if (transformationMatrix->get(0, 0) == 0 && transformationMatrix->get(1, 0) == 0) {
+        // Error case
+        roll = asin(-transformationMatrix->get(0, 1));
+        pitch = -transformationMatrix->get(2, 0) * M_PI / 2;
+        yaw = 0;
+    } else {
+        // Normal case
+        roll = atan2(transformationMatrix->get(1, 0),
+                     transformationMatrix->get(0, 0));
+        pitch = atan2(-transformationMatrix->get(2, 0),
+                      sqrt(pow(transformationMatrix->get(2, 1), 2) + pow(transformationMatrix->get(2, 2), 2)));
+        yaw = atan2(transformationMatrix->get(2, 1),
+                    transformationMatrix->get(2, 2));
+    }
 
     return new SixDPos(
-            transformationMatrix->get(0, 3),
-            transformationMatrix->get(1, 3),
-            transformationMatrix->get(2, 3),
-            0, M_PI, 0
+            x, y, z,
+            roll, pitch, yaw
     );
 }

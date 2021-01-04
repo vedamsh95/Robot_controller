@@ -1,5 +1,6 @@
 #ifndef SDRI_CTRL2019_TMATRIX_H
 #define SDRI_CTRL2019_TMATRIX_H
+
 #include <cstdint>
 
 /** \brief a homogeneous transformation matrix
@@ -81,7 +82,7 @@ public:
 
     double get(uint8_t row, uint8_t col) { return m_transformation[row > 4 ? 4 : row][col > 4 ? 4 : col]; };
 
-    TMatrix* multiply(TMatrix* m2);
+    TMatrix *multiply(TMatrix *m2);
 
     void print();
 };
