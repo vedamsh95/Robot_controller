@@ -60,7 +60,10 @@ Trajectory* Ptp::get_ptp_trajectory(Configuration* _start_cfg, Configuration* _e
 
   // Sample the values
   auto tmp = static_cast<float>(t_max / robot->time_interval);
-  size_t cycles = roundf(tmp);
+  // TODO check whether the inaccuracies originated from an error
+  size_t cycles = roundf(tmp) + 3; // Add some cycles to make sure that all
+                                   // trajectories reach their end. Due to
+                                   // rounding errors this is necessary.
   vector<Configuration*> configs;
   double t = 0;
   for ( size_t c = 0; c < cycles; c++ ) {

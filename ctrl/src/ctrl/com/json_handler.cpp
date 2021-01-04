@@ -3,20 +3,22 @@
 
 
 JsonHandler::JsonHandler(string _json_string) {
-    Json::Reader reader;
-    reader.parse(_json_string.c_str(), m_json_value);
+  Json::Reader reader;
+  reader.parse(_json_string.c_str(), m_json_value);
 
-    switch(m_json_value["op"].asInt()){
-        case 0: this->m_op_mode = CFG_2_POS;
-                break;
-        case 1: this->m_op_mode = POS_2_CFG;
-                break;
-        case 2: this->m_op_mode = PTP;
-                break;
-        case 3: this->m_op_mode = PTPSYNC;
-				break;
-		case 4: this->m_op_mode = LIN;
-            break;
+  switch(m_json_value["op"].asInt()){
+    case 0: this->m_op_mode = CFG_2_POS;
+      break;
+    case 1: this->m_op_mode = POS_2_CFG;
+      break;
+    case 2: this->m_op_mode = PTP;
+      break;
+    case 3: this->m_op_mode = PTPSYNC;
+				  break;
+		  case 4: this->m_op_mode = LIN;
+      break;
+    case 5: this->m_op_mode = SPLINE;
+      break;
     }
 
     this->m_data = (m_json_value["data"]);
