@@ -88,16 +88,16 @@ void TMatrix::print() {
     }
 }
 
-TMatrix TMatrix::multiply(TMatrix b) {
+TMatrix* TMatrix::multiply(TMatrix* b) {
     double c[4][4];
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             for (int p = 0; p < 4; p++) {
-                c[i][j] += m_transformation[i][p] * b.m_transformation[p][j];
+                c[i][j] += m_transformation[i][p] * b->m_transformation[p][j];
             }
         }
     }
-    return TMatrix(
+    return new TMatrix(
             c[0][0], c[0][1], c[0][2], c[0][3],
             c[1][0], c[1][1], c[1][2], c[1][3],
             c[2][0], c[2][1], c[2][2], c[2][3],

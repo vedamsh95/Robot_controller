@@ -24,14 +24,14 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
             {1 * M_PI + config[0],    1 * M_PI,    0,    -215},
     };
 
-    TMatrix transformationMatrix = TMatrix(
+    TMatrix* transformationMatrix = new TMatrix(
             denavitHartenbergTable[0][0],
             denavitHartenbergTable[0][1],
             denavitHartenbergTable[0][2],
             denavitHartenbergTable[0][3]
     );
     for (int i = 1; i < 7; i++) {
-        transformationMatrix = transformationMatrix.multiply(TMatrix(
+        transformationMatrix = transformationMatrix->multiply(new TMatrix(
                 denavitHartenbergTable[i][0],
                 denavitHartenbergTable[i][1],
                 denavitHartenbergTable[i][2],
@@ -39,14 +39,14 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
         ));
     }
 
-    transformationMatrix.print();
+    transformationMatrix->print();
 
     // Euler Angles: can be used to get the rotation of the end effector
 
     return new SixDPos(
-            transformationMatrix.get(0, 3),
-            transformationMatrix.get(1, 3),
-            transformationMatrix.get(2, 3),
+            transformationMatrix->get(0, 3),
+            transformationMatrix->get(1, 3),
+            transformationMatrix->get(2, 3),
             0, M_PI, 0
     );
 }
