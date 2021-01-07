@@ -15,20 +15,94 @@ double b = 1220;
 std::array<double, 6> solution;
 std::array<double, 4> phi2_phi3;
 std::array<double, 6> sol;
-std::array<double, 3> phi_limits;
+std::array<double, 6> sol_standard;
+
+
+std::array<double, 6> sol_specialcase1_1;
+std::array<double, 6> sol_specialcase1_2;
+std::array<double, 6> sol_specialcase2_1;
+std::array<double, 6> sol_specialcase2_2;
+
+std::array<double, 6> sol_phi1special1_1;
+std::array<double, 6> sol_phi1special1_2;
+std::array<double, 6> sol_phi1special1_3;
 
 std::array<double, 6> InvKinematics::inv_standardcase(double phi1, double d1) {
     std::array<double, 6> solution;
+   //checking for special phi1 configurations
+    if(-185 < phi1 < -175) {
+        //cout << "needs to be implemented" << endl;
+        double dpx = d1 - m;
+        double dpy = wcp[2] - n;
 
-    if (-185 < phi1 < -175) {
-        cout << "needs to be implemented" << endl;
+        if(d1 > m && wcp[2] > n){
+            phi2_phi3 = inv_forwardcase(dpx, dpy);
+            sol_phi1special1_1 = inv_checklimits(phi1, phi2_phi3);
+
+            phi1 = phi1 + 360;
+            phi2_phi3 = inv_forwardcase(dpx, dpy);
+            sol_phi1special1_2 = inv_checklimits(phi1, phi2_phi3);
+
+            phi1 = phi1 + 180;
+            dpx = d1 + m;
+            phi2_phi3 = inv_backwardcase(dpx, dpy);
+            sol_phi1special1_3 = inv_checklimits(phi1, phi2_phi3);
+        }
+
+        if(d1 < m){
+            dpx = m - d1;
+            dpy = wcp[2] - n;
+            phi2_phi3 = inv_backwardcase(dpx, dpy);
+
+            phi1 = phi1 + 360;
+            phi2_phi3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_2 = inv_checklimits(phi1, phi2_phi3);
+
+            phi1 = phi1 + 180;
+            dpx = d1 + m;
+            phi2_phi3 = inv_forwardcase(dpx, dpy);
+            sol_phi1special1_3 = inv_checklimits(phi1, phi2_phi3);
+        }
     }
     else if (185 > phi1 && phi1 > 175) {
-        cout << "needs to be implemented" << endl;
+        //cout << "needs to be implemented" << endl;
+        double dpx = d1 - m;
+        double dpy = wcp[2] - n;
+
+        if(d1 > m && wcp[2] > n){
+            phi2_phi3 = inv_forwardcase(dpx, dpy);
+            sol_phi1special1_1 = inv_checklimits(phi1, phi2_phi3);
+
+            phi1 = phi1 - 360;
+            phi2_phi3 = inv_forwardcase(dpx, dpy);
+            sol_phi1special1_2 = inv_checklimits(phi1, phi2_phi3);
+
+            phi1 = phi1 - 180;
+            dpx = d1 + m;
+            phi2_phi3 = inv_backwardcase(dpx, dpy);
+            sol_phi1special1_3 = inv_checklimits(phi1, phi2_phi3);
+        }
+
+        if(d1 < m){
+            dpx = m - d1;
+            dpy = wcp[2] - n;
+            phi2_phi3 = inv_backwardcase(dpx, dpy);
+
+            phi1 = phi1 - 360;
+            phi2_phi3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_2 = inv_checklimits(phi1, phi2_phi3);
+
+            phi1 = phi1 - 180;
+            dpx = d1 + m;
+            phi2_phi3 = inv_forwardcase(dpx, dpy);
+            sol_phi1special1_3 = inv_checklimits(phi1, phi2_phi3);
+        }
     }
     else if (-5 < phi1 && 5 > phi1) {
         cout << "needs to be implemented" << endl;
     }
+
+    //standard cases
     else if (d1 > m && -175 < phi1 < 175)                                                                               //calculating all the forward cases
     {
         std::cout << "forward case " << std::endl;
@@ -37,8 +111,8 @@ std::array<double, 6> InvKinematics::inv_standardcase(double phi1, double d1) {
         double dpy = wcp[2] - n;
         cout << "dpy: " << dpy << endl;
 
-        inv_forwardcase(dpx, dpy);
-        sol = inv_checklimits(phi1);
+        phi2_phi3 = inv_forwardcase(dpx, dpy);
+        sol = inv_checklimits(phi1, phi2_phi3);
         return sol;
     }                                                                                        //distance between the second joint and wcp
 
@@ -49,8 +123,8 @@ std::array<double, 6> InvKinematics::inv_standardcase(double phi1, double d1) {
         std::cout << "dpx: " << dpx << std::endl;
         double dpy = wcp[2] - n;                              //distnance between the second joint and wcp
         std::cout << "dpy: " << dpy << std::endl;
-        inv_backwardcase(dpx, dpy);
-        sol = inv_checklimits(phi1);
+        phi2_phi3 = inv_backwardcase(dpx, dpy);
+        sol = inv_checklimits(phi1, phi2_phi3);
         return sol;
     }
 }
@@ -112,7 +186,7 @@ std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
     return phi2_phi3;
 }
 
-std::array<double, 6> InvKinematics::inv_checklimits(double phi1){
+std::array<double, 6> InvKinematics::inv_checklimits(double phi1, array<double, 4> phi2_phi3){
 
     if (-185 < phi1 && phi1 < 185) {
         std::cout << "phi1: " << phi1 << std::endl;
@@ -148,8 +222,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     // you should call your inverse kinematics functions here!
 
     double phi1;
-
-    std::array<double, 6> solution;
     std::array<double, 4> dTCP = {0,0,-215,1};                                                                        //Vector of the distance from TCP to WCP
 
 
@@ -180,7 +252,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         cout << "phi1: " << phi1 << endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
-        sol = inv_standardcase(phi1, d1);
+        sol_standard = inv_standardcase(phi1, d1);
 
     }
 
@@ -191,7 +263,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         cout << "phi1: " << phi1 << endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
-        sol = inv_standardcase(phi1, d1);
+        sol_standard = inv_standardcase(phi1, d1);
 
     }
 
@@ -202,7 +274,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         std::cout << "phi1: " << phi1 << std::endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
-        sol = inv_standardcase(phi1, d1);
+        sol_standard = inv_standardcase(phi1, d1);
 
     }
 
@@ -213,7 +285,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         std::cout << "phi1: " << phi1 << std::endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
-        sol = inv_standardcase(phi1, d1);
+        sol_standard = inv_standardcase(phi1, d1);
     }
 
         //Special cases
@@ -226,13 +298,14 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             phi1 = -90;
             double dpx = wcp[1] - m;
             double dpy = wcp[2] - n;
-            inv_forwardcase(dpx, dpy);
-            inv_checklimits(phi1);
+            phi2_phi3 = inv_forwardcase(dpx, dpy);
+            sol_specialcase1_1 = inv_checklimits(phi1, phi2_phi3);
 
             phi1 = 90;
             dpx = wcp[1]+m;
-            inv_backwardcase(dpx,dpy);
-            inv_checklimits(phi1);
+            phi2_phi3 = inv_backwardcase(dpx,dpy);
+            sol_specialcase1_2 = inv_checklimits(phi1, phi2_phi3);
+
         }
 
         if(wcp[1] < m){
@@ -240,31 +313,61 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             phi1 = -90;
             double dpx = m -  wcp[1];
             double dpy = wcp[2] - n;
-            inv_backwardcase(dpx, dpy);
-            inv_checklimits(phi1);
+            phi2_phi3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_1 = inv_checklimits(phi1, phi2_phi3);
 
             phi1 = 90;
             dpx = wcp[1] + m;
-            inv_backwardcase(dpx, dpy);
-            inv_checklimits(phi1);
+            phi2_phi3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_2 = inv_checklimits(phi1, phi2_phi3);
         }
     }
         //special case 2:
     else if(wcp[0]==0 && wcp[1]<0)
     {
-        cout << "needs to be implemented" << endl;
+        //cout << "needs to be implemented" << endl;
+        if(wcp[1] > m){
+            double d1 = wcp[1];
+            phi1 = 90;
+            double dpx = wcp[1] - m;
+            double dpy = wcp[2] - n;
+            phi2_phi3 = inv_forwardcase(dpx, dpy);
+            sol_specialcase1_1 = inv_checklimits(phi1, phi2_phi3);
+
+            phi1 = -90;
+            dpx = wcp[1]+m;
+            phi2_phi3 = inv_backwardcase(dpx,dpy);
+            sol_specialcase1_2 = inv_checklimits(phi1, phi2_phi3);
+
+        }
+
+        if(wcp[1] < m){
+            double d1 = wcp[1];
+            phi1 = 90;
+            double dpx = m -  wcp[1];
+            double dpy = wcp[2] - n;
+            phi2_phi3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_1 = inv_checklimits(phi1, phi2_phi3);
+
+            phi1 = -90;
+            dpx = wcp[1] + m;
+            phi2_phi3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_2 = inv_checklimits(phi1, phi2_phi3);
+        }
     }
 
     //Calculation of the last three joints
-
-
-
-    std::cout<< "Solution_phi1:" << sol[0] << endl;
-    std::cout<< "Solution_phi2:" << sol[1] << endl;
-    std::cout<< "Solution_phi3:" << sol[2] << endl;
+    //Rotationsmatrix von 0 bis 6 (R06) bestimmen
+    //Rotationsmatrix von 0 bis 3 (R03) bestimmen, mit der Hilfe von Theta 1 bis 3
+    //Inverse R03 bestimmen
+    //Inv(R03)*R06 = R36
+    //Theta 4 bis 6 ausrechnen
+    std::cout<< "Solution_phi1:" << sol_standard[0] << endl;
+    std::cout<< "Solution_phi2:" << sol_standard[1] << endl;
+    std::cout<< "Solution_phi3:" << sol_standard[2] << endl;
 
     vector<Configuration*>* solutions = new vector<Configuration*>();
-    solutions->push_back(new Configuration({0,0,1,0,0,0}));
+    solutions->push_back(new Configuration({sol_standard[0],sol_standard[1],sol_standard[2],0,0,0}));
     solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));

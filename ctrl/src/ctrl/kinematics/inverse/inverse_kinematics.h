@@ -26,7 +26,7 @@ public:
 std::array<double, 6> inv_standardcase(double phi1, double d1);
 std::array<double, 4> inv_forwardcase(double dpx, double dpy);
 std::array<double, 4> inv_backwardcase(double dpx, double dpy);
-std::array<double, 6> inv_checklimits(double phi1);
+std::array<double, 6> inv_checklimits(double phi1, array<double, 4>phi2_phi3);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
 
