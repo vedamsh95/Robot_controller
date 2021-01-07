@@ -13,8 +13,9 @@ double a = 1150;
 double b = 1220;
 
 std::array<double, 6> solution;
-std::array<double, 5> phi2_phi3;
+std::array<double, 4> phi2_phi3;
 std::array<double, 6> sol;
+std::array<double, 3> phi_limits;
 
 std::array<double, 6> InvKinematics::inv_standardcase(double phi1, double d1) {
     std::array<double, 6> solution;
@@ -54,13 +55,13 @@ std::array<double, 6> InvKinematics::inv_standardcase(double phi1, double d1) {
     }
 }
 
-std::array<double, 5> InvKinematics::inv_forwardcase(double dpx, double dpy){
+std::array<double, 4> InvKinematics::inv_forwardcase(double dpx, double dpy){
 
     double d3 = sqrt(dpx * dpx + dpy * dpy);                                                                        //direct distance between joint and wcp
     std::cout << "d3: " << d3 << std::endl;
     double d2 = sqrt(o * o + b * b);
     std::cout << "d2: " << d2 << std::endl;
-    double beta = (acos(((d3 * d3) - (a * a) - (d2 * d2)) / (-2 * a * d2))*180/M_PI);
+    double beta = (acos(((d3 * d3) - (a * a) - (d2 * d2)) / (-2 * a * d2)));
     std::cout << "beta: " <<  beta << std::endl;
     double alpha1 = (asin(sin(beta) * (d2 / d3)))*180/M_PI;
     std::cout << "alpha1: " << alpha1 << std::endl;
@@ -72,24 +73,22 @@ std::array<double, 5> InvKinematics::inv_forwardcase(double dpx, double dpy){
     double phi2_f_d = -1 * (alpha2 - alpha1);                                                                       //for forward elbow down
     cout << "phi2_f_d: " << phi2_f_d << endl;
 
-    double phi3_f_u = 360 - beta - asin(b / d2)*180/M_PI - 90;                                                            //for forward elbow up
+    double phi3_f_u = 360 - beta*180/M_PI - asin(b / d2)*180/M_PI - 90;                                                            //for forward elbow up
     cout << "phi3_f_u: " << phi3_f_u << endl;
-    double phi3_f_d = -1*(90-(360-(asin(b/d2))*180/M_PI-90));                                                                  //for forward elbow down
+    double phi3_f_d = beta*180/M_PI - ((asin(b/d2))*180/M_PI)-90;                                                                  //for forward elbow down
     cout << "phi3_f_d: " << phi3_f_d << endl;
-    double phi3_f_d_1= -1*(90+asin(b/d2)*180/M_PI-beta);
-    cout << "phi3_f_d1: " << phi3_f_d_1 << endl;
 
-    phi2_phi3 = {phi2_f_u, phi2_f_d, phi3_f_u, phi3_f_d, phi3_f_d_1};
+    phi2_phi3 = {phi2_f_u, phi2_f_d, phi3_f_u, phi3_f_d};
 
     return phi2_phi3;
 }
 
-std::array<double, 5> InvKinematics::inv_backwardcase(double dpx, double dpy) {
+std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
     double d3 = sqrt(dpx * dpx + dpy * dpy);                   //direct distance between joint and wcp
     std::cout << "d3: " << d3 << std::endl;
     double d2 = sqrt(o * o + b * b);
     std::cout << "d2: " << d2 << std::endl;
-    double beta = (acos(((d3 * d3) - (a * a) - (d2 * d2)) / (-2 * a * d2))*180/M_PI);
+    double beta = (acos(((d3 * d3) - (a * a) - (d2 * d2)) / (-2 * a * d2)))*180/M_PI;
     std::cout << "beta: " <<  beta << std::endl;
     double alpha1 = (asin(sin(beta) * (d2 / d3)))*180/M_PI;
     std::cout << "alpha1: " << alpha1 << std::endl;
@@ -101,14 +100,14 @@ std::array<double, 5> InvKinematics::inv_backwardcase(double dpx, double dpy) {
     double phi2_b_d = -1 * (180 - (alpha2 - alpha1));          //for backwards elbow down
     std::cout << "phi2_b_d: " << phi2_b_d << std::endl;
 
-    double phi3_b_u = 270 - beta - (asin(b / d2))*180/M_PI;              //for backwards elbow up
+    double phi3_b_u = 270 - beta*180/M_PI-(asin(b / d2)*180/M_PI);              //for backwards elbow up
     std::cout << "phi3_b_u: " << phi3_b_u << std::endl;
-    double phi3_b_d = (360-beta-asin(b/d2)*180/M_PI-90);                                                             //double phi3_b_d = -1 * (90 - (beta - asin(b / d2)*180/M_PI));        //for backwards elbow down
+    double phi3_b_d = -1*(90-(beta*180/M_PI-asin(b/d2)*180/M_PI));                                                             //double phi3_b_d = -1 * (90 - (beta - asin(b / d2)*180/M_PI));        //for backwards elbow down
     std::cout << "phi3_b_d: " << phi3_b_d << std::endl;
     double phi3_b_d_1 = 270-beta-asin(b/d2)*180/M_PI;
     std::cout << "phi3_b_d_1: " << phi3_b_d_1 << std::endl;
 
-    phi2_phi3 = {phi2_b_u, phi2_b_d, phi3_b_u, phi3_b_d, phi3_b_d_1};
+    phi2_phi3 = {phi2_b_u, phi2_b_d, phi3_b_u, phi3_b_d};
 
     return phi2_phi3;
 }
@@ -126,21 +125,15 @@ std::array<double, 6> InvKinematics::inv_checklimits(double phi1){
                 solution[2] = phi2_phi3[2];
                 return solution;
             }
+
         }
-        else if (-140 < phi2_phi3[1] < -5) {
+        else if (-140 < phi2_phi3[1] && phi2_phi3[1]< -5) {
             std::cout << "phi2: " << phi2_phi3[1] << std::endl;
             if (-120 < phi2_phi3[3] && phi2_phi3[3] < 168) {
                 std::cout << "phi3: " << phi2_phi3[3] << std::endl;
                 solution[0] = phi1;
                 solution[1] = phi2_phi3[1];
                 solution[2] = phi2_phi3[3];
-                return solution;
-            }
-            else if(-120 < phi2_phi3[4] && phi2_phi3[4] < 168){
-                std::cout << "phi3: " << phi2_phi3[4] << std::endl;
-                solution[0] = phi1;
-                solution[1] = phi2_phi3[1];
-                solution[2] = phi2_phi3[4];
                 return solution;
             }
         }
@@ -169,27 +162,25 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 
 
     TMatrix TCP(_pos->get_A(),_pos->get_B(),_pos->get_C(),_pos->get_X()*1000,_pos->get_Y()*1000,_pos->get_Z()*1000);                                                            //Transformation Matrix for the TCP inside of the global coordinate system
-    //std::array<double, 4> wcp = TCP*dTCP;                                                                                                                                                 //Calculation of wrist center point
+    std::array<double, 4> wcp = TCP*dTCP;                                                                                                                                                 //Calculation of wrist center point
 
-    wcp[0]= (_pos->get_X()*1000)-215*(sin(_pos->get_C()) * sin(_pos->get_A()) + cos(_pos->get_C())*sin(_pos->get_B())*cos(_pos->get_A()));
-    wcp[1]= (_pos->get_Y()*1000)-215*((-1)*cos(_pos->get_C()) * sin(_pos->get_A()) + sin(_pos->get_C())*sin(_pos->get_B()) * sin(_pos->get_A()));
-    wcp[2]= (_pos->get_Z()*1000)-215*(cos(_pos->get_B()) * cos(_pos->get_A()));
+//    wcp[0]= (_pos->get_X()*1000)-215*(sin(_pos->get_C()) * sin(_pos->get_A()) + cos(_pos->get_C())*sin(_pos->get_B())*cos(_pos->get_A()));
+//    wcp[1]= (_pos->get_Y()*1000)-215*((-1)*cos(_pos->get_C()) * sin(_pos->get_A()) + sin(_pos->get_C())*sin(_pos->get_B()) * sin(_pos->get_A()));
+//    wcp[2]= (_pos->get_Z()*1000)-215*(cos(_pos->get_B()) * cos(_pos->get_A()));
 
 
     for (int i = 0; i < 4; ++i) {
         std::cout << "wcp :" << wcp[i] << std::endl;
     }
 
-
-    double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
-    std::cout << "d1: " << d1 << std::endl;
-
     if(wcp[0]>0 && wcp[1]>=0)
     {
         cout << "Fall 1" << endl;
         phi1= (-atan(wcp[1]/wcp[0]))*180/M_PI;
         cout << "phi1: " << phi1 << endl;
-        solution = inv_standardcase(phi1, d1);
+        double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
+        std::cout << "d1: " << d1 << std::endl;
+        sol = inv_standardcase(phi1, d1);
 
     }
 
@@ -198,7 +189,9 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         cout << "Fall 2" << endl;
         phi1= 180-atan(wcp[1]/wcp[0])*180/M_PI;
         cout << "phi1: " << phi1 << endl;
-        solution = inv_standardcase(phi1, d1);
+        double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
+        std::cout << "d1: " << d1 << std::endl;
+        sol = inv_standardcase(phi1, d1);
 
     }
 
@@ -207,7 +200,9 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         cout << "Fall 3" << endl;
         phi1=atan(wcp[1]/wcp[0])*180/M_PI;
         std::cout << "phi1: " << phi1 << std::endl;
-        solution = inv_standardcase(phi1, d1);
+        double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
+        std::cout << "d1: " << d1 << std::endl;
+        sol = inv_standardcase(phi1, d1);
 
     }
 
@@ -216,14 +211,43 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         cout << "Fall 4" << endl;
         phi1=180-atan(wcp[1]/-wcp[0])*180/M_PI;
         std::cout << "phi1: " << phi1 << std::endl;
-        solution = inv_standardcase(phi1, d1);
+        double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
+        std::cout << "d1: " << d1 << std::endl;
+        sol = inv_standardcase(phi1, d1);
     }
 
         //Special cases
         //Special case 1:
     else if(wcp[0]==0 && wcp[1]>0)
     {
-        cout << "needs to be implemented" << endl;
+        //cout << "needs to be implemented" << endl;
+        if(wcp[1] > m){
+            double d1 = wcp[1];
+            phi1 = -90;
+            double dpx = wcp[1] - m;
+            double dpy = wcp[2] - n;
+            inv_forwardcase(dpx, dpy);
+            inv_checklimits(phi1);
+
+            phi1 = 90;
+            dpx = wcp[1]+m;
+            inv_backwardcase(dpx,dpy);
+            inv_checklimits(phi1);
+        }
+
+        if(wcp[1] < m){
+            double d1 = wcp[1];
+            phi1 = -90;
+            double dpx = m -  wcp[1];
+            double dpy = wcp[2] - n;
+            inv_backwardcase(dpx, dpy);
+            inv_checklimits(phi1);
+
+            phi1 = 90;
+            dpx = wcp[1] + m;
+            inv_backwardcase(dpx, dpy);
+            inv_checklimits(phi1);
+        }
     }
         //special case 2:
     else if(wcp[0]==0 && wcp[1]<0)
@@ -231,11 +255,13 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         cout << "needs to be implemented" << endl;
     }
 
+    //Calculation of the last three joints
 
 
-    std::cout<< "Solution_phi1:" << solution[0] << endl;
-    std::cout<< "Solution_phi2:" << solution[1] << endl;
-    std::cout<< "Solution_phi3:" << solution[2] << endl;
+
+    std::cout<< "Solution_phi1:" << sol[0] << endl;
+    std::cout<< "Solution_phi2:" << sol[1] << endl;
+    std::cout<< "Solution_phi3:" << sol[2] << endl;
 
     vector<Configuration*>* solutions = new vector<Configuration*>();
     solutions->push_back(new Configuration({0,0,1,0,0,0}));
