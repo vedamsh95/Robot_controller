@@ -21,6 +21,8 @@ public:
      * @return {@ref Trajectoy} for the movement of the robot
      */
     Trajectory* get_lin_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg);
+    double compute(double max_velo, double in_angle, double fin_angle);
+    double new_speed(double in_angle, double fin_angle,double t_max);
 };
 
 
