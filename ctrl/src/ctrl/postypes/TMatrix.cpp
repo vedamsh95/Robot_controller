@@ -112,7 +112,6 @@ TMatrix::TMatrix(double _trans[6]) {
 
 }
 
-
 TMatrix::TMatrix(double _rot_x, double _rot_y, double _rot_z, double _trans_x, double _trans_y, double _trans_z) {
 	m_transformation[0][0] = cos(_rot_x) * cos(_rot_y);                         //phi is first rot [3]// theta second rot [4]// psi third rot [5]
     m_transformation[0][1] = (-1)*sin(_rot_z) * cos(_rot_x) + cos(_rot_z) * sin(_rot_y) * sin(_rot_x);

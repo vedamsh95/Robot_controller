@@ -362,6 +362,25 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     //Inverse R03 bestimmen
     //Inv(R03)*R06 = R36
     //Theta 4 bis 6 ausrechnen
+
+    //calculation of R03
+    TMatrix mat1(0, 180, 0, 645);
+    TMatrix mat2((0 + sol_standard[0]), 90, 330, 0);
+    TMatrix mat3((0 + sol_standard[1]), 0, 1150, 0);
+    TMatrix mat4((-90 + sol_standard[2]), 90, 115, 0);
+
+    //Having the transformationmatrix
+    TMatrix T03;
+    T03 = mat1*mat2*mat3*mat4;
+
+    //Calculating Euler Angles for R03
+    std::array<double, 3> euler;
+    euler = T03.convertToEulerAngles();
+
+    //Calculating R03
+    std::array<double, 6> _Trans{0,0,0,euler[0],euler[1],euler[2]};
+   // TMatrix R03(_Trans);
+
     std::cout<< "Solution_phi1:" << sol_standard[0] << endl;
     std::cout<< "Solution_phi2:" << sol_standard[1] << endl;
     std::cout<< "Solution_phi3:" << sol_standard[2] << endl;
