@@ -42,7 +42,7 @@ public:
      * @param end   target {@ref Configuration}
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_ptp(Configuration* start, Configuration* end);
+    Trajectory* move_robot_ptp(Configuration* start, Configuration* end, bool sync = false);
 
     /**
      * Computes a trajectory for a lin movement from a start and target position

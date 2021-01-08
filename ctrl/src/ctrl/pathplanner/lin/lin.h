@@ -8,7 +8,7 @@
  * This class implementes the lin movement from to given {@ref Configuration}, one for the start configuration and one
  * for the target configuration.
  *
- * TODO: ensure that you always stay within the physical limits of the robot, i.e., accelaration, verlocity, and rotation
+ * TODO: ensure that you always stay within the physical limits of the robot, i.e., acceleration, velocity, and rotation
  *       values of the physical joints.
  */
 class Lin {
