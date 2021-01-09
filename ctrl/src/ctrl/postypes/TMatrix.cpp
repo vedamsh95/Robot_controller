@@ -82,20 +82,20 @@ void TMatrix::print() {
     for (int i = 0; i < 4; i++) {
         printf(
                 "%8.2f %8.2f %8.2f %8.2f\n",
-                m_transformation[i][0],
-                m_transformation[i][1],
-                m_transformation[i][2],
-                m_transformation[i][3]
+                m_transformation[0][i],
+                m_transformation[1][i],
+                m_transformation[2][i],
+                m_transformation[3][i]
         );
     }
 }
 
 TMatrix* TMatrix::multiply(TMatrix* b) {
     TMatrix* result = new TMatrix();
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            for (int p = 0; p < 4; p++) {
-                result->m_transformation[i][j] += m_transformation[i][p] * b->m_transformation[p][j];
+    for (int col = 0; col < 4; col++) {
+        for (int row = 0; row < 4; row++) {
+            for (int n = 0; n < 4; n++) {
+                result->m_transformation[row][col] += this->get(n, col) * b->get(row, n);
             }
         }
     }
