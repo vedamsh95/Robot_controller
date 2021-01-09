@@ -16,4 +16,4 @@ add_dependencies(Ctrl PTP LIN)
 add_subdirectory(postypes)
 add_dependencies(Ctrl PosTypes)
 
-target_link_libraries(Ctrl Com PosTypes FWKin IVKin PTP LIN)
+target_link_libraries(Ctrl Com FWKin IVKin PTP LIN PosTypes)
