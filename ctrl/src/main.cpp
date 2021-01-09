@@ -6,6 +6,9 @@
 #include <chrono>
 #include <thread>
 
+#include <cmath>
+#include "ctrl/kinematics/direct/fw_kinematics.h"
+
 
 extern "C" {
 #include "ctrl/com/remoteApi/extApi.h"
@@ -76,6 +79,7 @@ simxInt Initial()
 }
 
 int main() {
+    cout << (new FwKinematics())->get_fw_kinematics(new Configuration({0, -0.5*M_PI, 0.5*M_PI, 0, 0, 0})) << endl;
     cout << "This is the entry point of the SDIR programming project" << endl;
     SdirCtrl ctrl;
     float c[6];

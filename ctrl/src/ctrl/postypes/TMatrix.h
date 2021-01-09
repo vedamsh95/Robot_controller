@@ -12,8 +12,8 @@
 class TMatrix {
 private:
 
-    double m_transformation[4][4];
-    double tip_cam_trans[4][4];
+    double m_transformation[4][4]{};
+    double tip_cam_trans[4][4]{};
 
 public:
     /**
