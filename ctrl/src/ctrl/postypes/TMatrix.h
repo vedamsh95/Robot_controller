@@ -74,6 +74,8 @@ public:
             double _eight, double _nine, double _ten, double _eleven, double _twelve, double _thirteen,
             double _fourteen, double _fifteen, double _sixteen);
 
+    TMatrix();
+
     /**
      * Getter for internal matrix representation
      * @return reference of the internal matrix representation
