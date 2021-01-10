@@ -5,6 +5,10 @@
 Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg)
 {
     //TODO: IMPLEMENT! implement the computation of a ptp trajectory with the corresponding velocity profile
+
+    double t_fin = 1;
+    double max_acc = 1;
+
     Trajectory* trajectory = new Trajectory();
 
     double in_phi1 = _start_cfg->get_configuration()[0] * 180/ PI;
@@ -42,6 +46,10 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
     double fin_phi6 = _end_cfg->get_configuration()[5] * 180 / PI;
 
     double max_vel_phi6 = 260;
+
+    for (int i = 0; i <= t_fin; i = i + 0.5) {
+        trajectory->add_configuration(new Configuration({ trap_prof(max_vel_phi1 ,max_acc ,in_phi1 ,fin_phi1 ,i,max_vel_phi1 / max_acc),trap_prof(max_vel_phi2 ,max_acc ,in_phi2 ,fin_phi2 ,i,max_vel_phi2 / max_acc),trap_prof(max_vel_phi3 ,max_acc ,in_phi3 ,fin_phi3 ,i,max_vel_phi3 / max_acc),trap_prof(max_vel_phi4 ,max_acc ,in_phi4 ,fin_phi4 ,i,max_vel_phi4 / max_acc),trap_prof(max_vel_phi5 ,max_acc ,in_phi5 ,fin_phi5 ,i,max_vel_phi5 / max_acc),trap_prof(max_vel_phi6 ,max_acc ,in_phi6 ,fin_phi6 ,i,max_vel_phi6 / max_acc) }));
+    }
 
     //Dummy trajectory
     trajectory->set_trajectory({
