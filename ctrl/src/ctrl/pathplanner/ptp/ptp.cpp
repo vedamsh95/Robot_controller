@@ -1,6 +1,8 @@
 #include "ptp.h"
 #include<iostream>
 
+
+
 Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg, bool sync)
 {
     //TODO: IMPLEMENT! implement the computation of a ptp trajectory with the corresponding velocity profile
@@ -12,7 +14,7 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
 
     Trajectory res;
     vector<Configuration*> config_vec;
-
+    double M_PII = 3.14159;
     double a_max = 200;     // max acceleration
 
     // initialize all the arrays
@@ -263,6 +265,7 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
 
     // if bool sync == false then we don't want a synchronised motion
     if(!sync){
+        std::cout << "asynchron motion: " << std::endl;
         for (int r = 0; r <= (max_t_f * 100); ++r) { //r = 1 will be 0.01s; so r = 100 = 1s
             std::cout << "r: " << r << std::endl;
             double t = double(r) / 100;
@@ -280,6 +283,7 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
                 std::cout << "joint1 Case Error." << std::endl;
             }
             std::cout << "joint1_t_pos for joint 1: " << joint1_t_pos << std::endl;
+            array_t_pos[0] = joint1_t_pos * M_PII / 180;
 
             //joint2
             if (joint2_max_vel_profile == true) {
@@ -294,6 +298,7 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
                 std::cout << "joint2 Case Error." << std::endl;
             }
             std::cout << "joint2_t_pos for joint 2: " << joint2_t_pos << std::endl;
+            array_t_pos[1] = joint2_t_pos * M_PII / 180;
 
             //joint3
             if (joint3_max_vel_profile == true) {
@@ -308,6 +313,7 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
                 std::cout << "joint3 Case Error." << std::endl;
             }
             std::cout << "joint3_t_pos for joint 3: " << joint3_t_pos << std::endl;
+            array_t_pos[2] = joint3_t_pos * M_PII / 180;
 
             //joint4
             if (joint4_max_vel_profile == true) {
@@ -322,6 +328,7 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
                 std::cout << "joint4 Case Error." << std::endl;
             }
             std::cout << "joint4_t_pos for joint 4: " << joint4_t_pos << std::endl;
+            array_t_pos[3] = joint4_t_pos * M_PII / 180;
 
             //joint5
             if (joint5_max_vel_profile == true) {
@@ -336,6 +343,7 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
                 std::cout << "joint5 Case Error." << std::endl;
             }
             std::cout << "joint5_t_pos for joint 5: " << joint5_t_pos << std::endl;
+            array_t_pos[4] = joint5_t_pos * M_PII / 180;
 
             //joint6
             if (joint6_max_vel_profile == true) {
@@ -350,9 +358,11 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
                 std::cout << "joint6 Case Error." << std::endl;
             }
             std::cout << "joint6_t_pos for joint 6: " << joint6_t_pos << std::endl;
+            array_t_pos[5] = joint6_t_pos * M_PII / 180;
 
-            config_vec.push_back(new Configuration(
-                    {joint1_t_pos, joint2_t_pos, joint3_t_pos, joint4_t_pos, joint5_t_pos, joint6_t_pos}));
+            config_vec.push_back(new Configuration(array_t_pos));
+            //        {joint1_t_pos, joint2_t_pos, joint3_t_pos, joint4_t_pos, joint5_t_pos, joint6_t_pos}));
+
         }
     } else if(sync){        // we need a synchronised motion
         // we need to slow down all trajectories except the ones with the longest t_f
@@ -507,7 +517,11 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
                 array_t_pos.at(i) = res.trapezoidal_profile(array_startpos.at(i), array_distance.at(i), array_endpos.at(i),
                                                        array_t_f.at(i), t, array_t_pos.at(i), array_a_adjust.at(i)*a_max, array_v_adjust.at(i)*array_v_max.at(i));
                 std::cout << "t_pos for joint" << i+1 << " = " << array_t_pos.at(i) << std::endl;
+                //change degree to radian
+                array_t_pos.at(i) = array_t_pos.at(i) * M_PII / 180;
             }
+            config_vec.push_back(new Configuration(
+                    {array_t_pos.at(0), array_t_pos.at(1), array_t_pos.at(2), array_t_pos.at(3), array_t_pos.at(4), array_t_pos.at(5)}));
         }
 
 
