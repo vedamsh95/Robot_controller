@@ -484,6 +484,7 @@ function createSplinePointsText(ui,id,selected_index)
 
     simUI.setComboboxItems(ui,id,texts,selected_index-1)
     splineCancel(ui,3004)
+    updatePath(pathHandle, spline_points_raw)
 end
 
 --[[
@@ -690,6 +691,44 @@ function splineIO(ui, id)
     end
 end
 
+--[[
+This functions updates the path for the spline functionality.
+Input:
+    handle      = Handle of the path that should be updated
+    id          = Points for the path, the first point however will be the current position
+--]]
+function updatePath(handle, values)
+
+    if (#values == 0) then
+        sim.cutPathCtrlPoints(handle, -1, 0)
+        return
+    end
+
+    local data = {}
+
+    -- Insert the current position as the first point
+    tip_pos = sim.getObjectPosition(tip,robot)
+    table.insert(data, tip_pos[1])
+    table.insert(data, tip_pos[2])
+    table.insert(data, tip_pos[3])
+    for j=1,8 do
+        table.insert(data, 0)
+    end
+
+    -- Fill the table with the missing values
+    for i=1,#values do
+        table.insert(data, values[i][1])
+        table.insert(data, values[i][2])
+        table.insert(data, values[i][3])
+        for j=1,8 do
+            table.insert(data, 0)
+        end
+    end
+
+    sim.cutPathCtrlPoints(handle, -1, 0)
+    sim.insertPathCtrlPoints(handle, 0, 0, #values+1, data)
+end
+
 ---------------------------------------------
 
 --Close the UI
@@ -894,7 +933,9 @@ or export the current points to a file."></label>
     sim.setStringSignal("uisignal",sim.packTable(myuis))
 
    -- Spline Zeug
-    --createSplinePointsText(ui_1,3000,1)
+    pathIntParams = { 7, 0, 0 }  -- First one is the size
+    pathColor = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    pathHandle = sim.createPath(-1, pathIntParams, nullptr, pathColor)
 
     ik_dummy = sim.getObjectHandle('ik_target')
     ik_target = sim.getObjectHandle('testTarget1')
