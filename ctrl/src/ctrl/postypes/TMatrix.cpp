@@ -3,9 +3,10 @@
 #include<iostream>
 #include <array>
 
-double M_PI= 3.14;
 //TODO implement your transformation type for the orientation (xyz, zyx, zyz)!
 TMatrix::TMatrix() {}
+
+double M_PI = 3.1415926535897932384626433832795028841971;
 
 TMatrix::TMatrix(double theta_n, double alpha_n, double r_n, double d_n) {
     double const fa = M_PI/180.0;
@@ -135,7 +136,6 @@ m_transformation[3][0] = 0;
 m_transformation[3][1] = 0;
 m_transformation[3][2] = 0;
 m_transformation[3][3] = 1;
-
 }
 
 

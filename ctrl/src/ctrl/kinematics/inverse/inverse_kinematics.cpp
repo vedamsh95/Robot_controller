@@ -316,7 +316,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     if(wcp[0]>0 && wcp[1]>=0)
     {
         cout << "Fall 1" << endl;
-        phi1= (-atan(wcp[1]/wcp[0]))*180/M_PI;
+        phi1= ((-1)*atan(wcp[1]/wcp[0]))*180/M_PI;
         cout << "phi1: " << phi1 << endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
