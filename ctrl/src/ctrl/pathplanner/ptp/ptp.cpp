@@ -63,10 +63,10 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
 
     // Sample the values
     auto tmp = static_cast<float>(t_max / robot->time_interval);
-    // TODO check whether the inaccuracies originated from an error
-    size_t cycles = roundf(tmp) + 3; // Add some cycles to make sure that all
-    // trajectories reach their end. Due to
-    // rounding errors this is necessary.
+    size_t cycles = roundf(tmp) + 3;    // Add some cycles to make sure that all
+                                        // trajectories reach their end. This needs
+                                        // to be done for V-REP. The precision of
+                                        // these methods are good enough.
     vector<Configuration *> configs;
     double t = 0;
     for (size_t c = 0; c < cycles; c++) {
@@ -127,6 +127,7 @@ void Ptp::plotMovement(vector<Configuration *> &configs) {
         x.at(i) = i * Robot::getInstance().time_interval;
     }
 
+    // Create the individual points for each joint
     std::array<std::vector<double>, NUM_JOINTS> functions;
     for (auto &cfg : configs) {
         for (int j = 0; j < NUM_JOINTS; j++) {
@@ -134,9 +135,14 @@ void Ptp::plotMovement(vector<Configuration *> &configs) {
         }
     }
 
+    // Plot all the joints
     for (int j = 0; j < NUM_JOINTS; j++) {
-        matplotlibcpp::named_plot("Joint j", x, functions[j]);
+        std::ostringstream labelStream;
+        labelStream << "Joint " << (j+1);
+        matplotlibcpp::named_plot(labelStream.str(), x, functions[j]);
     }
 
+    matplotlibcpp::title("Trajectories of the individual joints:");
+    matplotlibcpp::legend();
     matplotlibcpp::show();
 }
