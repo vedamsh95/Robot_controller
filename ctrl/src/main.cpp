@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <chrono>
 #include <thread>
-#include "TMatrix.h"
 
 
 extern "C" {
@@ -78,7 +77,6 @@ simxInt Initial()
 }
 
 int main() {
-    TMatrix a(0, 0, 0, 0, 0, 0); // Fix for linker error TODO do better
     cout << "This is the entry point of the SDIR programming project" << endl;
     SdirCtrl ctrl;
     float c[6];
