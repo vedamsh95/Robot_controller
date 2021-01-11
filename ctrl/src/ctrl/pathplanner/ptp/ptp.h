@@ -7,9 +7,11 @@
 #include <functional>
 #include <math.h>
 #include <iostream>
+#include <assert.h>
 #include "Single_trajectory.h"
 #include "Max_vel_trajectory.h"
 #include "Trapezoidal_trajectory.h"
+#include "../../matplotlib-cpp-master/matplotlibcpp.h"
 
 /**
  * This class implements the ptp movement from to given {@ref Configuration}, one for the start configuration and one
@@ -49,6 +51,12 @@ public:
    * @param cfg Configuration to check and change
    */
   void makeFeasible(Configuration* cfg);
+
+  /**
+   * Plots the given configuration using the matplotlibcpp library to visualise the trajectories
+   * @param configs     The configurations of the ptp movement to plot
+   */
+  static void plotMovement(vector<Configuration*> &configs);
 
 };
 

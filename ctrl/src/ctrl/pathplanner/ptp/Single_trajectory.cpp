@@ -9,3 +9,16 @@ double Single_trajectory::get_duration()
 {
   return tf;
 }
+
+Single_trajectory::Type Single_trajectory::selectType(double distance, double maxVel, double maxAcc)
+{
+    // Maximum distance that can be covered with a maximum
+    // velocity profile given the maximal velocity
+    double comp = maxVel * maxVel / maxAcc;
+
+    if(distance-comp < 0) {
+        return Type::MAX_VEL;
+    } else {
+        return Type::TRAPEZOIDAL;
+    }
+}

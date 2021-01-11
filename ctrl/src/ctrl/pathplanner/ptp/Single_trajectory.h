@@ -15,6 +15,15 @@ class Single_trajectory
 {
 
 public:
+
+    /**
+     * The different possible subclasses.
+     */
+    enum class Type {
+        TRAPEZOIDAL,
+        MAX_VEL
+    };
+
   /**
    * Constructor - only stores the data
    *
@@ -38,6 +47,15 @@ public:
    * @return The total duration of the trajectory
    */
   double get_duration();
+
+  /**
+   * Returns which trajectory type must be used
+   * @param distance    The distance that needs to be covered
+   * @param maxVel      The maximal velocity
+   * @param maxAcc      The given acceleration
+   * @return            Trajectory type
+   */
+  static Type selectType(double distance, double maxVel, double maxAcc);
 
 protected:
   /**
