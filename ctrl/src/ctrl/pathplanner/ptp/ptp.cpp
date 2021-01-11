@@ -517,9 +517,13 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
                 array_t_pos.at(i) = res.trapezoidal_profile(array_startpos.at(i), array_distance.at(i), array_endpos.at(i),
                                                        array_t_f.at(i), t, array_t_pos.at(i), array_a_adjust.at(i)*a_max, array_v_adjust.at(i)*array_v_max.at(i));
                 std::cout << "t_pos for joint" << i+1 << " = " << array_t_pos.at(i) << std::endl;
+
                 //change degree to radian
                 array_t_pos.at(i) = array_t_pos.at(i) * M_PII / 180;
             }
+            // cout statement below is for giving out positions for copying to excel
+            // std::cout << array_t_pos.at(0) << " " << array_t_pos.at(1) << " " << array_t_pos.at(2) << " " << array_t_pos.at(3)
+            //         << " " << array_t_pos.at(4) << " " << array_t_pos.at(5) << std::endl;
             config_vec.push_back(new Configuration(
                     {array_t_pos.at(0), array_t_pos.at(1), array_t_pos.at(2), array_t_pos.at(3), array_t_pos.at(4), array_t_pos.at(5)}));
         }
