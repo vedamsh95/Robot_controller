@@ -182,13 +182,15 @@ int main() {
              * Compute a LIN trajectory and move the robot in VREP
              */
             if(jsonHandler.get_op_mode() == OpMode::LIN){
+                double vel = jsonHandler.get_velocity();
+                double acc = jsonHandler.get_acceleration();
                 Configuration start_cfg((jsonHandler.get_data())[0]);
                 Configuration end_cfg((jsonHandler.get_data())[1]);
 //                cout << "Path Configuration" << endl;
 //                cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
 //                cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
 
-                Trajectory* trajectory = ctrl.move_robot_lin(&start_cfg, &end_cfg);
+                Trajectory* trajectory = ctrl.move_robot_lin(&start_cfg, &end_cfg, vel, acc);
                 for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
                     c[0] = (*cur_cfg)[0];
                     c[1] = (*cur_cfg)[1];
@@ -206,13 +208,15 @@ int main() {
              * Compute a spline trajectory and move the robot accordingly
              */
             if(jsonHandler.get_op_mode() == OpMode::SPLINE) {
+              double vel = jsonHandler.get_velocity();
+              double acc = jsonHandler.get_acceleration();
               vector<SixDPos*> points;
               size_t count = jsonHandler.get_data().size();
               for(size_t i = 0; i < count; i++) {
                 auto *pos = new SixDPos( jsonHandler.get_data()[static_cast<int>(i)]);
                 points.push_back(pos);
               }
-              Trajectory* trajectory = ctrl.move_robot_spline(points);
+              Trajectory* trajectory = ctrl.move_robot_spline(points, vel, acc);
               for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
                 c[0] = (*cur_cfg)[0];
                 c[1] = (*cur_cfg)[1];

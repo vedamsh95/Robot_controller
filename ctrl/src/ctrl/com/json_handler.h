@@ -89,6 +89,20 @@ public:
      * @return json string representation of the passed configurations
      */
     string get_json_string(vector<Configuration*>* _cfg);
+
+    /**
+     * Returns the velocity transmitted in the json string
+     *
+     * @return velocity, default = 0.0
+     */
+    double get_velocity();
+
+    /**
+    * Returns the acceleration transmitted in the json string
+    *
+    * @return Acceleration, default = 0.0
+    */
+    double get_acceleration();
 private:
     /** json value parsed from the json string */
     Json::Value m_json_value;

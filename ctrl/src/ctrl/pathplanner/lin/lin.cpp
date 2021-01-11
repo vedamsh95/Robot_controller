@@ -1,6 +1,6 @@
 #include "lin.h"
 
-Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg)
+Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration)
 {
     //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
     Trajectory* trajectory = new Trajectory();

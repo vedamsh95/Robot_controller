@@ -59,18 +59,22 @@ public:
      *
      * @param start start {@ref Configuration}
      * @param end   target {@ref Configuration}
+     * @param velocity The velocity at which the robot should move along the spline
+     * @param acceleration The acceleration at the start and at the end of the movement
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_lin(Configuration* start, Configuration* end);
+    Trajectory* move_robot_lin(Configuration* start, Configuration* end, double velocity, double acceleration);
 
     /**
      * Computes a spline that starts at the first given point and ends
      * at the last one while passing through the other ones in the given order.
      *
      * @param points The points the robot should move to using a spline
+     * @param velocity The velocity at which the robot should move along the spline
+     * @param acceleration The acceleration at the start and at the end of the movement
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_spline(vector<SixDPos*> &points);
+    Trajectory* move_robot_spline(vector<SixDPos*> &points, double velocity, double acceleration);
 };
 
 

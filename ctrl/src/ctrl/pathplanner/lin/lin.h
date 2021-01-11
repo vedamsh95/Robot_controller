@@ -18,9 +18,11 @@ public:
      *
      * @param _start_cfg {@ref Configruation} of the starting point of the path
      * @param _end_cfg {@ref Configruation} of the target point of the path
+     * @param velocity The velocity for the lin movement used in the corresponding trajectory
+     * @param acceleration The acceleration for lin movement used in the corresponding trajectory
      * @return {@ref Trajectoy} for the movement of the robot
      */
-    Trajectory* get_lin_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg);
+    Trajectory* get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration);
 };
 
 

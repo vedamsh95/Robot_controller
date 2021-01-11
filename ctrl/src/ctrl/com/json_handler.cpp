@@ -68,3 +68,18 @@ string JsonHandler::get_json_string(vector<Configuration*>* _cfg)
 
     return value.toStyledString();
 }
+
+double JsonHandler::get_velocity()
+{
+    if (m_json_value["vel"].isNull()) {
+        return 0.0;
+    }
+    return m_json_value["vel"].asDouble();
+}
+
+double JsonHandler::get_acceleration() {
+    if (m_json_value["acc"].isNull()) {
+        return 0.0;
+    }
+    return m_json_value["acc"].asDouble();
+}

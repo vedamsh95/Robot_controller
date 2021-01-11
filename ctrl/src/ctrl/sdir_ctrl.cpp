@@ -47,18 +47,18 @@ Trajectory* SdirCtrl::move_robot_lin(SixDPos* start, SixDPos* end)
 }
 
 
-Trajectory* SdirCtrl::move_robot_lin(Configuration* start, Configuration* end)
+Trajectory* SdirCtrl::move_robot_lin(Configuration* start, Configuration* end, double velocity, double acceleration)
 {
     //ToDo: IMPLEMENT!
     Lin lin;
-    return lin.get_lin_trajectoy(start, end);
+    return lin.get_lin_trajectory(start, end, velocity, acceleration);
 }
 
-Trajectory* SdirCtrl::move_robot_spline(vector<SixDPos*> &points)
+Trajectory* SdirCtrl::move_robot_spline(vector<SixDPos*> &points, double velocity, double acceleration)
 {
   //ToDO: IMPLEMENT!
   for ( auto pos : points ) {
-    std::cout << (*pos)[0] << ", " << (*pos)[1] << ", " << (*pos)[2] << std::endl;
+    //std::cout << (*pos)[0] << ", " << (*pos)[1] << ", " << (*pos)[2] << std::endl;
   }
   return nullptr;
 }

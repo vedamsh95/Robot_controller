@@ -308,7 +308,9 @@ function CalculateIK(ui,id)
                     j3 = tonumber(tar_c[4]),
                     j4 = tonumber(tar_c[5]),
                     j5 = tonumber(tar_c[6])
-                }}
+                }},
+            vel = tonumber(simUI.getEditValue(ui_1, 3020)),   -- The velocity for the lin movement
+            acc = tonumber(simUI.getEditValue(ui_1, 3021)),   -- The acceleration for the lin movement
         }
     end
     local str = json.encode (js, { indent = true })
@@ -349,7 +351,9 @@ function sendSplineData()
 
     js = {
         op = 5,
-        data = data_arr
+        data = data_arr,
+        vel = tonumber(simUI.getEditValue(ui_1, 3020)),   -- The velocity for the spline movement
+        acc = tonumber(simUI.getEditValue(ui_1, 3021)),   -- The acceleration for the spline movement
     }
 
     local str = json.encode (js, { indent = true })
@@ -398,7 +402,7 @@ function switchConfig(ui,id,newValue)
 end
 
 --[[
-Change between Cartisian Mode or Joint Configuartion Mode.
+Change between Cartesian Mode or Joint Configuration Mode.
 Input:
     ui = UI Handler Value
     id = as Number of the Button
@@ -860,6 +864,20 @@ You could either use Radian or Degree as Input."></label>
                 <radiobutton text="async" enabled="false" on-click="" id="1010" />
             </group>
         </group>
+        <group layout="vbox">
+            <label text="Please enter a velocity [m/s] and an acceleration [m/s^2]
+for the lin and spline movement:"></label>
+            <group layout="hbox">
+                <group>
+                    <label text="Velocity:"></label>
+                    <edit id="3020" value="0"></edit>
+                </group>
+                <group>
+                    <label text="Acceleration:"></label>
+                    <edit id="3021" value="0"></edit>
+                </group>
+            </group>
+        </group>
         <group layout="vbox" id="1020" enabled="false">
             <label text="Spline functionality:"></label>
             <combobox id="3000" on-change="splineSwitchPoint"></combobox>
@@ -938,10 +956,12 @@ or export the current points to a file."></label>
     local myuis = {ui_1,ui_2,ui_3}
     sim.setStringSignal("uisignal",sim.packTable(myuis))
 
-   -- Spline Zeug
-    pathIntParams = { 7, 0, 0 }  -- First one is the size
-    pathColor = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+   -- Spline
+    pathIntParams = { 7, 0, 0 }                                         -- First one is the size of the path
+    pathColor = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }                  -- Color of the path
     pathHandle = sim.createPath(-1, pathIntParams, nullptr, pathColor)
+    simUI.setEditValue(ui_1, 3020, tostring(1.0))
+    simUI.setEditValue(ui_1, 3021, tostring(5.0))
 
     ik_dummy = sim.getObjectHandle('ik_target')
     ik_target = sim.getObjectHandle('testTarget1')
