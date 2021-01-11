@@ -1,11 +1,10 @@
 #include "Max_vel_trajectory.h"
 
-Max_vel_trajectory::Max_vel_trajectory(int joint, double qi, double qf)
-  : Single_trajectory(joint, qi, qf)
+Max_vel_trajectory::Max_vel_trajectory(double v, double a, double qi, double qf)
+  : Single_trajectory(v, a, qi, qf)
 {
-  double a_max = robot->accelerations[joint];
   qm = (qf-qi) * 0.5;
-  tf = 2 * sqrt((2*abs(qm)/a_max));
+  tf = 2 * sqrt((2*abs(qm)/a));
 }
 
 double Max_vel_trajectory::eval( double t )

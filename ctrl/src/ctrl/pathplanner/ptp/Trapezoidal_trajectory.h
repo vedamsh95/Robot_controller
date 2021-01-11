@@ -17,22 +17,25 @@ public:
   /**
    * Constructor - Calculates the fastest trajectory
    *
-   * @param joint   Joint index
+   * @param v       Final velocity
+   * @param a       Used acceleration
    * @param qi      Initial joint angle
    * @param qf      Final joint angle
    */
-  Trapezoidal_trajectory(int joint, double qi, double qf);
+  Trapezoidal_trajectory(double v, double a, double qi, double qf);
 
   /**
    * Constructor - Calculates a trajectory with the given duration
    *               The duration must be larger than the smallest possible
    *               duration.
-   * @param joint   Joint index
+   *
+   * @param v       Final velocity
+   * @param a       Used acceleration
    * @param qi      Initial joint angle
    * @param qf      Final joint angle
    * @param tf      Desired final time
    */
-  Trapezoidal_trajectory(int joint, double qi, double qf, double tf);
+  Trapezoidal_trajectory(double v, double a, double qi, double qf, double tf);
 
   /**
    * Evaluates the calculated Trajectory at the given time step.

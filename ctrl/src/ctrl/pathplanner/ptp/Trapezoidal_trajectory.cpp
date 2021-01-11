@@ -1,22 +1,17 @@
 #include "Trapezoidal_trajectory.h"
 
-#include <iostream>
-
-Trapezoidal_trajectory::Trapezoidal_trajectory(int joint, double qi, double qf)
-    : Single_trajectory(joint, qi, qf)
+Trapezoidal_trajectory::Trapezoidal_trajectory(double v, double a, double qi, double qf)
+    : Single_trajectory(v, a, qi, qf)
 {
-  double a_max = robot->accelerations[joint];
-  double v_max = robot->velocities[joint];
-  tc = v_max / a_max;
-  tf = tc + (abs((qf - qi)) / (v_max));
+  tc = v / a;
+  tf = tc + (abs((qf - qi)) / (v));
 }
 
-Trapezoidal_trajectory::Trapezoidal_trajectory(int joint, double qi, double qf, double tf)
-    : Single_trajectory(joint, qi, qf)
+Trapezoidal_trajectory::Trapezoidal_trajectory(double v, double a, double qi, double qf, double tf)
+    : Single_trajectory(v, a, qi, qf)
 {
-  double a_max = robot->accelerations[joint];
   this->tf = tf;
-  tc = 0.5 * ( tf - sqrt(tf*tf-4*abs(qf-qi)/a_max));
+  tc = 0.5 * ( tf - sqrt(tf*tf-4*abs(qf-qi)/a));
 }
 
 template <typename T> int sgn(T val) {
@@ -25,16 +20,14 @@ template <typename T> int sgn(T val) {
 
 double Trapezoidal_trajectory::eval( double t )
 {
-  double a_max = robot->accelerations[joint];
-
   if ( t < 0) {
     return qi;
   } else if (t < tc) {
-    return qi + 0.5 * a_max * t * t * sgn(qf-qi);
+    return qi + 0.5 * ac * t * t * sgn(qf-qi);
   } else if ( t < tf - tc) {
-    return qi + a_max * tc * (t-tc/2)* sgn(qf-qi);
+    return qi + ac * tc * (t-tc/2)* sgn(qf-qi);
   } else if ( t < tf ) {
-    return qf - 0.5 * a_max * (tf - t) * (tf- t) * sgn(qf-qi);
+    return qf - 0.5 * ac * (tf - t) * (tf- t) * sgn(qf-qi);
   } else {
     return qf;
   }

@@ -21,15 +21,23 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
 
         // Distance to be covered
         double diff = (*_end_cfg)[i] - (*_start_cfg)[i];
-        Single_trajectory::Type type = Single_trajectory::selectType(
+        Single_trajectory::Type type = Single_trajectory::select_type(
                 diff,
                 robot->velocities[i],
                 robot->accelerations[i]);
 
         if (type == Single_trajectory::Type::MAX_VEL) {
-            single_trajectories[i] = new Max_vel_trajectory(i, (*_start_cfg)[i], (*_end_cfg)[i]);
+            single_trajectories[i] = new Max_vel_trajectory(
+                    robot->velocities[i],
+                    robot->accelerations[i],
+                    (*_start_cfg)[i],
+                    (*_end_cfg)[i]);
         } else if (type == Single_trajectory::Type::TRAPEZOIDAL) {
-            single_trajectories[i] = new Trapezoidal_trajectory(i, (*_start_cfg)[i], (*_end_cfg)[i]);
+            single_trajectories[i] = new Trapezoidal_trajectory(
+                    robot->velocities[i],
+                    robot->accelerations[i],
+                    (*_start_cfg)[i],
+                    (*_end_cfg)[i]);
         } else {
             // This should never happen since there are only those two types at the moment.
             assert(false);
@@ -57,7 +65,11 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
             // a trapezoidal trajectory, since a max-velocity trajectory cannot be
             // slowed down.
             delete single_trajectories[i];
-            single_trajectories[i] = new Trapezoidal_trajectory(i, (*_start_cfg)[i], (*_end_cfg)[i], t_max);
+            single_trajectories[i] = new Trapezoidal_trajectory(
+                    robot->velocities[i],
+                    robot->accelerations[i],
+                    (*_start_cfg)[i],
+                    (*_end_cfg)[i], t_max);
         }
     }
 

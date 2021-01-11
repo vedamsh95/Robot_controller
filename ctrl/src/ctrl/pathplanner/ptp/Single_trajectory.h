@@ -27,11 +27,12 @@ public:
   /**
    * Constructor - only stores the data
    *
-   * @param joint   Joint index
+   * @param v       Final velocity
+   * @param a       Used acceleration
    * @param qi      Initial joint angle
    * @param qf      Final joint angle
    */
-  Single_trajectory(int joint, double qi, double qf);
+  Single_trajectory(double v, double a, double qi, double qf);
 
   virtual ~Single_trajectory() = default;
 
@@ -55,16 +56,17 @@ public:
    * @param maxAcc      The given acceleration
    * @return            Trajectory type
    */
-  static Type selectType(double distance, double maxVel, double maxAcc);
+  static Type select_type(double distance, double maxVel, double maxAcc);
 
 protected:
   /**
    * Essential trajectory variables
    */
+  double ve;  // Final velocity
+  double ac;  // Used acceleration
   double qi;  // Initial joint angle
   double qf;  // Final joint angle
   double tf;  // Final time / duration
-  int joint;  // Joint index
 
   static Robot* robot;
 };

@@ -17,11 +17,12 @@ public:
   /**
    * Constructor - calculates the necessary values that describe the trajectory
    *
-   * @param joint   Joint index
+   * @param v       Final velocity
+   * @param a       Used acceleration
    * @param qi      Initial joint angle
    * @param qf      Final joint angle
    */
-  Max_vel_trajectory(int joint, double qi, double qf);
+  Max_vel_trajectory(double v, double a, double qi, double qf);
 
   /**
    * Evaluates the calculated Trajectory at the given time step.
