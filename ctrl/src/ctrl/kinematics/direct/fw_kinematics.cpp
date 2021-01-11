@@ -55,10 +55,10 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     res.output();
     a = res.convertToEulerAngles();
 
-    std::cout << "Phi " << a[0]<< std::endl;
-    std::cout << "Theta " << a[1]<< std::endl;
-    std::cout << "Psi " << a[2]<< std::endl;
+    std::cout << "Phi " << a[0]*180/M_PI<< std::endl;
+    std::cout << "Theta " << a[1]*180/M_PI<< std::endl;
+    std::cout << "Psi " << a[2]*180/M_PI<< std::endl;
 
     // return new SixDPos(1.757, 0.0, 1.91, 0, M_PI, 0);
-     return new SixDPos(res.get_element(0,3), res.get_element(1,3), res.get_element(2,3), a[0], a[1], a[2]);
+     return new SixDPos(res.get_element(0,3)/1000, res.get_element(1,3)/1000, res.get_element(2,3)/1000, a[0], a[1], a[2]);
 }

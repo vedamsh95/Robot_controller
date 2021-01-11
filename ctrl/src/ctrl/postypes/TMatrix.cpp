@@ -86,32 +86,35 @@ TMatrix::TMatrix(double _one, double _two, double _three, double _four, double _
 	m_transformation[3][3] = _sixteen;
 }
 
-
+//Matrix is transposed!!
 TMatrix::TMatrix(double _trans[6]) {
 	m_transformation[0][0] = cos(_trans[3]) * cos(_trans[4]);                   //phi is first rot [3]// theta second rot [4]// psi third rot [5]
-    m_transformation[0][1] = (-1)*sin(_trans[3]) * cos(_trans[5]) + cos(_trans[3]) * sin(_trans[4]) * sin(_trans[5]);
-    m_transformation[0][2] = sin(_trans[3]) * sin(_trans[5]) + cos(_trans[3])*sin(_trans[4])*cos(_trans[5]);
-//    m_transformation[0][3] = _trans[0];
+    m_transformation[1][0] = (-1)*sin(_trans[3]) * cos(_trans[5]) + cos(_trans[3]) * sin(_trans[4]) * sin(_trans[5]);
+    m_transformation[2][0] = sin(_trans[3]) * sin(_trans[5]) + cos(_trans[3])*sin(_trans[4])*cos(_trans[5]);
+    m_transformation[3][0] = _trans[0];
 
 
-    m_transformation[1][0] = sin(_trans[3]) * cos(_trans[4]);
+    m_transformation[0][1] = sin(_trans[3]) * cos(_trans[4]);
     m_transformation[1][1] = cos(_trans[3]) * cos(_trans[5]) + sin(_trans[3])*sin(_trans[4])*sin(_trans[5]);
-    m_transformation[1][2] = (-1)*cos(_trans[3]) * sin(_trans[5]) + sin(_trans[3])*sin(_trans[4]) * sin(_trans[5]);
-//    m_transformation[1][3] = _trans[1];
+    m_transformation[2][1] = (-1)*cos(_trans[3]) * sin(_trans[5]) + sin(_trans[3])*sin(_trans[4]) * sin(_trans[5]);
+    m_transformation[3][1] = _trans[1];
 
 
-    m_transformation[2][0] = sin(_trans[4]);
-    m_transformation[2][1] = cos(_trans[4]) * sin(_trans[5]);
+    m_transformation[0][2] = sin(_trans[4]);
+    m_transformation[1][2] = cos(_trans[4]) * sin(_trans[5]);
     m_transformation[2][2] = cos(_trans[4]) * cos(_trans[5]);
-//    m_transformation[2][3] = _trans[2];
+    m_transformation[3][2] = _trans[2];
 
-//    m_transformation[3][0] = 0;
-//    m_transformation[3][1] = 0;
-//    m_transformation[3][2] = 0;
-//    m_transformation[3][3] = 1;
+    m_transformation[0][3] = 0;
+    m_transformation[1][3] = 0;
+    m_transformation[2][3] = 0;
+    m_transformation[3][3] = 1;
 
 }
 
+//_rot_x is the first rotation around the z-axis
+//_rot_y is the second rotation around the y-axis
+//_rot_z is the last rotation around the x-axis
 TMatrix::TMatrix(double _rot_x, double _rot_y, double _rot_z, double _trans_x, double _trans_y, double _trans_z) {
 	m_transformation[0][0] = cos(_rot_x) * cos(_rot_y);                         //phi is first rot [3]// theta second rot [4]// psi third rot [5]
     m_transformation[0][1] = (-1)*sin(_rot_z) * cos(_rot_x) + cos(_rot_z) * sin(_rot_y) * sin(_rot_x);
@@ -125,7 +128,7 @@ TMatrix::TMatrix(double _rot_x, double _rot_y, double _rot_z, double _trans_x, d
     m_transformation[1][3] = _trans_y;
 
 
-    m_transformation[2][0] = sin(_rot_y);
+    m_transformation[2][0] = (-1)*sin(_rot_y);
     m_transformation[2][1] = cos(_rot_y) * sin(_rot_x);
     m_transformation[2][2] = cos(_rot_y) * cos(_rot_x);
     m_transformation[2][3] = _trans_z;
@@ -136,6 +139,32 @@ TMatrix::TMatrix(double _rot_x, double _rot_y, double _rot_z, double _trans_x, d
     m_transformation[3][3] = 1;
 
 }
+
+//TMatrix::TMatrix(double _rot_x, double _rot_y, double _rot_z, double _trans_x, double _trans_y, double _trans_z) {
+//    m_transformation[0][0] = cos(_rot_z) * cos(_rot_y);                         //phi is first rot [3]// theta second rot [4]// psi third rot [5]
+//    m_transformation[0][1] = (-1)*sin(_rot_x) * cos(_rot_z) + cos(_rot_x) * sin(_rot_y) * sin(_rot_z);
+//    m_transformation[0][2] = sin(_rot_x) * sin(_rot_z) + cos(_rot_x)*sin(_rot_y)*cos(_rot_z);
+//    m_transformation[0][3] = _trans_x;
+//
+//
+//    m_transformation[1][0] = sin(_rot_x) * cos(_rot_y);
+//    m_transformation[1][1] = cos(_rot_x) * cos(_rot_z) + sin(_rot_x)*sin(_rot_y)*sin(_rot_z);
+//    m_transformation[1][2] = (-1)*cos(_rot_x) * sin(_rot_z) + sin(_rot_x)*sin(_rot_y) * sin(_rot_z);
+//    m_transformation[1][3] = _trans_y;
+//
+//
+//    m_transformation[2][0] = sin(_rot_y);
+//    m_transformation[2][1] = cos(_rot_y) * sin(_rot_z);
+//    m_transformation[2][2] = cos(_rot_y) * cos(_rot_z);
+//    m_transformation[2][3] = _trans_z;
+//
+//    m_transformation[3][0] = 0;
+//    m_transformation[3][1] = 0;
+//    m_transformation[3][2] = 0;
+//    m_transformation[3][3] = 1;
+//
+//}
+
 
 double TMatrix::get_element(unsigned int row,  unsigned int column)
 {

@@ -82,8 +82,6 @@ public:
 
     std::array<double, 6> inverse();
 
-
-
 };
 
 

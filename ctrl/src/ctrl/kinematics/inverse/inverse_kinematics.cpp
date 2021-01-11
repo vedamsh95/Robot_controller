@@ -300,21 +300,18 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     std::cout << "B of sixDPos" <<_pos->get_B() << std::endl;
     std::cout << "C of sixDPos" <<_pos->get_C() << std::endl;
 
-   // TMatrix TCP(_pos->get_A(),_pos->get_B(),_pos->get_C(),_pos->get_X()*1000,_pos->get_Y()*1000,_pos->get_Z()*1000);                                                            //Transformation Matrix for the TCP inside of the global coordinate system
+    TMatrix TCP(_pos->get_A(),_pos->get_B(),_pos->get_C(),_pos->get_X()*1000,_pos->get_Y()*1000,_pos->get_Z()*1000);                                                            //Transformation Matrix for the TCP inside of the global coordinate system
    // std::array<double, 4> wcp = TCP*dTCP;                                                                                                                                                 //Calculation of wrist center point
       std::array<double, 3> wcp;
-
-      wcp[0] = _pos->get_X()*1000-(215)*sin(_pos->get_C()) * sin(_pos->get_A()) + cos(_pos->get_C())*sin(_pos->get_B())*cos(_pos->get_A());
-      wcp[1] = _pos->get_Y()*1000-(215)*(-1)*cos(_pos->get_C()) * sin(_pos->get_A()) + sin(_pos->get_C())*sin(_pos->get_B()) * sin(_pos->get_A());
-      wcp[2] = _pos->get_Z()*1000-(215)*cos(_pos->get_B()) * cos(_pos->get_A());
+      TCP.output();
+      wcp[0] = _pos->get_X()*1000-(215)* TCP.get_element(0,2);
+      wcp[1] = _pos->get_Y()*1000-(215)* TCP.get_element(1,2);
+      wcp[2] = _pos->get_Z()*1000-(215)* TCP.get_element(2,2);
 
 
     for (int i = 0; i < 3; ++i) {
         std::cout << "wcp :" << wcp[i] << std::endl;
     }
-
-    double test =sin(96.6968)*(1225.41/1775.61);
-    cout << test << endl;
 
     if(wcp[0]>0 && wcp[1]>=0)
     {
