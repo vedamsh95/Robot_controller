@@ -256,30 +256,54 @@ std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
 }
 
 std::array<double, 6> InvKinematics::inv_checklimits(double phi1, array<double, 4> phi2_phi3){
-
+bool elbowup = false;
+bool elbowdown = false;
     if (-185 < phi1 && phi1 < 185) {
         std::cout << "phi1: " << phi1 << std::endl;
         if (-140 < phi2_phi3[0] && phi2_phi3[0] < -5) {
             std::cout << "phi2: " << phi2_phi3[0] << std::endl;
             if (-120 < phi2_phi3[2] && phi2_phi3[2] < 168) {
                 std::cout << "phi3: " << phi2_phi3[2] << std::endl;
-                solution[0] = phi1;
-                solution[1] = phi2_phi3[0];
-                solution[2] = phi2_phi3[2];
-                return solution;
+                elbowup = true;
+//                solution[0] = phi1;
+//                solution[1] = phi2_phi3[0];
+//                solution[2] = phi2_phi3[2];
+               // return solution;
+
             }
 
         }
-        else if (-140 < phi2_phi3[1] && phi2_phi3[1]< -5) {
+        if (-140 < phi2_phi3[1] && phi2_phi3[1]< -5) {
             std::cout << "phi2: " << phi2_phi3[1] << std::endl;
             if (-120 < phi2_phi3[3] && phi2_phi3[3] < 168) {
                 std::cout << "phi3: " << phi2_phi3[3] << std::endl;
-                solution[0] = phi1;
-                solution[1] = phi2_phi3[1];
-                solution[2] = phi2_phi3[3];
-                return solution;
+//                solution[3] = phi1;
+//                solution[4] = phi2_phi3[1];
+//                solution[5] = phi2_phi3[3];
+//                return solution;
+        elbowdown = true;
             }
         }
+    }
+    if (elbowup == true && elbowdown == true){
+        solution[0] = phi1;
+        solution[1] = phi2_phi3[0];
+        solution[2] = phi2_phi3[2];
+        solution[3] = phi1;
+        solution[4] = phi2_phi3[1];
+        solution[5] = phi2_phi3[3];
+        std::cout << "Both Configurations are true" << endl;
+        return solution;
+    }
+
+    else if(elbowup == true && elbowdown == false){
+        solution[0] = phi1;
+        solution[1] = phi2_phi3[0];
+        solution[2] = phi2_phi3[2];
+        solution[3] = 0;
+        solution[4] = 0;
+        solution[5] = 0;
+        std::cout << "";
     }
 }
 
@@ -301,12 +325,12 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     std::cout << "C of sixDPos" <<_pos->get_C() << std::endl;
 
     TMatrix TCP(_pos->get_A(),_pos->get_B(),_pos->get_C(),_pos->get_X()*1000,_pos->get_Y()*1000,_pos->get_Z()*1000);                                                            //Transformation Matrix for the TCP inside of the global coordinate system
-   // std::array<double, 4> wcp = TCP*dTCP;                                                                                                                                                 //Calculation of wrist center point
+                                                                                                                                                    //Calculation of wrist center point
       std::array<double, 3> wcp;
       TCP.output();
-      wcp[0] = _pos->get_X()*1000-(215)* TCP.get_element(0,2);
-      wcp[1] = _pos->get_Y()*1000-(215)* TCP.get_element(1,2);
-      wcp[2] = _pos->get_Z()*1000-(215)* TCP.get_element(2,2);
+      wcp[0] = _pos->get_X()*1000-(215*TCP.get_element(0,2));
+      wcp[1] = _pos->get_Y()*1000-(215*TCP.get_element(1,2));
+      wcp[2] = _pos->get_Z()*1000-(215*TCP.get_element(2,2));
 
 
     for (int i = 0; i < 3; ++i) {
@@ -475,7 +499,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     else if(wcp[0]>0 && wcp[1]<=0)
     {
         cout << "Fall 3" << endl;
-        phi1=atan(wcp[1]/wcp[0])*180/M_PI;
+        phi1=(-1)*atan(wcp[1]/wcp[0])*180/M_PI;
         std::cout << "phi1: " << phi1 << std::endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
