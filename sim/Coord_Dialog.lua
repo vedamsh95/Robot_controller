@@ -645,7 +645,13 @@ function splineIO(ui, id)
     if (id == 3008) then
         local directory = sim.getStringParameter(sim.stringparam_scene_path) .."/"
         local i, names, popen = 0, {}, io.popen
-        local pfile = popen('dir "'..directory..'" /b')
+        command = ""
+        if (package.config:sub(1,1) == '/') then
+            command = 'ls -a "'..directory..'"'
+        else
+            command = 'dir "'..directory..'" /b'
+        end
+        local pfile = popen(command)
         for filename in pfile:lines() do
             local parts = splitString(filename, ".")
             if (parts[2] == "csv") then
