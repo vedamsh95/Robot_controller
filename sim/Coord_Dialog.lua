@@ -216,7 +216,7 @@ Input:
 --]]
 function CalculateIK(ui,id)
 
-    if (simUI.getRadiobuttonValue(ui,1015)==1) then
+    if (simUI.getRadiobuttonValue(ui,1022)==1) then
         sendSplineData()
         return
     end
