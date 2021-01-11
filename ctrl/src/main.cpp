@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <chrono>
 #include <thread>
+#include "TMatrix.h"
 
 
 extern "C" {
@@ -77,6 +78,7 @@ simxInt Initial()
 }
 
 int main() {
+    TMatrix a(0, 0, 0, 0, 0, 0); // Fix for linker error TODO do better
     cout << "This is the entry point of the SDIR programming project" << endl;
     SdirCtrl ctrl;
     float c[6];
@@ -209,7 +211,7 @@ int main() {
               vector<SixDPos*> points;
               size_t count = jsonHandler.get_data().size();
               for(size_t i = 0; i < count; i++) {
-                auto *pos = new SixDPos( jsonHandler.get_data()[i]);
+                auto *pos = new SixDPos( jsonHandler.get_data()[static_cast<int>(i)]);
                 points.push_back(pos);
               }
               Trajectory* trajectory = ctrl.move_robot_spline(points);
