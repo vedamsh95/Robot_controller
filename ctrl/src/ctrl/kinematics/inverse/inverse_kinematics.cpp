@@ -12,17 +12,17 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     vector<Configuration*>* solutions = new vector<Configuration*>();
     
     //TODO: Get first three joints from IVKinPos
-//    IVKinPos Position(_pos->get_X(), _pos->get_Y(), _pos->get_Z());
+	IVKinPos Position(_pos->get_X(), _pos->get_Y(), _pos->get_Z());
     vector<array<double, 3>*>* IVpos = new vector<array<double, 3>*>();
-//    IVpos = Position.get_IVKinPos();
+    IVpos = Position.get_IVKinPos();
     
     
     //Test values:
-    array<double, 3> a1, a2;
+    /*array<double, 3> a1, a2;
     a1 = {0, 0, 0};
     a2 = {1, 2, 3};
     IVpos->push_back(&a1);
-    IVpos->push_back(&a2);
+    IVpos->push_back(&a2);*/
     
 
     for (int i = 0; i < IVpos->size(); i++)

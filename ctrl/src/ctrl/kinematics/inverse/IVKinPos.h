@@ -17,11 +17,11 @@ public:
 
 	~IVKinPos();
 private:
-	static const int m = 330;
-	static const int n = 645;
-	static const int a = 1150;
-	static const int o = 115;
-	static const int b = 1220;
+	static constexpr double m = 0.330;
+	static constexpr double n = 0.645;
+	static constexpr double a = 1.150;
+	static constexpr double o = 0.115;
+	static constexpr double b = 1.220;
 
 
 		
@@ -31,6 +31,8 @@ private:
 		Position() : x(0), y(0), z(0) {};
 		Position(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
 	};
+	double deg2Rad(double _deg);
+	double rad2Deg(double _rad);
 	Position P = Position(); // wristPointCenter
 	//double joints[3];
 	std::array<double, 3>* checkLimits(double _phi1, std::array<double, 5>* _solution);
