@@ -23,13 +23,19 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     a2 = {1, 2, 3};
     IVpos->push_back(&a1);
     IVpos->push_back(&a2);*/
-    
+
 
     for (int i = 0; i < IVpos->size(); i++)
     {
 
         array<double, 3>* actPos = new array<double, 3>;
         actPos = IVpos->at(i);
+        
+        //convert actPos from degree to radian
+        for (int i =0; i <3; i++)
+        {
+            actPos->at(i) = actPos->at(i)*M_PI/180;
+        }
 
         //calculate rotation matrix for first 3 joints.
         TMatrix R_03(actPos->at(0), actPos->at(1), actPos->at(2), 0, 0, 0);
@@ -70,21 +76,30 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         for (int i = 0; i < 8; i++)
         {
             solutions->push_back(new Configuration({actPos->at(0), actPos->at(1),actPos->at(2),Configs[i][0],Configs[i][1],Configs[i][2]}));
+            
+            //Display configuration
+            cout << "Theta 1: " << actPos->at(0) << endl;
+            cout << "Theta 2: " << actPos->at(1) << endl;
+            cout << "Theta 3: " << actPos->at(2) << endl;
+            cout << "Theta 4: " << Configs[i][0] << endl;
+            cout << "Theta 5: " << Configs[i][1] << endl;
+            cout << "Theta 6: " << Configs[i][2] << endl;
+            
         }
-
     }
+    
     
     //prepare the result vector for the configurations
     // you should call your inverse kinematics functions here!
     
     //vector<Configuration*>* solutions = new vector<Configuration*>();
-    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({4/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({5/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));
+//    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
+//    solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
+//    solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));
+//    solutions->push_back(new Configuration({4/8 * M_PI,0,1,0,0,0}));
+//    solutions->push_back(new Configuration({5/8 * M_PI,0,1,0,0,0}));
+//    solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
+//    solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));
 
     return solutions;
 }
