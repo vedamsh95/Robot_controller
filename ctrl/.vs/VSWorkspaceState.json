@@ -1,0 +1,17 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\ctrl",
+    "\\src\\ctrl\\com",
+    "\\src\\ctrl\\com\\remoteApi",
+    "\\src\\ctrl\\kinematics",
+    "\\src\\ctrl\\kinematics\\inverse",
+    "\\src\\ctrl\\pathplanner",
+    "\\src\\ctrl\\pathplanner\\lin",
+    "\\src\\ctrl\\pathplanner\\ptp",
+    "\\src\\ctrl\\postypes"
+  ],
+  "SelectedNode": "\\src\\ctrl\\kinematics\\inverse\\inverse_kinematics.cpp",
+  "PreviewInSolutionExplorer": false
+}
