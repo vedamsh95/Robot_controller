@@ -10,19 +10,19 @@ double n = 645;
 double a = 1150;
 double b = 1220;
 
-std::array<double, 6> solution;
+std::vector<vector<double>> solution;
 std::array<double, 4> phi2_phi3;
-std::array<double, 6> solution_standard;
-std::array<double, 6> sol_standard;
+std::vector<std::vector<double>> solution_standard;
+std::vector<std::vector<double>> sol_standard;
 
-std::array<double, 6> sol_specialcase1_1;
-std::array<double, 6> sol_specialcase1_2;
-std::array<double, 6> sol_specialcase2_1;
-std::array<double, 6> sol_specialcase2_2;
+std::vector<std::vector<double>> sol_specialcase1_1;
+std::vector<std::vector<double>> sol_specialcase1_2;
+std::vector<std::vector<double>> sol_specialcase2_1;
+std::vector<std::vector<double>> sol_specialcase2_2;
 
-std::array<double, 6> sol_phi1special1_1;
-std::array<double, 6> sol_phi1special1_2;
-std::array<double, 6> sol_phi1special1_3;
+std::vector<vector<double>> sol_phi1special1_1;
+std::vector<vector<double>> sol_phi1special1_2;
+std::vector<vector<double>> sol_phi1special1_3;
 
 double _Trans03[6];
 
@@ -61,7 +61,7 @@ std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
     return theta4_5_6;
 }
 
-std::array<double, 9> InvKinematics::inv_checktheta(double phi1, double d1, std::array<double, 3> wcp) {
+std::vector<std::vector<double>> InvKinematics::inv_checktheta(double phi1, double d1, std::array<double, 3> wcp) {
     if(-185 < phi1 < -175) {
         //cout << "needs to be implemented" << endl;
         double dpx = d1 - m;
@@ -80,7 +80,7 @@ std::array<double, 9> InvKinematics::inv_checktheta(double phi1, double d1, std:
             phi2_phi3 = inv_backwardcase(dpx, dpy);
             sol_phi1special1_3 = inv_checklimits(phi1, phi2_phi3);
 
-            std::array<double, 9> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
+            std::vector<vector<double>> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
                                                    sol_phi1special1_1[2], sol_phi1special1_2[0],
                                                    sol_phi1special1_2[1],sol_phi1special1_2[3],
                                                    sol_phi1special1_3[0],sol_phi1special1_3[1],
@@ -103,7 +103,7 @@ std::array<double, 9> InvKinematics::inv_checktheta(double phi1, double d1, std:
             phi2_phi3 = inv_forwardcase(dpx, dpy);
             sol_phi1special1_3 = inv_checklimits(phi1, phi2_phi3);
 
-            std::array<double, 9> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
+            std::vector<std::vector<double>> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
                                                        sol_phi1special1_1[2], sol_phi1special1_2[0],
                                                        sol_phi1special1_2[1],sol_phi1special1_2[3],
                                                        sol_phi1special1_3[0],sol_phi1special1_3[1],
@@ -130,7 +130,7 @@ std::array<double, 9> InvKinematics::inv_checktheta(double phi1, double d1, std:
             phi2_phi3 = inv_backwardcase(dpx, dpy);
             sol_phi1special1_3 = inv_checklimits(phi1, phi2_phi3);
 
-            std::array<double, 9> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
+            std::vector<std::vector<double>> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
                                                        sol_phi1special1_1[2], sol_phi1special1_2[0],
                                                        sol_phi1special1_2[1],sol_phi1special1_2[3],
                                                        sol_phi1special1_3[0],sol_phi1special1_3[1],
@@ -153,7 +153,7 @@ std::array<double, 9> InvKinematics::inv_checktheta(double phi1, double d1, std:
             phi2_phi3 = inv_forwardcase(dpx, dpy);
             sol_phi1special1_3 = inv_checklimits(phi1, phi2_phi3);
 
-            std::array<double, 9> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
+            std::vector<std::vector<double>> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
                                                        sol_phi1special1_1[2], sol_phi1special1_2[0],
                                                        sol_phi1special1_2[1],sol_phi1special1_2[3],
                                                        sol_phi1special1_3[0],sol_phi1special1_3[1],
@@ -167,9 +167,8 @@ std::array<double, 9> InvKinematics::inv_checktheta(double phi1, double d1, std:
     }
 }
 
-std::array<double, 6> InvKinematics::inv_standardcase(double phi1, double d1, std::array<double, 3> wcp) {
-    std::array<double, 6> solution;
-   //checking for special phi1 configurations
+std::vector<std::vector<double>> InvKinematics::inv_standardcase(double phi1, double d1, std::array<double, 3> wcp) {
+    double id = 0;
    //standard cases
     if (d1 > m && -175 < phi1 < 175)                                                                               //calculating all the forward cases
     {
@@ -181,19 +180,45 @@ std::array<double, 6> InvKinematics::inv_standardcase(double phi1, double d1, st
 
         phi2_phi3 = inv_forwardcase(dpx, dpy);
         sol_standard = inv_checklimits(phi1, phi2_phi3);
+        id = sol_standard.at(0).at(0);
+        if(id == 2 || id == 3){
+            sol_standard.at(0).at(0) = 100+id;
+        }
+
+        else if(id == 11){
+            sol_standard.at(0).at(0) = 100+id;
+            sol_standard.at(1).at(0) = 100+12;
+        }
+
+        else if(id == 4){
+            std::cout << "No possible configuration for the robot" << endl;
+        }
         return sol_standard;
+    }                                                         //distance between the second joint and wcp
 
-    }                                                                                        //distance between the second joint and wcp
-
-    else if (d1 < m && -175 < phi1 < 175)                              //calculating all the backward cases
+    else if (d1 < m && -175 < phi1 < 175)                     //calculating all the backward cases
     {
         std::cout << "backward case " << std::endl;
         double dpx = m - d1;                                  //calculating the x and y components of the
         std::cout << "dpx: " << dpx << std::endl;
         double dpy = wcp[2] - n;                              //distnance between the second joint and wcp
         std::cout << "dpy: " << dpy << std::endl;
+
         phi2_phi3 = inv_backwardcase(dpx, dpy);
         sol_standard = inv_checklimits(phi1, phi2_phi3);
+        id = sol_standard.at(0).at(0);
+        if(id == 2 || id == 3){
+            sol_standard.at(0).at(0) = 200+id;
+        }
+
+        else if(id == 11){
+            sol_standard.at(0).at(0) = 200+id;
+            sol_standard.at(1).at(0) = 200+12;
+        }
+
+        else if(id == 4){
+            std::cout << "No possible configuration for the robot" << endl;
+        }
         return sol_standard;
     }
 }
@@ -247,7 +272,7 @@ std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
 
     double phi3_b_u = 270 - beta*180/M_PI-(asin(b / d2)*180/M_PI);              //for backwards elbow up
     std::cout << "phi3_b_u: " << phi3_b_u << std::endl;
-    double phi3_b_d = -1*(90-(beta-asin(b/d2)*180/M_PI));                                                             //double phi3_b_d = -1 * (90 - (beta - asin(b / d2)*180/M_PI));        //for backwards elbow down
+    double phi3_b_d = -1*(90-(beta*180/M_PI-asin(b/d2)*180/M_PI));                                                             //double phi3_b_d = -1 * (90 - (beta - asin(b / d2)*180/M_PI));        //for backwards elbow down
     std::cout << "phi3_b_d: " << phi3_b_d << std::endl;
 
     phi2_phi3 = {phi2_b_u, phi2_b_d, phi3_b_u, phi3_b_d};
@@ -255,9 +280,11 @@ std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
     return phi2_phi3;
 }
 
-std::array<double, 6> InvKinematics::inv_checklimits(double phi1, array<double, 4> phi2_phi3){
+std::vector<vector<double>> InvKinematics::inv_checklimits(double phi1, array<double, 4> phi2_phi3){
 bool elbowup = false;
 bool elbowdown = false;
+double id = 0;
+
     if (-185 < phi1 && phi1 < 185) {
         std::cout << "phi1: " << phi1 << std::endl;
         if (-140 < phi2_phi3[0] && phi2_phi3[0] < -5) {
@@ -281,31 +308,62 @@ bool elbowdown = false;
 //                solution[4] = phi2_phi3[1];
 //                solution[5] = phi2_phi3[3];
 //                return solution;
-        elbowdown = true;
+                elbowdown = true;
             }
         }
     }
     if (elbowup == true && elbowdown == true){
-        solution[0] = phi1;
-        solution[1] = phi2_phi3[0];
-        solution[2] = phi2_phi3[2];
-        solution[3] = phi1;
-        solution[4] = phi2_phi3[1];
-        solution[5] = phi2_phi3[3];
+        id = 11;
+        std::vector<double> elbow_up_vec;
+        elbow_up_vec.push_back(id);
+        elbow_up_vec.push_back(phi1);
+        elbow_up_vec.push_back(phi2_phi3[0]);
+        elbow_up_vec.push_back(phi2_phi3[2]);
+        id = 12;
+        std::vector<double> elbow_down_vec;
+        elbow_down_vec.push_back(id);
+        elbow_down_vec.push_back(phi1);
+        elbow_down_vec.push_back(phi2_phi3[1]);
+        elbow_down_vec.push_back(phi2_phi3[3]);
+
         std::cout << "Both Configurations are true" << endl;
-        return solution;
+        solution.push_back(elbow_up_vec);
+        solution.push_back(elbow_down_vec);
     }
 
     else if(elbowup == true && elbowdown == false){
-        solution[0] = phi1;
-        solution[1] = phi2_phi3[0];
-        solution[2] = phi2_phi3[2];
-        solution[3] = 0;
-        solution[4] = 0;
-        solution[5] = 0;
-        std::cout << "";
+        id = 2;
+        std::vector<double> elbow_up_vec;
+        elbow_up_vec.push_back(id);
+        elbow_up_vec.push_back(phi1);
+        elbow_up_vec.push_back(phi2_phi3[0]);
+        elbow_up_vec.push_back(phi2_phi3[2]);
+
+        std::cout << "Only Elbow up is a possible configuration";
+        solution.push_back(elbow_up_vec);
     }
+    else if(elbowup == false && elbowdown == true){
+        std::vector<double> elbow_down_vec;
+        id = 3;
+        elbow_down_vec.push_back(id);
+        elbow_down_vec.push_back(phi1);
+        elbow_down_vec.push_back(phi2_phi3[1]);
+        elbow_down_vec.push_back(phi2_phi3[3]);
+
+        std::cout << "Both Configurations are true" << endl;
+        solution.push_back(elbow_down_vec);
+    }
+    else if(elbowup == false && elbowdown == false){
+        std::vector<double> no_solution;
+        id = 4;
+        no_solution.push_back(id);
+        std::cout << "No Configuration is reachable" << endl;
+
+        solution.push_back(no_solution);
+    }
+    return solution;
 }
+
 
 vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 {
@@ -351,68 +409,70 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         else {
           solution_standard = inv_standardcase(phi1, d1, wcp);
 
+
+
             //calculation of R03
-            TMatrix mat1(0, 180, 0, 645);
-            TMatrix mat2((0 + sol_standard[0]), 90, 330, 0);
-            TMatrix mat3((0 + sol_standard[1]), 0, 1150, 0);
-            TMatrix mat4((-90 + sol_standard[2]), 90, 115, 0);
-
-            //Having the transformationmatrix
-            TMatrix T03;
-            T03 = mat1*mat2*mat3*mat4;
-            //Calculating Euler Angles for R03
-            std::array<double, 3> euler;
-            euler = T03.convertToEulerAngles();
-
-            //Calculating R03
-            double _Trans03[6];
-            _Trans03[0] = 0;
-            _Trans03[1] = 0;
-            _Trans03[2] = 0;
-            _Trans03[3] = euler[0];
-            _Trans03[4] = euler[1];
-            _Trans03[5] = euler[2];
-
-            //Transposed matrix of R03
-            TMatrix R03(_Trans03);
-
-            TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
-
-            TMatrix R36 = R03*R06;
-            std::array<double, 10> solution_standard_4_5_6;
-            solution_standard_4_5_6 = inv_gettheta4_5_6(R36);
-
-            vector<Configuration*>* solutions = new vector<Configuration*>();
-            //soltions for positiv theta 5
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[0],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[0],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[1],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[1],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
-
-            //solutions for negative theta 5
-
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[2],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[2],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[3],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[3],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
-
-            return solutions;
+//            TMatrix mat1(0, 180, 0, 645);
+//            TMatrix mat2((0 + sol_standard[0]), 90, 330, 0);
+//            TMatrix mat3((0 + sol_standard[1]), 0, 1150, 0);
+//            TMatrix mat4((-90 + sol_standard[2]), 90, 115, 0);
+//
+//            //Having the transformationmatrix
+//            TMatrix T03;
+//            T03 = mat1*mat2*mat3*mat4;
+//            //Calculating Euler Angles for R03
+//            std::array<double, 3> euler;
+//            euler = T03.convertToEulerAngles();
+//
+//            //Calculating R03
+//            double _Trans03[6];
+//            _Trans03[0] = 0;
+//            _Trans03[1] = 0;
+//            _Trans03[2] = 0;
+//            _Trans03[3] = euler[0];
+//            _Trans03[4] = euler[1];
+//            _Trans03[5] = euler[2];
+//
+//            //Transposed matrix of R03
+//            TMatrix R03(_Trans03);
+//
+//            TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
+//
+//            TMatrix R36 = R03*R06;
+//            std::array<double, 10> solution_standard_4_5_6;
+//            solution_standard_4_5_6 = inv_gettheta4_5_6(R36);
+//
+//            vector<Configuration*>* solutions = new vector<Configuration*>();
+//            //soltions for positiv theta 5
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[0],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[0],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[1],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[1],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
+//
+//            //solutions for negative theta 5
+//
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[2],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[2],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[3],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[3],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
+//
+//            return solutions;
 
         }
 
@@ -431,67 +491,67 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
         else {
            solution_standard = inv_standardcase(phi1, d1, wcp);
-            //calculation of R03
-            TMatrix mat1(0, 180, 0, 645);
-            TMatrix mat2((0 + sol_standard[0]), 90, 330, 0);
-            TMatrix mat3((0 + sol_standard[1]), 0, 1150, 0);
-            TMatrix mat4((-90 + sol_standard[2]), 90, 115, 0);
-
-            //Having the transformationmatrix
-            TMatrix T03;
-            T03 = mat1*mat2*mat3*mat4;
-            //Calculating Euler Angles for R03
-            std::array<double, 3> euler;
-            euler = T03.convertToEulerAngles();
-
-            //Calculating R03
-            double _Trans03[6];
-            _Trans03[0] = 0;
-            _Trans03[1] = 0;
-            _Trans03[2] = 0;
-            _Trans03[3] = euler[0];
-            _Trans03[4] = euler[1];
-            _Trans03[5] = euler[2];
-
-            //Transposed matrix of R03
-            TMatrix R03(_Trans03);
-
-            TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
-
-            TMatrix R36 = R03*R06;
-            std::array<double, 10> solution_standard_4_5_6;
-            solution_standard_4_5_6 = inv_gettheta4_5_6(R36);
-
-            vector<Configuration*>* solutions = new vector<Configuration*>();
-            //soltions for positiv theta 5
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[0],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[0],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[1],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[1],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
-
-            //solutions for negative theta 5
-
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[2],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[2],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[3],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[3],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
-            return solutions;
+//            //calculation of R03
+//            TMatrix mat1(0, 180, 0, 645);
+//            TMatrix mat2((0 + sol_standard[0]), 90, 330, 0);
+//            TMatrix mat3((0 + sol_standard[1]), 0, 1150, 0);
+//            TMatrix mat4((-90 + sol_standard[2]), 90, 115, 0);
+//
+//            //Having the transformationmatrix
+//            TMatrix T03;
+//            T03 = mat1*mat2*mat3*mat4;
+//            //Calculating Euler Angles for R03
+//            std::array<double, 3> euler;
+//            euler = T03.convertToEulerAngles();
+//
+//            //Calculating R03
+//            double _Trans03[6];
+//            _Trans03[0] = 0;
+//            _Trans03[1] = 0;
+//            _Trans03[2] = 0;
+//            _Trans03[3] = euler[0];
+//            _Trans03[4] = euler[1];
+//            _Trans03[5] = euler[2];
+//
+//            //Transposed matrix of R03
+//            TMatrix R03(_Trans03);
+//
+//            TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
+//
+//            TMatrix R36 = R03*R06;
+//            std::array<double, 10> solution_standard_4_5_6;
+//            solution_standard_4_5_6 = inv_gettheta4_5_6(R36);
+//
+//            vector<Configuration*>* solutions = new vector<Configuration*>();
+//            //soltions for positiv theta 5
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[0],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[0],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[1],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[1],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
+//
+//            //solutions for negative theta 5
+//
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[2],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[2],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[3],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[3],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
+//            return solutions;
         }
 
     }
@@ -509,66 +569,66 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
         else {
             solution_standard = inv_standardcase(phi1, d1, wcp);
-            //calculation of R03
-            TMatrix mat1(0, 180, 0, 645);
-            TMatrix mat2((0 + sol_standard[0]), 90, 330, 0);
-            TMatrix mat3((0 + sol_standard[1]), 0, 1150, 0);
-            TMatrix mat4((-90 + sol_standard[2]), 90, 115, 0);
-
-            //Having the transformationmatrix
-            TMatrix T03;
-            T03 = mat1*mat2*mat3*mat4;
-            //Calculating Euler Angles for R03
-            std::array<double, 3> euler;
-            euler = T03.convertToEulerAngles();
-
-            //Calculating R03
-            double _Trans03[6];
-            _Trans03[0] = 0;
-            _Trans03[1] = 0;
-            _Trans03[2] = 0;
-            _Trans03[3] = euler[0];
-            _Trans03[4] = euler[1];
-            _Trans03[5] = euler[2];
-
-            //Transposed matrix of R03
-            TMatrix R03(_Trans03);
-
-            TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
-
-            TMatrix R36 = R03*R06;
-            std::array<double, 10> solution_standard_4_5_6;
-            solution_standard_4_5_6 = inv_gettheta4_5_6(R36);
-
-            vector<Configuration*>* solutions = new vector<Configuration*>();
-            //soltions for positiv theta 5
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[0],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[0],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[1],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[1],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
-
-            //solutions for negative theta 5
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[2],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[2],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[3],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[3],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
-            return solutions;
+//            //calculation of R03
+//            TMatrix mat1(0, 180, 0, 645);
+//            TMatrix mat2((0 + sol_standard[0]), 90, 330, 0);
+//            TMatrix mat3((0 + sol_standard[1]), 0, 1150, 0);
+//            TMatrix mat4((-90 + sol_standard[2]), 90, 115, 0);
+//
+//            //Having the transformationmatrix
+//            TMatrix T03;
+//            T03 = mat1*mat2*mat3*mat4;
+//            //Calculating Euler Angles for R03
+//            std::array<double, 3> euler;
+//            euler = T03.convertToEulerAngles();
+//
+//            //Calculating R03
+//            double _Trans03[6];
+//            _Trans03[0] = 0;
+//            _Trans03[1] = 0;
+//            _Trans03[2] = 0;
+//            _Trans03[3] = euler[0];
+//            _Trans03[4] = euler[1];
+//            _Trans03[5] = euler[2];
+//
+//            //Transposed matrix of R03
+//            TMatrix R03(_Trans03);
+//
+//            TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
+//
+//            TMatrix R36 = R03*R06;
+//            std::array<double, 10> solution_standard_4_5_6;
+//            solution_standard_4_5_6 = inv_gettheta4_5_6(R36);
+//
+//            vector<Configuration*>* solutions = new vector<Configuration*>();
+//            //soltions for positiv theta 5
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[0],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[0],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[1],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[1],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
+//
+//            //solutions for negative theta 5
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[2],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[2],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[3],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[3],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
+//            return solutions;
         }
     }
 
@@ -585,67 +645,67 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
         else {
             solution_standard = inv_standardcase(phi1, d1, wcp);
-            //calculation of R03
-            TMatrix mat1(0, 180, 0, 645);
-            TMatrix mat2((0 + sol_standard[0]), 90, 330, 0);
-            TMatrix mat3((0 + sol_standard[1]), 0, 1150, 0);
-            TMatrix mat4((-90 + sol_standard[2]), 90, 115, 0);
-
-            //Having the transformationmatrix
-            TMatrix T03;
-            T03 = mat1*mat2*mat3*mat4;
-            //Calculating Euler Angles for R03
-            std::array<double, 3> euler;
-            euler = T03.convertToEulerAngles();
-
-            //Calculating R03
-            double _Trans03[6];
-            _Trans03[0] = 0;
-            _Trans03[1] = 0;
-            _Trans03[2] = 0;
-            _Trans03[3] = euler[0];
-            _Trans03[4] = euler[1];
-            _Trans03[5] = euler[2];
-
-            //Transposed matrix of R03
-            TMatrix R03(_Trans03);
-
-            TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
-
-            TMatrix R36 = R03*R06;
-            std::array<double, 10> solution_standard_4_5_6;
-            solution_standard_4_5_6 = inv_gettheta4_5_6(R36);
-
-            vector<Configuration*>* solutions = new vector<Configuration*>();
-            //soltions for positiv theta 5
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[0],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[0],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[1],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[1],
-                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
-
-            //solutions for negative theta 5
-
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[2],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[2],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[3],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
-            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
-                                                    solution_standard[2],solution_standard_4_5_6[3],
-                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
-            return solutions;
+//            //calculation of R03
+//            TMatrix mat1(0, 180, 0, 645);
+//            TMatrix mat2((0 + sol_standard[0]), 90, 330, 0);
+//            TMatrix mat3((0 + sol_standard[1]), 0, 1150, 0);
+//            TMatrix mat4((-90 + sol_standard[2]), 90, 115, 0);
+//
+//            //Having the transformationmatrix
+//            TMatrix T03;
+//            T03 = mat1*mat2*mat3*mat4;
+//            //Calculating Euler Angles for R03
+//            std::array<double, 3> euler;
+//            euler = T03.convertToEulerAngles();
+//
+//            //Calculating R03
+//            double _Trans03[6];
+//            _Trans03[0] = 0;
+//            _Trans03[1] = 0;
+//            _Trans03[2] = 0;
+//            _Trans03[3] = euler[0];
+//            _Trans03[4] = euler[1];
+//            _Trans03[5] = euler[2];
+//
+//            //Transposed matrix of R03
+//            TMatrix R03(_Trans03);
+//
+//            TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
+//
+//            TMatrix R36 = R03*R06;
+//            std::array<double, 10> solution_standard_4_5_6;
+//            solution_standard_4_5_6 = inv_gettheta4_5_6(R36);
+//
+//            vector<Configuration*>* solutions = new vector<Configuration*>();
+//            //soltions for positiv theta 5
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[0],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[0],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[1],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[6]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[1],
+//                                                    solution_standard_4_5_6[4],solution_standard_4_5_6[7]}));
+//
+//            //solutions for negative theta 5
+//
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[2],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[2],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[3],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[8]}));
+//            solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],
+//                                                    solution_standard[2],solution_standard_4_5_6[3],
+//                                                    solution_standard_4_5_6[5],solution_standard_4_5_6[9]}));
+//            return solutions;
         }
     }
 
@@ -717,15 +777,15 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
     }
 
-//    vector<Configuration*>* solutions = new vector<Configuration*>();
-//    solutions->push_back(new Configuration({sol_standard[0],sol_standard[1],sol_standard[2],0,0,0}));
-//    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
-//    solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
-//    solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));
-//    solutions->push_back(new Configuration({4/8 * M_PI,0,1,0,0,0}));
-//    solutions->push_back(new Configuration({5/8 * M_PI,0,1,0,0,0}));
-//    solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
-//    solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));
-//
-//    return solutions;
+    vector<Configuration*>* solutions = new vector<Configuration*>();
+    //solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],solution_standard[2],0,0,0}));
+    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
+    solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
+    solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));
+    solutions->push_back(new Configuration({4/8 * M_PI,0,1,0,0,0}));
+    solutions->push_back(new Configuration({5/8 * M_PI,0,1,0,0,0}));
+    solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
+    solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));
+
+    return solutions;
 }

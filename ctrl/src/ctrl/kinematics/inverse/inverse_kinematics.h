@@ -23,11 +23,11 @@ public:
      */
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
 
-std::array<double, 6> inv_standardcase(double phi1, double d1, std::array<double, 3> wcp);
+std::vector<std::vector<double>> inv_standardcase(double phi1, double d1, std::array<double, 3> wcp);
 std::array<double, 4> inv_forwardcase(double dpx, double dpy);
 std::array<double, 4> inv_backwardcase(double dpx, double dpy);
-std::array<double, 6> inv_checklimits(double phi1, array<double, 4>phi2_phi3);
-std::array<double, 9> inv_checktheta(double phi1, double d1, std::array<double, 3> wcp);
+std::vector<std::vector<double>> inv_checklimits(double phi1, array<double, 4>phi2_phi3);
+std::vector<std::vector<double>> inv_checktheta(double phi1, double d1, std::array<double, 3> wcp);
 std::array<double, 10> inv_gettheta4_5_6(TMatrix R36);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
