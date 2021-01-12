@@ -9,11 +9,18 @@
 //TODO implement your transformation type for the orientation (xyz, zyx, zyz)!
 TMatrix::TMatrix() {}
 
-//double M_PI = 3.1415926535897932384626433832795028841971;
+//double M_PI = 3.1415926535897932384626433832795028841971; // just for testing
 
-TMatrix::TMatrix(double theta_n, double alpha_n, double r_n, double d_n) {
+/*constructor homogeneous TranslationMatrix DenavitHartenberg TMatrix
+ *@ requires:   theta   : rotation around the z-axis
+ *              alpha_n : rotation around the x-axis
+ *              r_n     : Distance of the origin n-1 to origin n along the x-axis of CSn (CS1) in millimeters
+ *              d_n     : Distance of the origins n-1 to origin n along the z-axis of CSn-1 in millimeters
+ *
+ *@ ensures:    Object TMatrix 4x4 TranslationMatrix
+ * */
+TMatrix::TMatrix(double theta_n, double alpha_n, double r_n, double d_n) {              // new constructor Translationmatrix Denavit Hartenberg
     double const fa = M_PI/180;
-
 
     for (int h = 0; h < 4; h++)
     {
@@ -71,6 +78,16 @@ TMatrix::TMatrix(double theta_n, double alpha_n, double r_n, double d_n) {
     }
 }
 
+
+
+/*constructor  TMatrix
+ *@ requires:   one     : double number
+ *              two     : double number
+ *              [...]   : double number
+ *              sixteen : double number
+ *
+ *@ ensures:    Object general TMatrix 4x4
+ * */
 TMatrix::TMatrix(double _one, double _two, double _three, double _four, double _five, double _six, double _seven, double _eight, double _nine, double _ten, double _eleven, double _twelve, double _thirteen, double _fourteen, double _fifteen, double _sixteen) {
 	m_transformation[0][0] = _one;
 	m_transformation[0][1] = _two;
@@ -89,6 +106,17 @@ TMatrix::TMatrix(double _one, double _two, double _three, double _four, double _
 	m_transformation[3][2] = _fifteen;
 	m_transformation[3][3] = _sixteen;
 }
+
+
+
+
+/*constructor transformation matrix of denavit hartenberg method
+ *@ requires:   double array[6] -->
+ *
+ *
+ *@ ensures:    Object general TMatrix 4x4
+ * */
+
 
 //Matrix is transposed!!
 TMatrix::TMatrix(double _trans[6]) {
@@ -116,9 +144,18 @@ TMatrix::TMatrix(double _trans[6]) {
 
 }
 
-// rotation around the z-axis       ---> phi --> rot_z
-// rotation around the y-axis       ---> theta --> rot_y
-// rotation around the x-axis       ---> psi -->rot_x
+
+
+
+/*constructor  Rotational TMatrix
+ *@ requires:   _rot_z     : rotation around the z-axis ---> phi in radian
+ *              _rot_y     : rotation around the y-axis ---> theta in radian
+ *              _rot_x     : rotation around the x-axis ---> psi in radian
+ *              _trans_x   : double length translation_x in mm
+ *              _trans_y   : double length translation_y in mm
+ *              _trans_z   : double length translation_z in mm
+ *@ ensures:    Object Rotational TMatrix 4x4
+ * */
 TMatrix::TMatrix(double _rot_z, double _rot_y, double _rot_x, double _trans_x, double _trans_y, double _trans_z) {
 m_transformation[0][0] = cos(_rot_z)*cos(_rot_y);
 m_transformation[0][1] = (-1)*sin(_rot_z)*cos(_rot_x) + cos(_rot_z)*sin(_rot_y)*sin(_rot_x);
@@ -143,13 +180,19 @@ m_transformation[3][3] = 1;
 
 
 
-
+/* @requires: unsigned int 0<=row <4  && unsigend int 0<= coloum <4
+ * @ensures: double element of 4x4 Matrix
+ * */
 double TMatrix::get_element(unsigned int row,  unsigned int column)
 {
 //returns the element on position
 return m_transformation[row][column];
 }
 
+
+/* @requires: this TMatrix Object itself
+ * @ensures:  void terminal output with std::cout
+ * */
 void TMatrix::output() {
     printf("Array contents: \n");
 
@@ -163,6 +206,10 @@ void TMatrix::output() {
     }
 }
 
+
+/* @requires: this TMatrix Object && TMatrix&
+ * @ensures:  4x4 * 4x4 (Matrix Matrix Multiplication)
+ * */
 TMatrix TMatrix::operator*(const TMatrix &mat1) {
 
     TMatrix result;
@@ -182,6 +229,10 @@ TMatrix TMatrix::operator*(const TMatrix &mat1) {
     return result;
 }
 
+/* @requires: this TMatrix Object && std::array<double,4>&
+ * @ensures:  4x4 * 4x1 (Matrix Vector Multiplication)
+ * */
+
 std::array<double, 4> TMatrix::operator*(const std::array<double, 4> &arr) {
 
     std::array<double, 4> result;
@@ -198,8 +249,9 @@ std::array<double, 4> TMatrix::operator*(const std::array<double, 4> &arr) {
     return result;
 }
 
-
-
+/* @requires: this TMatrix TranslationMatrix 4x4 of denavit Hartenberg
+ * @ensures:  double array[3] with phi, theta, psi in degree
+ * */
 std::array<double, 3> TMatrix::convertToEulerAngles() {
     // initialize the euler angles
     double phi, theta, psi;
