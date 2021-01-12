@@ -4,8 +4,3 @@ add_library(PosTypes
             TMatrix.cpp
             Trajectory.cpp
         )
-
-target_include_directories(FWKin
-        PUBLIC
-        "${CMAKE_SOURCE_DIR}/src/ctrl/postypes"
-        )
