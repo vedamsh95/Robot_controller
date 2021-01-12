@@ -25,6 +25,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     // you should call your inverse kinematics functions here!
     vector<Configuration*>* solutions = new vector<Configuration*>();
     solutions->push_back(new Configuration({ 0,0,1,0,0,0 }));
+
     double new_X =  (*_pos) [0];
     double new_Y = (*_pos) [1];
     double new_Z = (*_pos) [2];
@@ -33,11 +34,10 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     double new_yaw = (*_pos) [5];
 
 
+
     // Les's find matrix R0_6 by using Raw Yaw and Pitch angle 
     double R0_6[3][3];
     double r11, r12, r13, r21, r22, r23, r31, r32, r33;
-    
-
 
     r11 = cos(new_roll) * cos(new_pitch);
     r12 = -(sin(new_roll) * cos(new_yaw)) + (cos(new_roll) * sin(new_pitch) * sin(new_yaw));
@@ -65,16 +65,17 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     Y_c = new_Y - (d_6 * r23);
     Z_c = new_Z - (d_6 * r33);
 
-    
+   
     //Compute the theta1 here
     std::vector<double> theta1_arr, theta2_arr, theta3_arr;
     theta1_arr = find_theta1(X_c, Y_c);
-    
+
     //vector<double>theta1_arr;
     //find_theta1(X_c, Y_c, theta1_arr);
 
     //Compute the theta2 and theta3 here
-    for (auto elem1 : theta1_arr) 
+
+    for (auto elem1 : theta1_arr)
     {
         if (-185 < elem1 < 185)
         {
@@ -91,22 +92,24 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
         else if (elem1 < -185 || elem1 >185)
             break;
-    
+
+ 
     }
 
 
-    
 
-  /*
-    solutions->push_back(new Configuration({0,0,1,0,0,0}));
-    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({4/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({5/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));
-*/
+
+    /*
+      solutions->push_back(new Configuration({0,0,1,0,0,0}));
+      solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
+      solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
+      solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));
+      solutions->push_back(new Configuration({4/8 * M_PI,0,1,0,0,0}));
+      solutions->push_back(new Configuration({5/8 * M_PI,0,1,0,0,0}));
+      solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
+      solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));
+  */
+
     return solutions;
 }
 
@@ -116,7 +119,8 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     and two backward solution
     */
 
-std::vector<double> find_theta1(double X_c, double Y_c) 
+
+std::vector<double> find_theta1(double X_c, double Y_c)
 {
 
     //computing the taninverse using general mathmatics formula
@@ -190,12 +194,13 @@ std::vector<double> find_theta1(double X_c, double Y_c)
 }
 
 
-void find_theta2_theta3(double X_c, double Y_c, double Z_c, vector<double>& arr2, vector<double>& arr3) 
+
+void find_theta2_theta3(double X_c, double Y_c, double Z_c, vector<double>& arr2, vector<double>& arr3)
 {
-    double d_1, d_2, d_3, Px_dash, Py_dash,theta2, theta3, beta1, alpha1, alpha2;
+    double d_1, d_2, d_3, Px_dash, Py_dash, theta2, theta3, beta1, alpha1, alpha2;
     d_1 = sqrt(X_c * X_c + Y_c * Y_c);
     d_2 = sqrt(b * b + o * o);
-    if (d_1 > m) 
+    if (d_1 > m)
     {
         Px_dash = d_1 - m;
         Py_dash = Z_c - n;
@@ -204,7 +209,8 @@ void find_theta2_theta3(double X_c, double Y_c, double Z_c, vector<double>& arr2
         alpha1 = asin(sin(beta1) * (d_2 / d_3)) * 180 / PI;
         alpha2 = asin(Py_dash / d_3) * 180 / PI;
         //forward elbow down
-        theta2 = -(alpha2 - alpha1); 
+
+        theta2 = -(alpha2 - alpha1);
         theta3 = beta1 - (asin(b / d_2) * 180 / PI) - 90;
         arr2.push_back(theta2);
         arr3.push_back(theta3);
@@ -226,16 +232,18 @@ void find_theta2_theta3(double X_c, double Y_c, double Z_c, vector<double>& arr2
         alpha1 = asin(sin(beta1) * (d_2 / d_3)) * 180 / PI;
         alpha2 = asin(Py_dash / d_3) * 180 / PI;
         //bacward elbow down
-        theta2 = (alpha2 - alpha1)-180;
+
+        theta2 = (alpha2 - alpha1) - 180;
+
         theta3 = -(90 - (beta1 - (asin(b / d_2) * 180 / PI)));
         arr2.push_back(theta2);
         arr3.push_back(theta3);
 
         //backward elbow down
-        theta2 = (alpha1 + alpha2)-180;
+
+        theta2 = (alpha1 + alpha2) - 180;
         theta3 = 270 - beta1 - (asin(b / d_2) * 180 / PI);
         arr2.push_back(theta2);
         arr3.push_back(theta3);
-    
     }
 }
