@@ -30,9 +30,6 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
             denavitHartenbergTable[0][2],
             denavitHartenbergTable[0][3]
     );
-    printf("First TMatrix:\n");
-    transformationMatrix->print();
-    printf("\n");
     for (int i = 1; i < 7; i++) {
         TMatrix *nextTransformationMatrix = new TMatrix(
                 denavitHartenbergTable[i][0],
@@ -40,12 +37,7 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
                 denavitHartenbergTable[i][2],
                 denavitHartenbergTable[i][3]
         );
-        printf("Multiplied with TMatrix #%d:\n", i);
-        nextTransformationMatrix->print();
         transformationMatrix = transformationMatrix->multiply(nextTransformationMatrix);
-        printf("Equals new TMatrix:\n");
-        transformationMatrix->print();
-        printf("\n");
     }
 
     double x = transformationMatrix->get(0, 3);
