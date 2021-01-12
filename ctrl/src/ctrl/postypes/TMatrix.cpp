@@ -1,15 +1,18 @@
 #include "TMatrix.h"
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include<iostream>
 #include <array>
+//#undef __STRICT_ANSI__
+
 
 //TODO implement your transformation type for the orientation (xyz, zyx, zyz)!
 TMatrix::TMatrix() {}
 
-double M_PI = 3.1415926535897932384626433832795028841971;
+//double M_PI = 3.1415926535897932384626433832795028841971;
 
 TMatrix::TMatrix(double theta_n, double alpha_n, double r_n, double d_n) {
-    double const fa = M_PI/180.0;
+    double const fa = M_PI/180;
 
 
     for (int h = 0; h < 4; h++)
