@@ -27,6 +27,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 
     SixDPos(x,y,z,r_a,r_b,r_c);
 
+
         xc = x -  d * (sin(r_c) *sin(r_a) + cos(r_c) * sin(r_b) * cos(r_a));
         yc = y - d * (-1* cos(r_c)*sin(r_a)+ sin(r_c)*sin(r_b)*cos(r_a));
         zc = z - d * (cos(r_b)*cos(r_a));
