@@ -1,65 +1,101 @@
 #define _USE_MATH_DEFINES
 
 #include "inverse_kinematics.h"
-#include "fw_kinematics.cpp"
+#include "TMatrix.h"
 #include <math.h>
 #include<tuple>
-using namespace std;
 
 //define the Robot constants
-#define d 0.215
-#define m 0.330
-#define n 0.645
-#define o 0.115
-#define a 1.150
-#define b 1.220
+#define d 215
+#define m 330
+#define n 645
+#define o 115
+#define a 1150
+#define b 1220
+
+//1.  get final TCP details from the pointer sent to get_inv_kinematics function
+//2.  take the overall transformation matrix from TMatrix function
+//3.  find WCP
+//4.  find phi1 call phi1 function, return an array of possible phi1 values
+//5.  take each values of phi1, check if it meets the criteria, call function to find phi2 and phi3
+//6.  if the returned array of phi2 and phi3 within possible values w.r.t the robot configurations, proceed to find phi4,phi5 and phi6
+//7.  call phi4,phi5,phi6 function and return array of possible values
+//8.  push to the possible set of configuration 
+//9.  function to find phi1
+//10. function to find phi2 and phi3
+//11. function to find phi4, phi5 and phi6
+
 
 vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 {
-    //TODO: IMPLEMENT Compute the inverse kinematics for a given position
 
-    vector<Configuration*>* solutions;
-    //Convert the given Position into orientation matrics
-    //let Oc store the retreived Transformation matrix
+    vector<Configuration*>* solutions = new vector<Configuration*>();
+//1.
+    double Xp =_pos->get_X();
+    double Yp =_pos->get_Y();
+    double Zp = _pos->get_Z();
+    double e1 = _pos->get_A();
+    double e2 = _pos->get_B();
+    double e3 = _pos->get_C();
 
-    SixDPos Oc = FwKinematics::get_fw_kinematics(Configuration * _cfg);
+    //transformation matrix
+    TMatrix Trans(Xp,Yp,Zp,e1,e2,e3);
+    double* ptr = Trans.get_matrix();
 
-    //let Xc, Yc and Zc be the coordinates of WCP
+    //2. take the overall transformation matrix from pointer returned from TMatrix class
+ 
+    double Tansformationmatrix[4][4];
+    for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    Tansformationmatrix[i][j] = *ptr;
+                    ptr++;
+                }
+            }
 
-    double Xc = Oc[0] - d * p[13];
-    double Yc = Oc[1] - d * p[14];
-    double Zc = Oc[2] - d * p[15];
+ //3. 
+    //find WCP
+    double Xc = Xp - d * Tansformationmatrix[2][0];
+    double Yc = Yp - d * Tansformationmatrix[2][1];
+    double Zc = Zp - d * Tansformationmatrix[2][2];
 
-    //finding phi1, phi2 and phi3 are three angles
-    //Multiple configurations can be possible and all should be returned as vector
 
-
-    //phi1
+//4. phi1
     vector<double>arrayphi1;
     findphi1(Xc, Yc, arrayphi1);
 
     // find phi2 and phi3 and return to main pgm, get 1 configuation  
 
-    for (int i = 0; i<arrayphi1.size(); i++)
+
+//5. 
+    for (double i = 0; i<arrayphi1.size(); i++)
     {
-        int phi1 = arrayphi1[i];
+        double phi1 = arrayphi1[i];
         if (phi1 < -185 || phi1 > 185)
             break;
         else
         {
             vector<double> arrayphi2, arrayphi3;
             findphi2phi3(Xc, Yc, Zc, phi1, arrayphi2, arrayphi3);
-            Configuration tempconfig* = new Configularion();
-            int j = 0;
-            for (j = 0; j < arrayphi2.size(); j++)
+
+            for (double j = 0; j < arrayphi2.size(); j++)
             {
+//6.
                 if (-140<arrayphi2[j]<-5 && -120<arrayphi3[j]< +168)
                 {
-                    tempconfig[0] = phi1;
-                    tempconfig[1] = arrayphi2[j];
-                    tempconfig[2] = arrayphi3[j];
-                    solutions.push_back(tempconfig);
+                 
+
+//7. find phi4, phi5, phi6 corresponding to the first 3 angles
+
+                    vector<double> phi4, phi5, phi6;
+                    findphi3phi4phi5(phi1, arrayphi2[j], arrayphi3[j], phi4, phi5, phi6, ptr);
+                    
+//8. 
+                    for(double r = 0; r<phi4.size(); r++)    
+                                solutions->push_back(new Configuration({phi1, arrayphi2[j],arrayphi3[j],phi4[r], phi5[r],phi6[r] }));
                 }
+
                 else
                 {
                     break;
@@ -67,26 +103,13 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             }
         }
     }
-
-
-    //prepare the result vector for the configurations
-    // you should call your inverse kinematics functions here!
-    //vector<Configuration*>* solutions = new vector<Configuration*>();
-    //solutions->push_back(new Configuration({0,0,1,0,0,0}));
-    //solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
-    //solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
-    //solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));
-    //solutions->push_back(new Configuration({4/8 * M_PI,0,1,0,0,0}));
-    //solutions->push_back(new Configuration({5/8 * M_PI,0,1,0,0,0}));
-    //solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
-    //solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));
-
     return solutions;
-
-
 }
-// PHI1
-//finding arrayPhi1 with various conditions, ARRAY OF possible Phi1 angles
+
+
+//9. finding arrayPhi1 with various conditions, ARRAY OF possible Phi1 angles
+
+
 vector<double> findphi1(double Xc, double Yc, vector<double>& point)
 {
     double phi1 = atan2(Yc, Xc) * 180 / M_PI;   // in angles
@@ -111,7 +134,7 @@ vector<double> findphi1(double Xc, double Yc, vector<double>& point)
         else if (Xc < 0 && Yc < 0)
         {
             point.push_back(-phi1);
-            point.push_back(-(180 + phi1);
+            point.push_back(-(180 + phi1));
         }
     }
     if (-185 < phi1 < -175)
@@ -150,8 +173,8 @@ vector<double> findphi1(double Xc, double Yc, vector<double>& point)
 }
 
 
+//10. PHI2 and PHI3 returns 2 values at the same time
 
-//PHI2 and PHI3
 void findphi2phi3(double Xc, double Yc, double Zc, double phi1, vector<double>& point2, vector<double>& point3)
 {
 
@@ -184,7 +207,7 @@ tuple<double, double>  ForwardsElbowdown(double d1, double Zc)
 
         d3 = sqrt(Px * Px + Py * Py);
         //beeta is b1
-        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2)) * 180 / M_PI);
+        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2) * (180 / M_PI));
             //alpha 1 is a1
             a1 = asin(Py / d3) * 180 / M_PI;
             //alpha 2 is a2
@@ -199,7 +222,7 @@ tuple<double, double>  ForwardsElbowdown(double d1, double Zc)
         Py = Zc - n;
 
         d3 = sqrt(Px * Px + Py * Py);
-        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2)) * 180 / M_PI);
+        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2) * (180 / M_PI));
         a1 = asin(Py / d3) * 180 / M_PI;
         a2 = asin(sin(b1) * (d2 / d3)) * 180 / M_PI;
         phi2 = 180 - (a1 - a2);
@@ -225,12 +248,11 @@ tuple<double, double>  ForwardsElbowup(double d1, double Zc)
         Py = Zc - n;
 
         d3 = sqrt(Px * Px + Py * Py);
-        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2)) * 180 / M_PI);
+        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2) * (180 / M_PI));
         a1 = asin(Py / d3) * 180 / M_PI;
         a2 = asin(sin(b1) * d2 / d3) * 180 / M_PI;
-
         phi2 = -(a1 + a2);
-        phi3 = 360 - b1 - (asin(b / d2) * 180 / M_PI) - 90
+        phi3 = 360 - b1 - (asin(b / d2) * 180 / M_PI) - 90;
             return make_tuple(phi2, phi3);
     }
     else if (d1 < m)
@@ -240,7 +262,7 @@ tuple<double, double>  ForwardsElbowup(double d1, double Zc)
         Py = Zc - n;
 
         d3 = sqrt(Px * Px + Py * Py);
-        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2)) * 180 / M_PI);
+        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2) * (180 / M_PI));
         a1 = asin(Py / d3) * 180 / M_PI;
         a2 = asin(sin(b1) * d2 / d3) * 180 / M_PI;
 
@@ -265,7 +287,7 @@ tuple<double, double>  BackwardsElbowdown(double d1, double Zc)
         double Py = Zc - n;
 
         d3 = sqrt(Px * Px + Py * Py);
-        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2)) * 180 / M_PI);
+        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2) * (180 / M_PI));
         a1 = asin(Py / d3) * 180 / M_PI;
         a2 = asin(sin(b1) * d2 / d3) * 180 / M_PI;
 
@@ -279,7 +301,7 @@ tuple<double, double>  BackwardsElbowdown(double d1, double Zc)
         double Py = Zc - n;
 
         d3 = sqrt(Px * Px + Py * Py);
-        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2)) * 180 / M_PI);
+        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2)) * (180 / M_PI);
         a1 = asin(Py / d3) * 180 / M_PI;
         a2 = asin(sin(b1) * d2 / d3) * 180 / M_PI;
 
@@ -302,11 +324,11 @@ tuple<double, double> BackwardsElbowup(double d1, double Zc)
         double Px = d1 + m;
         double Py = Zc - n;
         d3 = sqrt(Px * Px + Py * Py);
-        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2)) * 180 / M_PI);
+        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2) * (180 / M_PI));
         a1 = asin(Py / d3) * 180 / M_PI;
         a2 = asin(sin(b1) * d2 / d3) * 180 / M_PI;
         phi2 = (a1 + a2) - 180;
-        phi3 = -(90 - (b1 - (asin(b / d2) * 180 / M_PI));
+        phi3 = -(90 - (b1 - (asin(b / d2) * 180 / M_PI)));
         return make_tuple(phi2, phi3);
     }
     else if (d1 <= m)
@@ -314,11 +336,11 @@ tuple<double, double> BackwardsElbowup(double d1, double Zc)
         double Px = d1 + m;
         double Py = Zc - n;
         d3 = sqrt(Px * Px + Py * Py);
-        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2)) * 180 / M_PI);
+        b1 = acos((d3 * d3 - a * a - d2 * d2) / (-2 * a * d2) * (180 / M_PI));
         a1 = asin(Py / d3) * 180 / M_PI;
         a2 = asin(sin(b1) * d2 / d3) * 180 / M_PI;
         phi2 = -(a1 - a2);
-        phi3 = -(90 - (b1 - (asin(b / d2) * 180 / M_PI));
+        phi3 = -(90 - (b1 - (asin(b / d2) * 180 / M_PI)));
         return make_tuple(phi2, phi3);
     }
     else
@@ -326,4 +348,134 @@ tuple<double, double> BackwardsElbowup(double d1, double Zc)
         return make_tuple(0, 0);
     }
 
+}
+
+//11. find phi3, phi4 and phi5
+
+void findphi3phi4phi5(double phi1, double phi2, double phi3, vector<double>& phi4, vector<double>& phi5, vector<double>& phi6, double* ptr)
+{
+
+    //find 0R3 rotation about phi1 to find the first rotational matrix
+    double r1[3][3];
+    r1[0][0] = cos(phi1);
+    r1[0][1] = sin(phi1);
+    r1[0][2] = 0;
+    r1[1][0] = -sin(phi1);
+    r1[1][1] = cos(phi1);
+    r1[1][2] = 0;
+    r1[2][0] = 0;
+    r1[2][1] = 0;
+    r1[2][2] = 1;
+
+    double d2 = sqrt((o * o) + (b * b));
+
+    //rotation about phi2 and phi3 to find the second rotational matrix
+    double r2[3][3];
+    r1[0][0] = cos(phi1 + phi2);
+    r1[0][1] = sin(phi1 + phi2);
+    r1[0][2] = 0;
+    r1[1][0] = -sin(phi1 + phi2);
+    r1[1][1] = cos(phi1 + phi2);
+    r1[1][2] = 0;
+    r1[2][0] = (d2 * cos(phi1 + phi2)) + (a * cos(phi1));
+    r1[2][1] = (d2 * sin(phi1 + phi2)) + (a * sin(phi1));
+    r1[2][2] = 1;
+
+    //net rotational matrix 0R3 is product of first and second rotational matrix
+
+    double R03[3][3];
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            R03[i][j] = 0;
+
+    //find R03 as product of R1 and R2
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            for (int k = 0; k < 3; k++)
+            {
+                R03[i][j] += r1[i][k] * r2[k][j];
+            }
+
+    //find transformation matrix from pointer
+    double Tansformationmatrix[4][4];
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            Tansformationmatrix[i][j] = *ptr;
+            ptr++;
+        }
+    }
+
+    //find overall rotaiton matrix R06 from the transformation matrix
+    double R06[3][3];
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+        {
+            R06[i][j] = Tansformationmatrix[i][j];
+
+        }
+
+    // multiply 0R3(Transpose)x 0R6 to be 3R6
+    double R36[3][3];
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            for (int k = 0; k < 3; k++)
+            {
+                R36[i][j] += R03[k][i] * R06[k][j];
+            }
+    //now we have R36, find values of phi4, phi5 and phi6
+    //using Atan2 function,
+
+//equations - 1st set
+    double tempphi4 = atan2(-R36[2][1], -R36[2][0]) * (180 / M_PI);
+
+    //set of possible configuration of phi4 as per first set of equations
+    int k = 0;
+    while (-350 < tempphi4 < 350)
+    {
+
+        double tempphi5 = atan2(sqrt(1 - ((R36[2][2]) * (R36[2][2]))), R36[2][2]) * (180 / M_PI);
+        double tempphi6 = atan2(R36[1][2], R36[0][2]) * (180 / M_PI);
+
+        int l = 0;
+        while (-350 < tempphi6 < 350)
+        {
+
+            phi4.push_back(tempphi4);
+            phi5.push_back(tempphi5);
+            phi6.push_back(tempphi6);
+            tempphi6 += 2 * 180 * l;
+            l++;
+        }
+        k++;
+        tempphi4 += 2 * 180 * k;
+    }
+
+    //equations - 2nd set
+
+    //set of possible configuration of phi4 from second set of equations
+    double tempphi4 = atan2(R36[2][1], R36[2][0]) * (180 / M_PI);
+
+    //set of possible configuration of phi4 as per first set of equations
+    int k = 0;
+    while (-350 < tempphi4 < 350)
+    {
+
+        double tempphi5 = atan2(-sqrt(1 - ((R36[2][2]) * (R36[2][2]))), R36[2][2]) * (180 / M_PI);
+        double tempphi6 = atan2(-R36[1][2], -R36[0][2]) * (180 / M_PI);
+
+        int l = 0;
+        while (-350 < tempphi6 < 350)
+        {
+
+            phi4.push_back(tempphi4);
+            phi5.push_back(tempphi5);
+            phi6.push_back(tempphi6);
+            tempphi6 += 2 * 180 * l;
+            l++;
+        }
+        k++;
+        tempphi4 += 2 * 180 * k;
+    }
 }
