@@ -83,6 +83,7 @@ public:
     double *get_matrix() { return &m_transformation[0][0]; };
 
     double get(uint8_t row, uint8_t col) { return m_transformation[col > 4 ? 4 : col][row > 4 ? 4 : row]; };
+    void set(uint8_t row, uint8_t col, double value) { m_transformation[col > 4 ? 4 : col][row > 4 ? 4 : row] = value; };
 
     TMatrix *multiply(TMatrix *m2);
 
