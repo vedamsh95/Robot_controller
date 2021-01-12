@@ -79,7 +79,16 @@ simxInt Initial()
 }
 
 int main() {
-    cout << (new FwKinematics())->get_fw_kinematics(new Configuration({0, -0.5*M_PI, 0.5*M_PI, 0, 0, 0})) << endl;
+    // Example for forward kinematics
+    SixDPos *fwkinSample = (new FwKinematics())->get_fw_kinematics(new Configuration(
+            {0, -0.5 * M_PI, 0.5 * M_PI, 0, 0, 0}
+    ));
+    cout << "X=" << fwkinSample->get_X() << " Y=" << fwkinSample->get_Y() << " Z=" << fwkinSample->get_Z()
+         << " A=" << fwkinSample->get_A() * 180 / M_PI
+         << " B=" << fwkinSample->get_B() * 180 / M_PI
+         << " C=" << fwkinSample->get_C() * 180 / M_PI << endl;
+
+
     cout << "This is the entry point of the SDIR programming project" << endl;
     SdirCtrl ctrl;
     float c[6];
