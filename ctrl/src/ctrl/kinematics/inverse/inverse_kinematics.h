@@ -22,5 +22,9 @@ public:
      * @return  a reference to a <code>vector<code> containing all possible configurations for the passed position
      */
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
+
+    double angles_phi1();
+    double angles_phi2();
+    double angles_phi3();
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
