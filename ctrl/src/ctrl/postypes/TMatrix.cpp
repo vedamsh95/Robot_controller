@@ -116,9 +116,9 @@ TMatrix::TMatrix(double _trans[6]) {
 
 }
 
-// rotation around the z-axis     ---> phi --> rot_z
-// rotation around the y-axis    ---> theta --> rot_y
-// rotation around the x-axis      ---> psi -->rot_x
+// rotation around the z-axis       ---> phi --> rot_z
+// rotation around the y-axis       ---> theta --> rot_y
+// rotation around the x-axis       ---> psi -->rot_x
 TMatrix::TMatrix(double _rot_z, double _rot_y, double _rot_x, double _trans_x, double _trans_y, double _trans_z) {
 m_transformation[0][0] = cos(_rot_z)*cos(_rot_y);
 m_transformation[0][1] = (-1)*sin(_rot_z)*cos(_rot_x) + cos(_rot_z)*sin(_rot_y)*sin(_rot_x);
@@ -204,14 +204,15 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
     // initialize the euler angles
     double phi, theta, psi;
     std::array<double, 3> a;
-    double u = 0.1;
+    double u = 0.0001;
 
     // Error case
     if ( (this->m_transformation[0][0] <= 0 + u || this->m_transformation[0][0] >= 0 - u)
     && (this->m_transformation[1][0] <= 0 + u || this->m_transformation[1][0] >= 0 - u)) {
-        phi = asinh( - this->m_transformation[0][1] );
+        phi = asin( - this->m_transformation[0][1] );
         theta = - this->m_transformation[2][0] * M_PI/2;
         psi = 0;
+        std::cout << "errorCASTEEEE!!!E!11" << std::endl;
     }
     else {  // normal case
         phi = atan2(this->m_transformation[1][0], this->m_transformation[0][0]);
