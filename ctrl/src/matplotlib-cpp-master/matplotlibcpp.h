@@ -1637,6 +1637,44 @@ inline void legend(const std::map<std::string, std::string>& keywords)
   Py_DECREF(res);  
 }
 
+template <typename Vector = std::vector<double>>
+inline void legend(const std::string &loc = "best",
+                   const Vector &bbox_to_anchor = Vector(),
+                   const std::map<std::string, std::string> &keywords = {}) {
+    detail::_interpreter::get();
+
+    PyObject *kwargs = PyDict_New();
+
+    // add location
+    if (loc != "")
+        PyDict_SetItemString(kwargs, "loc", PyString_FromString(loc.c_str()));
+
+    // add bbox to anchor
+    if (bbox_to_anchor.size() == 2 || bbox_to_anchor.size() == 4) {
+        PyObject *bbox = matplotlibcpp::detail::get_array(bbox_to_anchor);
+        PyDict_SetItemString(kwargs, "bbox_to_anchor", bbox);
+    }
+
+    // add other keywords
+    for (std::map<std::string, std::string>::const_iterator it = keywords.begin();
+         it != keywords.end(); ++it) {
+        PyDict_SetItemString(kwargs, it->first.c_str(),
+                             PyString_FromString(it->second.c_str()));
+    }
+
+    PyObject *res =
+            PyObject_Call(detail::_interpreter::get().s_python_function_legend,
+                          detail::_interpreter::get().s_python_empty_tuple, kwargs);
+
+    Py_DECREF(kwargs);
+
+    if (!res)
+        throw std::runtime_error("Call to legend() failed.");
+
+    Py_DECREF(res);
+}
+
+
 template<typename Numeric>
 void ylim(Numeric left, Numeric right)
 {
