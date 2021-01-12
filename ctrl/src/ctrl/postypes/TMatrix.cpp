@@ -92,10 +92,10 @@ void TMatrix::print() {
 
 TMatrix* TMatrix::multiply(TMatrix* b) {
     TMatrix* result = new TMatrix();
-    for (int col = 0; col < 4; col++) {
-        for (int row = 0; row < 4; row++) {
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
             for (int n = 0; n < 4; n++) {
-                result->m_transformation[row][col] += this->get(n, col) * b->get(row, n);
+                result->m_transformation[col][row] += this->get(row, n) * b->get(n, col);
             }
         }
     }
