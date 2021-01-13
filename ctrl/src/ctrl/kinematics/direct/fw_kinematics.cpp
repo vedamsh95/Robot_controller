@@ -121,7 +121,9 @@ vector<double> FwKinematics::get_euler_angles(TMatrix& tMatrix)
     return data[(row-1)*4+col-1];
   };
 
-  if (T(1,1) == 0 && T(2,1) == 0) {
+  double epsilon = 0.00174532925;    // 0.1 degrees
+
+  if (abs(T(1,1)) < epsilon && abs(T(2,1)) < epsilon) {
     phi     = asin(-T(1,2) );
     theta   = - T(3, 1) * M_PI * 0.5;
     psi     = 0;
