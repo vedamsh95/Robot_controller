@@ -22,6 +22,8 @@ std::vector<std::vector<double>> sol_specialcase1_1;
 std::vector<std::vector<double>> sol_specialcase1_2;
 std::vector<std::vector<double>> sol_specialcase2_1;
 std::vector<std::vector<double>> sol_specialcase2_2;
+std::vector<Configuration*>* sol_specialcase1_1_vec;
+std::vector<Configuration*>* sol_specialcase1_2_vec;
 
 std::vector<vector<double>> sol_phi1special1_1;
 std::vector<vector<double>> sol_phi1special1_2;
@@ -238,7 +240,7 @@ std::vector<std::vector<double>> InvKinematics::inv_checktheta(double phi1, doub
 std::vector<std::vector<double>> InvKinematics::inv_standardcase(double phi1, double d1, std::array<double, 3> wcp) {
     double id = 0;
    //standard cases
-    if ((d1 > m) && -175 < phi1 && phi1 < 175)                                                                               //calculating all the forward cases
+    if ((d1 > m) && (-175 < phi1 && phi1 < 175))                                                                               //calculating all the forward cases
     {
         std::cout << "forward case " << std::endl;
         double dpx = d1 - m;                                                                                            //calculating the x and y components of the
@@ -360,11 +362,6 @@ double id = 0;
             if (-120 < phi2_phi3[2] && phi2_phi3[2] < 168) {
                 std::cout << "phi3: " << phi2_phi3[2] << std::endl;
                 elbowup = true;
-//                solution[0] = phi1;
-//                solution[1] = phi2_phi3[0];
-//                solution[2] = phi2_phi3[2];
-               // return solution;
-
             }
 
         }
@@ -372,10 +369,6 @@ double id = 0;
             std::cout << "phi2: " << phi2_phi3[1] << std::endl;
             if (-120 < phi2_phi3[3] && phi2_phi3[3] < 168) {
                 std::cout << "phi3: " << phi2_phi3[3] << std::endl;
-//                solution[3] = phi1;
-//                solution[4] = phi2_phi3[1];
-//                solution[5] = phi2_phi3[3];
-//                return solution;
                 elbowdown = true;
             }
         }
@@ -432,13 +425,14 @@ double id = 0;
     return solution;
 }
 
-std::vector<Configuration*>* InvKinematics::inv_add_standardcase_to_vec_theta1_2_3(double phi1, double d1, std::array<double, 3> wcp, SixDPos* _pos){
+std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double phi1, double d1, std::array<double, 3> wcp, SixDPos* _pos, vector<vector<double>> solutions_vec){
     double id = 0;
     vector<Configuration *>* config_vec = new vector<Configuration *>();
     Configuration *upward_config;
     Configuration *downward_config;
     Configuration *single_config;
-    solution_standard = inv_standardcase(phi1, d1, wcp);
+    //solution_standard = inv_standardcase(phi1, d1, wcp);
+    solution_standard = solutions_vec;
     std::cout << solution_standard.at(0).at(1);
     id = solution_standard.at(0).at(0);
     std::cout << id << endl;
@@ -718,7 +712,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
         else {
                 //solution_vec contains the possible configurations for a standardcase for all joints
-                solution_vec = inv_add_standardcase_to_vec_theta1_2_3(phi1,d1,wcp, _pos);
+                solution_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, solution_standard);
         }
 
     }
@@ -736,7 +730,8 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
         else {
                 //solution_vec contains the possible configurations for a standardcase for all joints
-                solution_vec = inv_add_standardcase_to_vec_theta1_2_3(phi1,d1,wcp, _pos);
+                solution_standard = inv_standardcase(phi1, d1, wcp);
+                solution_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, solution_standard);
         }
 
     }
@@ -754,7 +749,8 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
         else {
                 //solution_vec contains the possible configurations for a standardcase for all joints
-                solution_vec = inv_add_standardcase_to_vec_theta1_2_3(phi1,d1,wcp,_pos);
+                solution_standard = inv_standardcase(phi1, d1, wcp);
+                solution_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, solution_standard);
         }
     }
 
@@ -771,7 +767,8 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
         else {
                 //solution_vec contains the possible configurations for a standardcase for all joints
-                solution_vec = inv_add_standardcase_to_vec_theta1_2_3(phi1,d1,wcp, _pos);
+                solution_standard = inv_standardcase(phi1, d1, wcp);
+                solution_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, solution_standard);
         }
     }
 
@@ -787,13 +784,18 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             double dpy = wcp[2] - n;
             phi2_phi3 = inv_forwardcase(dpx, dpy);
             sol_specialcase1_1 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
-
+            sol_specialcase1_1_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, sol_specialcase1_1);
+            double size1_1 = sol_specialcase1_1_vec->size();
+          //  for(int i = 0; i<=size1_1; i++){
+           //     solution_vec->push_back(sol_specialcase1_1_vec->at(i)->get_configuration());
+           // }
 
             phi1 = 90;
             dpx = wcp[1]+m;
             phi2_phi3 = inv_backwardcase(dpx,dpy);
             sol_specialcase1_2 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
-
+            sol_specialcase1_2_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, sol_specialcase1_2);
+            double size1_2 = sol_specialcase1_2_vec->size();
 
         }
 
