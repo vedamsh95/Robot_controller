@@ -1,5 +1,8 @@
 #include "ptp.h"
 
+// Choose whether the plots for the ptp functionality should be plotted (blocking)
+//#define PLOT
+
 Ptp::Ptp() {
     robot = &Robot::getInstance();
     trajectory = new Trajectory();
@@ -92,7 +95,10 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
 
     trajectory->set_trajectory(configs);
 
+#ifdef PLOT
     plotMovement(configs);
+#endif
+
 
     for (auto tra : single_trajectories) {
         delete tra;
