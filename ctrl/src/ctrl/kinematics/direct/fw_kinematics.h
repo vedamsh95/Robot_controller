@@ -7,16 +7,22 @@
 #include <Configuration.h>
 
 /**
- * This class is intended to handle the direct kinematic computation from a given configuration
+ * This class is intended to handle the direct kinematic computation from a given configuration.
+ * It makes use of Roll, Pitch, Yaw Euler angles:
+ * Extrinsic:
+ *  Yaw around z, Pitch around y', Roll around z''
+ * Intrinsic:
+ *  Roll around z, Pitch around y, Yaw around x
  */
 class FwKinematics {
 public:
     /**
      * Computes the forward kinematic from a given {@Configuration}
+     *
      * @param _cfg {@Configuration} to compute the forward kinematic from
      * @return computed {@ref SixDPos}
      */
-    SixDPos* get_fw_kinematics(Configuration* _cfg);
+    SixDPos *get_fw_kinematics(Configuration *_cfg);
 
 private:
 
@@ -39,7 +45,7 @@ private:
     * @param Homogeneous transformation matrix
     * @return Set of Euler Angles denoting Roll, Pitch, and Yaw [rad]
     */
-    vector<double> get_euler_angles(TMatrix& tMatrix);
+    vector<double> get_euler_angles(TMatrix &tMatrix);
 
 };
 
