@@ -2,7 +2,6 @@
 #include<iostream>
 
 
-
 Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg, bool sync)
 {
     //TODO: IMPLEMENT! implement the computation of a ptp trajectory with the corresponding velocity profile
@@ -16,6 +15,7 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
     vector<Configuration*> config_vec;
     double M_PII = 3.14159;
     double a_max = 200;     // max acceleration
+    double timesteps = 100; // 0.001s; so r = 1000 = 1s
 
     // initialize all the arrays
     array<double, 6> array_startpos{};
@@ -266,9 +266,9 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
     // if bool sync == false then we don't want a synchronised motion
     if(!sync){
         std::cout << "asynchron motion: " << std::endl;
-        for (int r = 0; r <= (max_t_f * 100); ++r) { //r = 1 will be 0.01s; so r = 100 = 1s
+        for (int r = 0; r <= (max_t_f * timesteps); ++r) { //r = 1 will be 0.00001s; so r = 100000 = 1s
             std::cout << "r: " << r << std::endl;
-            double t = double(r) / 100;
+            double t = double(r) / timesteps;
             std::cout << "t: " << t << std::endl;
             //joint1
             if (joint1_max_vel_profile == true) {
@@ -508,9 +508,9 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
             }
         }
         std::cout << "synchronised motion ptp: " << std::endl;
-        for(int r = 0; r <= max_t_f*100; r++){
+        for(int r = 0; r <= max_t_f*timesteps; r++){
             std::cout << "r: " << r << std::endl;
-            double t = double(r) / 100;
+            double t = double(r) / timesteps;
             std::cout << "t: " << t << std::endl;
 
             for(int i = 0; i < 6; i++){

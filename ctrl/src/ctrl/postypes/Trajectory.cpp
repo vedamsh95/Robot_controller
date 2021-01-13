@@ -62,7 +62,7 @@ double Trajectory::trapezoidal_profile(double joint_startpos, double joint_dista
         joint_t_f = joint_t_c + (abs(joint_distance) / joint_v_max);
         if (t < 0) {
             return joint_t_pos;
-        } else if (t < joint_t_c ) {
+        } else if (t <= joint_t_c ) {
             joint_t_pos = joint_startpos + 0.5 * a_max * pow(t, 2) * ( joint_distance/abs(joint_distance) );    // last part to get sign of distance
         } else if( (joint_t_c < t) && ( t <= (joint_t_f - joint_t_c) ) ) {
             joint_t_pos = joint_startpos + a_max * joint_t_c * (t - (joint_t_c /2) ) * ( joint_distance/abs(joint_distance) );
