@@ -23,13 +23,15 @@ public:
      */
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
 
-std::vector<std::vector<double>> inv_standardcase(double phi1, double d1, std::array<double, 3> wcp);
+std::vector<std::vector<double>> inv_standardcase(double theta1, double d1, std::array<double, 3> wcp);
 std::array<double, 4> inv_forwardcase(double dpx, double dpy);
 std::array<double, 4> inv_backwardcase(double dpx, double dpy);
-std::vector<std::vector<double>> inv_checklimits_theta1_2_3(double phi1, array<double, 4>phi2_phi3);
-std::vector<std::vector<double>> inv_checktheta(double phi1, double d1, std::array<double, 3> wcp);
+std::vector<std::vector<double>> inv_checklimits_theta1_2_3(double theta1, array<double, 4>theta2_theta3);
+std::vector<Configuration*>* inv_checktheta(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos);
+std::vector<Configuration*>* inv_othercase_1(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos);
+    std::vector<Configuration*>* InvKinematics::inv_othercase_2(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos);
 std::array<double, 10> inv_gettheta4_5_6(TMatrix R36);
-std::vector<Configuration*>* inv_add_case_to_vec(double phi1, double d1, std::array<double, 3> wcp, SixDPos* _pos, vector<vector<double>> solutions_vec);
+std::vector<Configuration*>* inv_add_case_to_vec(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos, vector<vector<double>> solutions_vec);
 std::vector<std::vector<double>> inv_vec_sol_theta4_5_6(TMatrix T03, SixDPos* _pos);
 std::vector<std::vector<double>> inv_checklimits_theta4_5_6(std::array<double, 10> solution_standard_4_5_6);
 };

@@ -14,7 +14,7 @@ double b = 1220;
 vector<Configuration*>* solution_vec = new vector<Configuration*>();
 
 std::vector<vector<double>> solution;
-std::array<double, 4> phi2_phi3;
+std::array<double, 4> theta2_theta3;
 std::vector<std::vector<double>> solution_standard;
 std::vector<std::vector<double>> sol_standard;
 
@@ -24,12 +24,23 @@ std::vector<std::vector<double>> sol_specialcase2_1;
 std::vector<std::vector<double>> sol_specialcase2_2;
 std::vector<Configuration*>* sol_specialcase1_1_vec;
 std::vector<Configuration*>* sol_specialcase1_2_vec;
+std::vector<Configuration*>* sol_specialcase1_3_vec;
 
-std::vector<vector<double>> sol_phi1special1_1;
-std::vector<vector<double>> sol_phi1special1_2;
-std::vector<vector<double>> sol_phi1special1_3;
+std::vector<vector<double>> sol_theta1_special1_1;
+std::vector<vector<double>> sol_theta1_special1_2;
+std::vector<vector<double>> sol_theta1_special1_3;
+
+// 2 vectors that are used in the othercase functions
+vector<vector<double>> sol_othercase_1_vec;
+vector<vector<double>> sol_othercase_2_vec;
+//vectors are used to store solution from othercase functions in main function
+vector<Configuration *> *sol_othercase_1_vec_config;
+vector<Configuration *> *sol_othercase_2_vec_config;
 
 double _Trans03[6];
+
+
+
 
 std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
 
@@ -74,9 +85,15 @@ std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
         az = 0;
         az_is_0 = true;
     }
+    if(az <= 1.000001 && az>= 0.999999){
+        az = 1;
+    }
+    if(az >= -1.000001 && az <= -0.999999){
+        az = -1;
+    }
+
     std::cout << "R36" << std::endl;
     R36.output();
-    std::cout << "testrechnung: " << atan2(0,0) << endl;
     //Calculations for the varieties of thetas
     array<double, 4> theta4{};
     array<double, 2> theta5{};
@@ -99,6 +116,7 @@ std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
         theta5[0] = atan2(sqrt(1-pow((az),2)), az)*180/M_PI;
     }else{
         theta5[0] = atan2(sqrt(1-pow((az),2)), (-1)*az)*180/M_PI;
+        theta5[0] = atan2(sqrt(1-pow((az),2)), -1)*180/M_PI;
     }
     theta6[0] = atan2(sz,nz)*180/M_PI;
     theta6[1] = theta6[0] + 360;
@@ -131,116 +149,222 @@ std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
     return theta4_5_6;
 }
 
-std::vector<std::vector<double>> InvKinematics::inv_checktheta(double phi1, double d1, std::array<double, 3> wcp) {
-    if(-185 < phi1 && phi1 < -175) {
-        //cout << "needs to be implemented" << endl;
+std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos) {
+    std::vector<Configuration*>* sol_theta1_specialcases_vec{};
+    if(-185 < theta1 && theta1 < -175) {
+        std::cout << "theta1: (-185 < theta1 && theta1 < -175)" << std::endl;
+        //initialize dpx and dpy (as needed in first if statement)
         double dpx = d1 - m;
         double dpy = wcp[2] - n;
 
         if(d1 > m && wcp[2] > n){
-            phi2_phi3 = inv_forwardcase(dpx, dpy);
-            sol_phi1special1_1 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
-
-            phi1 = phi1 + 360;
-            phi2_phi3 = inv_forwardcase(dpx, dpy);
-            sol_phi1special1_2 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
-
-            phi1 = phi1 + 180;
-            dpx = d1 + m;
-            phi2_phi3 = inv_backwardcase(dpx, dpy);
-            sol_phi1special1_3 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
-
-            std::vector<vector<double>> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
-                                                   sol_phi1special1_1[2], sol_phi1special1_2[0],
-                                                   sol_phi1special1_2[1],sol_phi1special1_2[3],
-                                                   sol_phi1special1_3[0],sol_phi1special1_3[1],
-                                                   sol_phi1special1_3[2]};
-            return sol_phi1specialcases;
+            // dpx and dpy do not change here
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            //step1
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            sol_theta1_special1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
+            // size1_1 is the number of configurations inside the vector
+            double size1_1 = sol_specialcase1_1_vec->size();
+            for(int i = 0; i < size1_1; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_1_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1 << ")" << std:: endl;
             }
 
-        if(d1 < m){
+            //step2
+            double theta1_2 = theta1 + 360;
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
+            sol_specialcase1_2_vec = inv_add_case_to_vec(theta1_2, d1, wcp, _pos, sol_theta1_special1_2);
+            // size1_1 is the number of configurations inside the vector
+            double size1_2 = sol_specialcase1_2_vec->size();
+            for(int i = 0; i < size1_2; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_2_vec->at(i));
+            }
+            if(size1_2 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1_2 << ")" << std:: endl;
+            }
+
+            //step3
+            double theta1_3 = theta1 + 180;
+            dpx = d1 + m;
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
+            sol_specialcase1_3_vec = inv_add_case_to_vec(theta1_3, d1, wcp, _pos, sol_theta1_special1_3);
+            // size1_1 is the number of configurations inside the vector
+            double size1_3 = sol_specialcase1_3_vec->size();
+            for(int i = 0; i < size1_3; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_3_vec->at(i));
+            }
+            if(size1_3 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1_3 << ")" << std:: endl;
+            }
+        }
+
+        else if(d1 < m){
             dpx = m - d1;
             dpy = wcp[2] - n;
-            phi2_phi3 = inv_backwardcase(dpx, dpy);
-            sol_specialcase1_1 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_theta1_special1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
+            // size1_1 is the number of configurations inside the vector
+            double size1_1 = sol_specialcase1_1_vec->size();
+            for(int i = 0; i < size1_1; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_1_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1 << ")" << std:: endl;
+            }
 
-            phi1 = phi1 + 360;
-            phi2_phi3 = inv_backwardcase(dpx, dpy);
-            sol_specialcase1_2 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            double theta1_2 = theta1 + 360;
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            sol_specialcase1_2_vec = inv_add_case_to_vec(theta1_2, d1, wcp, _pos, sol_theta1_special1_2);
+            // size1_1 is the number of configurations inside the vector
+            double size1_2 = sol_specialcase1_2_vec->size();
+            for(int i = 0; i < size1_2; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_2_vec->at(i));
+            }
+            if(size1_2 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1_2 << ")" << std:: endl;
+            }
 
-            phi1 = phi1 + 180;
+
+            double theta1_3 = theta1 + 180;
             dpx = d1 + m;
-            phi2_phi3 = inv_forwardcase(dpx, dpy);
-            sol_phi1special1_3 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            sol_specialcase1_3_vec = inv_add_case_to_vec(theta1_3, d1, wcp, _pos, sol_theta1_special1_3);
+            // size1_1 is the number of configurations inside the vector
+            double size1_3 = sol_specialcase1_3_vec->size();
+            for(int i = 0; i < size1_3; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_3_vec->at(i));
+            }
+            if(size1_3 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1_3 << ")" << std:: endl;
+            }
 
-            std::vector<std::vector<double>> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
-                                                       sol_phi1special1_1[2], sol_phi1special1_2[0],
-                                                       sol_phi1special1_2[1],sol_phi1special1_2[3],
-                                                       sol_phi1special1_3[0],sol_phi1special1_3[1],
-                                                       sol_phi1special1_3[2]};
-            return sol_phi1specialcases;
         }
     }
-
-    else if (185 > phi1 && phi1 > 175) {
-        //cout << "needs to be implemented" << endl;
+    else if (185 > theta1 && theta1 > 175) {
+        std::cout << "theta1: (185 > theta1 && theta1 > 175)" << std::endl;
         double dpx = d1 - m;
         double dpy = wcp[2] - n;
 
         if(d1 > m && wcp[2] > n){
-            phi2_phi3 = inv_forwardcase(dpx, dpy);
-            sol_phi1special1_1 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            sol_theta1_special1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
+            // size1_1 is the number of configurations inside the vector
+            double size1_1 = sol_specialcase1_1_vec->size();
+            for(int i = 0; i < size1_1; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_1_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1 << ")" << std:: endl;
+            }
 
-            phi1 = phi1 - 360;
-            phi2_phi3 = inv_forwardcase(dpx, dpy);
-            sol_phi1special1_2 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
 
-            phi1 = phi1 - 180;
+            double theta1_2 = theta1 - 360;
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
+            sol_specialcase1_2_vec = inv_add_case_to_vec(theta1_2, d1, wcp, _pos, sol_theta1_special1_2);
+            // size1_1 is the number of configurations inside the vector
+            double size1_2 = sol_specialcase1_2_vec->size();
+            for(int i = 0; i < size1_2; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_2_vec->at(i));
+            }
+            if(size1_2 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1_2 << ")" << std:: endl;
+            }
+
+
+            double theta1_3 = theta1 - 180;
             dpx = d1 + m;
-            phi2_phi3 = inv_backwardcase(dpx, dpy);
-            sol_phi1special1_3 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
-
-            std::vector<std::vector<double>> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
-                                                       sol_phi1special1_1[2], sol_phi1special1_2[0],
-                                                       sol_phi1special1_2[1],sol_phi1special1_2[3],
-                                                       sol_phi1special1_3[0],sol_phi1special1_3[1],
-                                                       sol_phi1special1_3[2]};
-            return sol_phi1specialcases;
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
+            sol_specialcase1_3_vec = inv_add_case_to_vec(theta1_3, d1, wcp, _pos, sol_theta1_special1_3);
+            // size1_1 is the number of configurations inside the vector
+            double size1_3 = sol_specialcase1_3_vec->size();
+            for(int i = 0; i < size1_3; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_3_vec->at(i));
+            }
+            if(size1_3 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1_3 << ")" << std:: endl;
+            }
 
         }
 
         if(d1 < m){
             dpx = m - d1;
             dpy = wcp[2] - n;
-            phi2_phi3 = inv_backwardcase(dpx, dpy);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_theta1_special1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
+            // size1_1 is the number of configurations inside the vector
+            double size1_1 = sol_specialcase1_1_vec->size();
+            for(int i = 0; i < size1_1; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_1_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1 << ")" << std:: endl;
+            }
 
-            phi1 = phi1 - 360;
-            phi2_phi3 = inv_backwardcase(dpx, dpy);
-            sol_specialcase1_2 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            double theta1_2 = theta1 - 360;
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
+            sol_specialcase1_2_vec = inv_add_case_to_vec(theta1_2, d1, wcp, _pos, sol_theta1_special1_2);
+            // size1_1 is the number of configurations inside the vector
+            double size1_2 = sol_specialcase1_2_vec->size();
+            for(int i = 0; i < size1_2; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_2_vec->at(i));
+            }
+            if(size1_2 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1_2 << ")" << std:: endl;
+            }
 
-            phi1 = phi1 - 180;
+
+
+            double theta1_3 = theta1 - 180;
             dpx = d1 + m;
-            phi2_phi3 = inv_forwardcase(dpx, dpy);
-            sol_phi1special1_3 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
-
-            std::vector<std::vector<double>> sol_phi1specialcases{sol_phi1special1_1[0], sol_phi1special1_1[1],
-                                                       sol_phi1special1_1[2], sol_phi1special1_2[0],
-                                                       sol_phi1special1_2[1],sol_phi1special1_2[3],
-                                                       sol_phi1special1_3[0],sol_phi1special1_3[1],
-                                                       sol_phi1special1_3[2]};
-            return sol_phi1specialcases;
-
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
+            sol_specialcase1_3_vec = inv_add_case_to_vec(theta1_3, d1, wcp, _pos, sol_theta1_special1_3);
+            // size1_1 is the number of configurations inside the vector
+            double size1_3 = sol_specialcase1_3_vec->size();
+            for(int i = 0; i < size1_3; i++){
+                // push every configuration into the complete vector
+                sol_theta1_specialcases_vec->push_back(sol_specialcase1_3_vec->at(i));
+            }
+            if(size1_3 == 0){
+                std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1_3 << ")" << std:: endl;
+            }
         }
     }
-    else if (-5 < phi1 && 5 > phi1) {
+    else if (-5 < theta1 && 5 > theta1) {
         cout << "needs to be implemented" << endl;
     }
+    return sol_theta1_specialcases_vec;
 }
 
-std::vector<std::vector<double>> InvKinematics::inv_standardcase(double phi1, double d1, std::array<double, 3> wcp) {
+std::vector<std::vector<double>> InvKinematics::inv_standardcase(double theta1, double d1, std::array<double, 3> wcp) {
     double id = 0;
    //standard cases
-    if ((d1 > m) && (-175 < phi1 && phi1 < 175))                                                                               //calculating all the forward cases
+    if ((d1 > m) && (-175 < theta1 && theta1 < 175))                                                                               //calculating all the forward cases
     {
         std::cout << "forward case " << std::endl;
         double dpx = d1 - m;                                                                                            //calculating the x and y components of the
@@ -248,8 +372,8 @@ std::vector<std::vector<double>> InvKinematics::inv_standardcase(double phi1, do
         double dpy = wcp[2] - n;
         cout << "dpy: " << dpy << endl;
 
-        phi2_phi3 = inv_forwardcase(dpx, dpy);
-        sol_standard = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+        theta2_theta3 = inv_forwardcase(dpx, dpy);
+        sol_standard = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
         id = sol_standard.at(0).at(0);
         if(id == 2 || id == 3){
             sol_standard.at(0).at(0) = 100+id;
@@ -263,10 +387,9 @@ std::vector<std::vector<double>> InvKinematics::inv_standardcase(double phi1, do
         else if(id == 4){
             std::cout << "No possible configuration for the robot" << endl;
         }
-        return sol_standard;
     }                                                         //distance between the second joint and wcp
 
-    else if ((d1 < m) && (-175 < phi1 && phi1< 175))                     //calculating all the backward cases
+    else if ((d1 < m) && (-175 < theta1 && theta1 < 175))                     //calculating all the backward cases
     {
         std::cout << "backward case " << std::endl;
         double dpx = m - d1;                                  //calculating the x and y components of the
@@ -274,8 +397,8 @@ std::vector<std::vector<double>> InvKinematics::inv_standardcase(double phi1, do
         double dpy = wcp[2] - n;                              //distnance between the second joint and wcp
         std::cout << "dpy: " << dpy << std::endl;
 
-        phi2_phi3 = inv_backwardcase(dpx, dpy);
-        sol_standard = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+        theta2_theta3 = inv_backwardcase(dpx, dpy);
+        sol_standard = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
         id = sol_standard.at(0).at(0);
         if(id == 2 || id == 3){
             sol_standard.at(0).at(0) = 200+id;
@@ -289,8 +412,8 @@ std::vector<std::vector<double>> InvKinematics::inv_standardcase(double phi1, do
         else if(id == 4){
             std::cout << "No possible configuration for the robot" << endl;
         }
-        return sol_standard;
     }
+    return sol_standard;
 }
 
 std::array<double, 4> InvKinematics::inv_forwardcase(double dpx, double dpy){
@@ -308,19 +431,19 @@ std::array<double, 4> InvKinematics::inv_forwardcase(double dpx, double dpy){
     double alpha2 = (asin(dpy / d3))*180/M_PI;
     std::cout << "alpha2: " << alpha2 << std::endl;
 
-    double phi2_f_u = -1 * (alpha1 + alpha2);                                                                       //for forward elbow up
-    cout << "phi2_f_u: " << phi2_f_u << endl;
-    double phi2_f_d = -1 * (alpha2 - alpha1);                                                                       //for forward elbow down
-    cout << "phi2_f_d: " << phi2_f_d << endl;
+    double theta2_f_u = -1 * (alpha1 + alpha2);                                                                       //for forward elbow up
+    cout << "theta2_f_u: " << theta2_f_u << endl;
+    double theta2_f_d = -1 * (alpha2 - alpha1);                                                                       //for forward elbow down
+    cout << "theta2_f_d: " << theta2_f_d << endl;
 
-    double phi3_f_u = 360 - beta*180/M_PI - asin(b / d2)*180/M_PI - 90;                                                            //for forward elbow up
-    cout << "phi3_f_u: " << phi3_f_u << endl;
-    double phi3_f_d = beta*180/M_PI - ((asin(b/d2))*180/M_PI)-90;                                                                  //for forward elbow down
-    cout << "phi3_f_d: " << phi3_f_d << endl;
+    double theta3_f_u = 360 - beta * 180 / M_PI - asin(b / d2) * 180 / M_PI - 90;                                                            //for forward elbow up
+    cout << "theta3_f_u: " << theta3_f_u << endl;
+    double theta3_f_d = beta * 180 / M_PI - ((asin(b / d2)) * 180 / M_PI) - 90;                                                                  //for forward elbow down
+    cout << "theta3_f_d: " << theta3_f_d << endl;
 
-    phi2_phi3 = {phi2_f_u, phi2_f_d, phi3_f_u, phi3_f_d};
+    theta2_theta3 = {theta2_f_u, theta2_f_d, theta3_f_u, theta3_f_d};
 
-    return phi2_phi3;
+    return theta2_theta3;
 }
 
 std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
@@ -335,40 +458,40 @@ std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
     double alpha2 = (asin(dpy / d3));
     std::cout << "alpha2: " << alpha2 << std::endl;
 
-    double phi2_b_u = -1 * (180 - (alpha1 + alpha2));          //for backwards elbow up
-    std::cout << "phi2_b_u: " << phi2_b_u << std::endl;
-    double phi2_b_d = -1 * (180 - (alpha2 - alpha1));          //for backwards elbow down
-    std::cout << "phi2_b_d: " << phi2_b_d << std::endl;
+    double theta2_b_u = -1 * (180 - (alpha1 + alpha2));          //for backwards elbow up
+    std::cout << "theta2_b_u: " << theta2_b_u << std::endl;
+    double theta2_b_d = -1 * (180 - (alpha2 - alpha1));          //for backwards elbow down
+    std::cout << "theta2_b_d: " << theta2_b_d << std::endl;
 
-    double phi3_b_u = 270 - beta*180/M_PI-(asin(b / d2)*180/M_PI);              //for backwards elbow up
-    std::cout << "phi3_b_u: " << phi3_b_u << std::endl;
-    double phi3_b_d = -1*(90-(beta*180/M_PI-asin(b/d2)*180/M_PI));                                                             //double phi3_b_d = -1 * (90 - (beta - asin(b / d2)*180/M_PI));        //for backwards elbow down
-    std::cout << "phi3_b_d: " << phi3_b_d << std::endl;
+    double theta3_b_u = 270 - beta * 180 / M_PI - (asin(b / d2) * 180 / M_PI);              //for backwards elbow up
+    std::cout << "theta3_b_u: " << theta3_b_u << std::endl;
+    double theta3_b_d = -1 * (90 - (beta * 180 / M_PI - asin(b / d2) * 180 / M_PI));                                                             //double theta3_b_d = -1 * (90 - (beta - asin(b / d2)*180/M_PI));        //for backwards elbow down
+    std::cout << "theta3_b_d: " << theta3_b_d << std::endl;
 
-    phi2_phi3 = {phi2_b_u, phi2_b_d, phi3_b_u, phi3_b_d};
+    theta2_theta3 = {theta2_b_u, theta2_b_d, theta3_b_u, theta3_b_d};
 
-    return phi2_phi3;
+    return theta2_theta3;
 }
 
-std::vector<vector<double>> InvKinematics::inv_checklimits_theta1_2_3(double phi1, array<double, 4> phi2_phi3){
+std::vector<vector<double>> InvKinematics::inv_checklimits_theta1_2_3(double theta1, array<double, 4> theta2_theta3){
 bool elbowup = false;
 bool elbowdown = false;
 double id = 0;
 
-    if (-185 < phi1 && phi1 < 185) {
-        std::cout << "phi1: " << phi1 << std::endl;
-        if (-140 < phi2_phi3[0] && phi2_phi3[0] < -5) {
-            std::cout << "phi2: " << phi2_phi3[0] << std::endl;
-            if (-120 < phi2_phi3[2] && phi2_phi3[2] < 168) {
-                std::cout << "phi3: " << phi2_phi3[2] << std::endl;
+    if (-185 < theta1 && theta1 < 185) {
+        std::cout << "theta1: " << theta1 << std::endl;
+        if (-140 < theta2_theta3[0] && theta2_theta3[0] < -5) {
+            std::cout << "theta2: " << theta2_theta3[0] << std::endl;
+            if (-120 < theta2_theta3[2] && theta2_theta3[2] < 168) {
+                std::cout << "theta3: " << theta2_theta3[2] << std::endl;
                 elbowup = true;
             }
 
         }
-        if (-140 < phi2_phi3[1] && phi2_phi3[1]< -5) {
-            std::cout << "phi2: " << phi2_phi3[1] << std::endl;
-            if (-120 < phi2_phi3[3] && phi2_phi3[3] < 168) {
-                std::cout << "phi3: " << phi2_phi3[3] << std::endl;
+        if (-140 < theta2_theta3[1] && theta2_theta3[1] < -5) {
+            std::cout << "theta2: " << theta2_theta3[1] << std::endl;
+            if (-120 < theta2_theta3[3] && theta2_theta3[3] < 168) {
+                std::cout << "theta3: " << theta2_theta3[3] << std::endl;
                 elbowdown = true;
             }
         }
@@ -377,15 +500,15 @@ double id = 0;
         id = 11;
         std::vector<double> elbow_up_vec;
         elbow_up_vec.push_back(id);
-        elbow_up_vec.push_back(phi1);
-        elbow_up_vec.push_back(phi2_phi3[0]);
-        elbow_up_vec.push_back(phi2_phi3[2]);
+        elbow_up_vec.push_back(theta1);
+        elbow_up_vec.push_back(theta2_theta3[0]);
+        elbow_up_vec.push_back(theta2_theta3[2]);
         id = 12;
         std::vector<double> elbow_down_vec;
         elbow_down_vec.push_back(id);
-        elbow_down_vec.push_back(phi1);
-        elbow_down_vec.push_back(phi2_phi3[1]);
-        elbow_down_vec.push_back(phi2_phi3[3]);
+        elbow_down_vec.push_back(theta1);
+        elbow_down_vec.push_back(theta2_theta3[1]);
+        elbow_down_vec.push_back(theta2_theta3[3]);
 
         std::cout << "Both Configurations are true" << endl;
         solution.push_back(elbow_up_vec);
@@ -396,42 +519,42 @@ double id = 0;
         id = 2;
         std::vector<double> elbow_up_vec;
         elbow_up_vec.push_back(id);
-        elbow_up_vec.push_back(phi1);
-        elbow_up_vec.push_back(phi2_phi3[0]);
-        elbow_up_vec.push_back(phi2_phi3[2]);
+        elbow_up_vec.push_back(theta1);
+        elbow_up_vec.push_back(theta2_theta3[0]);
+        elbow_up_vec.push_back(theta2_theta3[2]);
 
-        std::cout << "Only Elbow up is a possible configuration" << std::endl;
+        std::cout << "checklimits: Only Elbow up is a possible configuration" << std::endl;
         solution.push_back(elbow_up_vec);
     }
     else if(elbowup == false && elbowdown == true){
         std::vector<double> elbow_down_vec;
         id = 3;
         elbow_down_vec.push_back(id);
-        elbow_down_vec.push_back(phi1);
-        elbow_down_vec.push_back(phi2_phi3[1]);
-        elbow_down_vec.push_back(phi2_phi3[3]);
+        elbow_down_vec.push_back(theta1);
+        elbow_down_vec.push_back(theta2_theta3[1]);
+        elbow_down_vec.push_back(theta2_theta3[3]);
 
-        std::cout << "Both Configurations are true" << endl;
+        std::cout << "checklimits: Both Configurations are true" << endl;
         solution.push_back(elbow_down_vec);
     }
     else if(elbowup == false && elbowdown == false){
         std::vector<double> no_solution;
         id = 4;
         no_solution.push_back(id);
-        std::cout << "No Configuration is reachable" << endl;
+        std::cout << "checklimits: No Configuration is reachable" << endl;
 
         solution.push_back(no_solution);
     }
     return solution;
 }
 
-std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double phi1, double d1, std::array<double, 3> wcp, SixDPos* _pos, vector<vector<double>> solutions_vec){
+std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos, vector<vector<double>> solutions_vec){
     double id = 0;
     vector<Configuration *>* config_vec = new vector<Configuration *>();
     Configuration *upward_config;
     Configuration *downward_config;
     Configuration *single_config;
-    //solution_standard = inv_standardcase(phi1, d1, wcp);
+    //solution_standard = inv_standardcase(theta1, d1, wcp);
     solution_standard = solutions_vec;
     std::cout << solution_standard.at(0).at(1);
     id = solution_standard.at(0).at(0);
@@ -661,6 +784,53 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
     return sol_theta_4_5_6;
 }
 
+std::vector<Configuration*>* InvKinematics::inv_othercase_1(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos){
+    std::vector<Configuration*>* sol_othercase_1_vec_config;
+    double dpx = d1 + m;
+    double dpy = wcp[2] -n;
+    double theta1_1 = theta1 + 180;
+    theta2_theta3 = inv_backwardcase(dpx, dpy);
+    sol_othercase_1_vec = inv_checklimits_theta1_2_3(theta1_1, theta2_theta3);
+    sol_othercase_1_vec_config = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_othercase_1_vec);
+    // size1_1 is the number of configurations inside the vector
+    double size1_1 = sol_othercase_1_vec_config->size();
+    for(int i = 0; i < size1_1; i++){
+        // push every configuration into the complete vector
+        solution_vec->push_back(sol_othercase_1_vec_config->at(i));
+    }
+    if(size1_1 == 0){
+        std::cout << "No configuration added to solution_vec for other case 1 (" << sol_othercase_1_vec_config->size() << ")" << std:: endl;
+    }else{
+        std::cout << "Configuration added to solution_vec for other case 1 (" << sol_othercase_1_vec_config->size() << ")" << std:: endl;
+    }
+
+    return sol_othercase_1_vec_config;
+}
+
+std::vector<Configuration*>* InvKinematics::inv_othercase_2(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos){
+    std::vector<Configuration*>* sol_othercase_2_vec_config;
+    double dpx = d1 + m;
+    double dpy = wcp[2] -n;
+    double theta1_1 = theta1 - 180;
+    theta2_theta3 = inv_backwardcase(dpx, dpy);
+    sol_othercase_2_vec = inv_checklimits_theta1_2_3(theta1_1, theta2_theta3);
+    sol_othercase_2_vec_config = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_othercase_2_vec);
+    // size1_1 is the number of configurations inside the vector
+    double size1_1 = sol_othercase_2_vec_config->size();
+    for(int i = 0; i < size1_1; i++){
+        // push every configuration into the complete vector
+        solution_vec->push_back(sol_othercase_2_vec_config->at(i));
+    }
+    if(size1_1 == 0){
+        std::cout << "No configuration added to solution_vec for other case 2 (" << sol_othercase_2_vec_config->size() << ")" << std:: endl;
+    }else{
+        std::cout << "Configuration added to solution_vec for other case 2 (" << sol_othercase_2_vec_config->size() << ")" << std:: endl;
+    }
+
+    return sol_othercase_2_vec_config;
+}
+
+
 
 vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 {
@@ -669,7 +839,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     //prepare the result vector for the configurations
     //you should call your inverse kinematics functions here!
 
-    double phi1;
+    double theta1;
     double id = 0;
     std::array<double, 4> dTCP = {0,0,-215,1};                                                                        //Vector of the distance from TCP to WCP
 
@@ -702,17 +872,37 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     if(wcp[0]>0 && wcp[1]>=0)
     {
         cout << "Fall 1" << endl;
-        phi1= ((-1)*atan(wcp[1]/wcp[0]))*180/M_PI;
-        cout << "phi1: " << phi1 << endl;
+        theta1= ((-1) * atan(wcp[1] / wcp[0])) * 180 / M_PI;
+        cout << "theta1: " << theta1 << endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
 
-        if(-185 < phi1 && phi1 < -175 || 185 > phi1 && phi1 > 175 || -5 < phi1 && phi1 < 5){
-          inv_checktheta(phi1,d1, wcp);
+        if(-185 < theta1 && theta1 < -175 || 185 > theta1 && theta1 > 175 || -5 < theta1 && theta1 < 5){
+            solution_vec = inv_checktheta(theta1, d1, wcp, _pos);
         }
         else {
-                //solution_vec contains the possible configurations for a standardcase for all joints
-                solution_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, solution_standard);
+            //solution_vec contains the possible configurations for a standardcase for all joints
+            solution_standard = inv_standardcase(theta1, d1, wcp);
+            solution_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, solution_standard);
+        }
+
+        //othercases
+        double size_othercase1 = inv_othercase_1(theta1, d1, wcp, _pos)->size();
+        double size_othercase2 = inv_othercase_2(theta1, d1, wcp, _pos)->size();
+        // add configs from othercases to solution
+        if(size_othercase1 != 0){
+            sol_othercase_1_vec_config = inv_othercase_1(theta1, d1, wcp, _pos);
+            for(int i = 0; i < size_othercase1; i++){
+                //add configurations to solution vector
+                solution_vec ->push_back(sol_othercase_1_vec_config->at(i));
+            }
+        }
+        if(size_othercase2 != 0){
+            sol_othercase_2_vec_config = inv_othercase_2(theta1, d1, wcp, _pos);
+            for(int i = 0; i < size_othercase2; i++){
+                //add configurations to solution vector
+                solution_vec ->push_back(sol_othercase_2_vec_config->at(i));
+            }
         }
 
     }
@@ -720,18 +910,37 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     else if(wcp[0]<0 && wcp[1]<=0)
     {
         cout << "Fall 2" << endl;
-        phi1= 180-atan(wcp[1]/wcp[0])*180/M_PI;
-        cout << "phi1: " << phi1 << endl;
+        theta1= 180 - atan(wcp[1] / wcp[0]) * 180 / M_PI;
+        cout << "theta1: " << theta1 << endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
 
-        if((-185 < phi1 && phi1 < -175) || (185 > phi1 && phi1 > 175) || (-5 < phi1 && phi1 < 5)){
-            inv_checktheta(phi1,d1, wcp);
+        if((-185 < theta1 && theta1 < -175) || (185 > theta1 && theta1 > 175) || (-5 < theta1 && theta1 < 5)){
+            solution_vec = inv_checktheta(theta1, d1, wcp, _pos);
         }
         else {
-                //solution_vec contains the possible configurations for a standardcase for all joints
-                solution_standard = inv_standardcase(phi1, d1, wcp);
-                solution_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, solution_standard);
+            //solution_vec contains the possible configurations for a standardcase for all joints
+            solution_standard = inv_standardcase(theta1, d1, wcp);
+            solution_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, solution_standard);
+        }
+
+        //othercases
+        double size_othercase1 = inv_othercase_1(theta1, d1, wcp, _pos)->size();
+        double size_othercase2 = inv_othercase_2(theta1, d1, wcp, _pos)->size();
+        // add configs from othercases to solution
+        if(size_othercase1 != 0){
+            sol_othercase_1_vec_config = inv_othercase_1(theta1, d1, wcp, _pos);
+            for(int i = 0; i < size_othercase1; i++){
+                //add configurations to solution vector
+                solution_vec ->push_back(sol_othercase_1_vec_config->at(i));
+            }
+        }
+        if(size_othercase2 != 0){
+            sol_othercase_2_vec_config = inv_othercase_2(theta1, d1, wcp, _pos);
+            for(int i = 0; i < size_othercase2; i++){
+                //add configurations to solution vector
+                solution_vec ->push_back(sol_othercase_2_vec_config->at(i));
+            }
         }
 
     }
@@ -739,111 +948,244 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     else if(wcp[0]>0 && wcp[1]<=0)
     {
         cout << "Fall 3" << endl;
-        phi1=(-1)*atan(wcp[1]/wcp[0])*180/M_PI;
-        std::cout << "phi1: " << phi1 << std::endl;
+        theta1= (-1) * atan(wcp[1] / wcp[0]) * 180 / M_PI;
+        std::cout << "theta1: " << theta1 << std::endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
 
-        if((-185 < phi1 && phi1 < -175) || (185 > phi1 && phi1 > 175) || (-5 < phi1 && phi1 < 5)){
-            inv_checktheta(phi1,d1, wcp);
+        if((-185 < theta1 && theta1 < -175) || (185 > theta1 && theta1 > 175) || (-5 < theta1 && theta1 < 5)){
+            solution_vec = inv_checktheta(theta1, d1, wcp, _pos);
         }
         else {
-                //solution_vec contains the possible configurations for a standardcase for all joints
-                solution_standard = inv_standardcase(phi1, d1, wcp);
-                solution_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, solution_standard);
+            //solution_vec contains the possible configurations for a standardcase for all joints
+            solution_standard = inv_standardcase(theta1, d1, wcp);
+            solution_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, solution_standard);
         }
+
+        //othercases
+        double size_othercase1 = inv_othercase_1(theta1, d1, wcp, _pos)->size();
+        double size_othercase2 = inv_othercase_2(theta1, d1, wcp, _pos)->size();
+        // add configs from othercases to solution
+        if(size_othercase1 != 0){
+            sol_othercase_1_vec_config = inv_othercase_1(theta1, d1, wcp, _pos);
+            for(int i = 0; i < size_othercase1; i++){
+                //add configurations to solution vector
+                solution_vec ->push_back(sol_othercase_1_vec_config->at(i));
+            }
+        }
+        if(size_othercase2 != 0){
+            sol_othercase_2_vec_config = inv_othercase_2(theta1, d1, wcp, _pos);
+            for(int i = 0; i < size_othercase2; i++){
+                //add configurations to solution vector
+                solution_vec ->push_back(sol_othercase_2_vec_config->at(i));
+            }
+        }
+
     }
 
     else if(wcp[0]<0 && wcp[1]>=0)
     {
         cout << "Fall 4" << endl;
-        phi1=180-atan(wcp[1]/(-1*wcp[0]))*180/M_PI;
-        std::cout << "phi1: " << phi1 << std::endl;
+        theta1= 180 - atan(wcp[1] / (-1 * wcp[0])) * 180 / M_PI;
+        std::cout << "theta1: " << theta1 << std::endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
 
-        if((-185 < phi1 && phi1 < -175) || (185 > phi1 && phi1 > 175) || (-5 < phi1 && phi1 < 5)){
-            inv_checktheta(phi1,d1, wcp);
+        if((-185 < theta1 && theta1 < -175) || (185 > theta1 && theta1 > 175) || (-5 < theta1 && theta1 < 5)){
+            solution_vec = inv_checktheta(theta1, d1, wcp, _pos);
         }
         else {
-                //solution_vec contains the possible configurations for a standardcase for all joints
-                solution_standard = inv_standardcase(phi1, d1, wcp);
-                solution_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, solution_standard);
+            //solution_vec contains the possible configurations for a standardcase for all joints
+            solution_standard = inv_standardcase(theta1, d1, wcp);
+            solution_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, solution_standard);
         }
+
+        //othercases
+        double size_othercase1 = inv_othercase_1(theta1, d1, wcp, _pos)->size();
+        double size_othercase2 = inv_othercase_2(theta1, d1, wcp, _pos)->size();
+        // add configs from othercases to solution
+        if(size_othercase1 != 0){
+            sol_othercase_1_vec_config = inv_othercase_1(theta1, d1, wcp, _pos);
+            for(int i = 0; i < size_othercase1; i++){
+                //add configurations to solution vector
+                solution_vec ->push_back(sol_othercase_1_vec_config->at(i));
+            }
+        }
+        if(size_othercase2 != 0){
+            sol_othercase_2_vec_config = inv_othercase_2(theta1, d1, wcp, _pos);
+            for(int i = 0; i < size_othercase2; i++){
+                //add configurations to solution vector
+                solution_vec ->push_back(sol_othercase_2_vec_config->at(i));
+            }
+        }
+
     }
 
         //Special cases
         //Special case 1:
-    else if((wcp[0] <= 0.001 && wcp[0] >= -0.001) && wcp[1] > 0)
-    {
-        //cout << "needs to be implemented" << endl;
+    else if((wcp[0] <= 0.001 && wcp[0] >= -0.001) && wcp[1] > 0){
+        std::cout << "Special Case 1: " << std::endl;
         if(wcp[1] > m){
             double d1 = wcp[1];
-            phi1 = -90;
+            theta1 = -90;
             double dpx = wcp[1] - m;
             double dpy = wcp[2] - n;
-            phi2_phi3 = inv_forwardcase(dpx, dpy);
-            sol_specialcase1_1 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
-            sol_specialcase1_1_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, sol_specialcase1_1);
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            sol_specialcase1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_specialcase1_1);
+            // size1_1 is the number of configurations inside the vector
             double size1_1 = sol_specialcase1_1_vec->size();
-          //  for(int i = 0; i<=size1_1; i++){
-           //     solution_vec->push_back(sol_specialcase1_1_vec->at(i)->get_configuration());
-           // }
-
-            phi1 = 90;
+            for(int i = 0; i < size1_1; i++){
+               // push every configuration into the complete vector
+                solution_vec->push_back(sol_specialcase1_1_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to solution_vec for special case 1 (y > m, theta = -90) (" << sol_specialcase1_1_vec->size() << ") for y > m" << std:: endl;
+            }
+            //new theta
+            theta1 = 90;
             dpx = wcp[1]+m;
-            phi2_phi3 = inv_backwardcase(dpx,dpy);
-            sol_specialcase1_2 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
-            sol_specialcase1_2_vec = inv_add_case_to_vec(phi1, d1, wcp, _pos, sol_specialcase1_2);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_2 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            sol_specialcase1_2_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_specialcase1_2);
+            // size1_2 is the number of configurations inside the vector
             double size1_2 = sol_specialcase1_2_vec->size();
+            for(int i = 0; i < size1_2; i++){
+                // push every configuration into the complete vector
+                solution_vec->push_back(sol_specialcase1_2_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to solution_vec for special case 1 (y > m, theta = 90) (" << sol_specialcase1_2_vec->size() << ")" << std:: endl;
+            }
+            // check if all configurations got added to solution_vec
+            if(solution_vec->size() == size1_1+size1_2){
+                std::cout << "All configurations added to solution_vec (" << solution_vec->size() << ") for y > m" << std:: endl;
+            }
 
         }
 
         if(wcp[1] < m){
             double d1 = wcp[1];
-            phi1 = -90;
+            theta1 = -90;
             double dpx = m -  wcp[1];
             double dpy = wcp[2] - n;
-            phi2_phi3 = inv_backwardcase(dpx, dpy);
-            sol_specialcase1_1 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
 
-            phi1 = 90;
+            sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_specialcase1_1);
+            // size1_1 is the number of configurations inside the vector
+            double size1_1 = sol_specialcase1_1_vec->size();
+            for(int i = 0; i < size1_1; i++){
+                // push every configuration into the complete vector
+                solution_vec->push_back(sol_specialcase1_1_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to solution_vec for special case 1 (y < m, theta = -90) (" << sol_specialcase1_1_vec->size() << ")" << std:: endl;
+            }
+            //new theta
+            theta1 = 90;
             dpx = wcp[1] + m;
-            phi2_phi3 = inv_backwardcase(dpx, dpy);
-            sol_specialcase1_2 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_2 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+
+            sol_specialcase1_2_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_specialcase1_2);
+            // size1_2 is the number of configurations inside the vector
+            double size1_2 = sol_specialcase1_2_vec->size();
+            for(int i = 0; i < size1_2; i++){
+                // push every configuration into the complete vector
+                solution_vec->push_back(sol_specialcase1_2_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to solution_vec for special case 1 (y < m, theta = 90) (" << sol_specialcase1_2_vec->size() << ") for y < m" << std:: endl;
+            }
+            // check if all configurations got added to solution_vec
+            if(solution_vec->size() == size1_1+size1_2){
+                std::cout << "All configurations added to solution_vec (" << solution_vec->size() << ") for y < m" << std:: endl;
+            }
         }
     }
-        //special case 2:
-    else if(wcp[0]==0 && wcp[1]<0)
-    {
-        //cout << "needs to be implemented" << endl;
+    //special case 2:
+    else if(wcp[0]==0 && wcp[1]<0){
+        std::cout << "Special Case 2: " << std::endl;
+
         if(wcp[1] > m){
             double d1 = wcp[1];
-            phi1 = 90;
+            theta1 = 90;
             double dpx = wcp[1] - m;
             double dpy = wcp[2] - n;
-            phi2_phi3 = inv_forwardcase(dpx, dpy);
-            sol_specialcase1_1 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            sol_specialcase1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
 
-            phi1 = -90;
+            sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_specialcase1_1);
+            // size1_1 is the number of configurations inside the vector
+            double size1_1 = sol_specialcase1_1_vec->size();
+            for(int i = 0; i < size1_1; i++){
+                // push every configuration into the complete vector
+                solution_vec->push_back(sol_specialcase1_1_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to solution_vec for special case 2 (y > m, theta = 90) (" << sol_specialcase1_1_vec->size() << ") for y > m" << std:: endl;
+            }
+            //new theta
+            theta1 = -90;
             dpx = wcp[1]+m;
-            phi2_phi3 = inv_backwardcase(dpx,dpy);
-            sol_specialcase1_2 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_2 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
 
+            sol_specialcase1_2_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_specialcase1_2);
+            // size1_2 is the number of configurations inside the vector
+            double size1_2 = sol_specialcase1_2_vec->size();
+            for(int i = 0; i < size1_2; i++){
+                // push every configuration into the complete vector
+                solution_vec->push_back(sol_specialcase1_2_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to solution_vec for special case 2 (y > m, theta = -90) (" << sol_specialcase1_2_vec->size() << ")" << std:: endl;
+            }
+            // check if all configurations got added to solution_vec
+            if(solution_vec->size() == size1_1+size1_2){
+                std::cout << "All configurations added to solution_vec (" << solution_vec->size() << ") for y > m" << std:: endl;
+            }
         }
 
         if(wcp[1] < m){
             double d1 = wcp[1];
-            phi1 = 90;
+            theta1 = 90;
             double dpx = m -  wcp[1];
             double dpy = wcp[2] - n;
-            phi2_phi3 = inv_backwardcase(dpx, dpy);
-            sol_specialcase1_1 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
 
-            phi1 = -90;
+            sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_specialcase1_1);
+            // size1_1 is the number of configurations inside the vector
+            double size1_1 = sol_specialcase1_1_vec->size();
+            for(int i = 0; i < size1_1; i++){
+                // push every configuration into the complete vector
+                solution_vec->push_back(sol_specialcase1_1_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to solution_vec for special case 2 (y < m, theta = 90) (" << sol_specialcase1_1_vec->size() << ")" << std:: endl;
+            }
+            //new theta
+            theta1 = -90;
             dpx = wcp[1] + m;
-            phi2_phi3 = inv_backwardcase(dpx, dpy);
-            sol_specialcase1_2 = inv_checklimits_theta1_2_3(phi1, phi2_phi3);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            sol_specialcase1_2 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+
+            sol_specialcase1_2_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_specialcase1_2);
+            // size1_2 is the number of configurations inside the vector
+            double size1_2 = sol_specialcase1_2_vec->size();
+            for(int i = 0; i < size1_2; i++){
+                // push every configuration into the complete vector
+                solution_vec->push_back(sol_specialcase1_2_vec->at(i));
+            }
+            if(size1_1 == 0){
+                std::cout << "No configuration added to solution_vec for special case 2 (y < m, theta = -90) (" << sol_specialcase1_2_vec->size() << ") for y < m" << std:: endl;
+            }
+            // check if all configurations got added to solution_vec
+            if(solution_vec->size() == size1_1+size1_2){
+                std::cout << "All configurations added to solution_vec (" << solution_vec->size() << ") for y < m" << std:: endl;
+            }
         }
     }
 
@@ -858,5 +1200,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));*/
 
     //return solutions;
+    std::cout << "There are " << solution_vec->size() << " possible configurations." << std::endl;
     return solution_vec;
 }
