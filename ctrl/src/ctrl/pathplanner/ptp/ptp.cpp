@@ -1,6 +1,6 @@
 #include "ptp.h"
 
-// Choose whether the plots for the ptp functionality should be plotted (blocking)
+// Choose whether the trajectories should be plotted (blocking).
 //#define PLOT
 
 Ptp::Ptp() {
@@ -13,8 +13,8 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
     // i.e. that all joint angles are within the possible range.
     // If they are not, change the end configuration to the limits
     // so that the motion can still be performed
-    makeFeasible(_start_cfg);
-    makeFeasible(_end_cfg);
+    make_feasible(_start_cfg);
+    make_feasible(_end_cfg);
 
     std::array<Single_trajectory *, NUM_JOINTS> single_trajectories{};
 
@@ -24,6 +24,7 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
 
         // Distance to be covered
         double diff = (*_end_cfg)[i] - (*_start_cfg)[i];
+
         Single_trajectory::Type type = Single_trajectory::select_type(
                 diff,
                 robot->velocities[i],
@@ -79,9 +80,9 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
     // Sample the values
     auto tmp = static_cast<float>(t_max / robot->time_interval);
     size_t cycles = roundf(tmp) + 3;    // Add some cycles to make sure that all
-                                        // trajectories reach their end. This needs
-                                        // to be done for V-REP. The precision of
-                                        // these methods are good enough.
+    // trajectories reach their end. This needs
+    // to be done for V-REP. The precision of
+    // these methods are good enough.
     vector<Configuration *> configs;
     double t = 0;
     for (size_t c = 0; c < cycles; c++) {
@@ -96,9 +97,8 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
     trajectory->set_trajectory(configs);
 
 #ifdef PLOT
-    plotMovement(configs);
+    plot_movement(configs);
 #endif
-
 
     for (auto tra : single_trajectories) {
         delete tra;
@@ -114,7 +114,7 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
     return trajectory;
 }
 
-void Ptp::makeFeasible(Configuration *cfg) {
+void Ptp::make_feasible(Configuration *cfg) {
     for (int i = 0; i < NUM_JOINTS; i++) {
         if ((*cfg)[i] < robot->limits[i].min) {
             std::cout << "[PTP] Joint " << i + 1 << " is out of range!" << std::endl;
@@ -127,7 +127,7 @@ void Ptp::makeFeasible(Configuration *cfg) {
     }
 }
 
-void Ptp::plotMovement(vector<Configuration *> &configs) {
+void Ptp::plot_movement(vector<Configuration *> &configs) {
 
     if (configs.empty()) {
         std::cout << "[PTP] Cannot plot configs: Empty!" << std::endl;
@@ -161,35 +161,37 @@ void Ptp::plotMovement(vector<Configuration *> &configs) {
             if (i == 0) {
                 velocities.at(j).push_back(0);
             } else {
-                velocities.at(j).push_back(std::abs(((*configs.at(i))[j] - ((*configs.at(i-1))[j]) ) / Robot::getInstance().time_interval ));
+                velocities.at(j).push_back(std::abs(
+                        ((*configs.at(i))[j] - ((*configs.at(i - 1))[j])) / Robot::getInstance().time_interval));
             }
         }
 
     }
 
     matplotlibcpp::suptitle("Trajectories of the individual joints:");
-    matplotlibcpp::subplot(2, 1, 1 );
+    matplotlibcpp::subplot(2, 1, 1);
     matplotlibcpp::title("Position:");
 
     // Plot all the joints
     for (int j = 0; j < NUM_JOINTS; j++) {
         std::ostringstream labelStream;
-        labelStream << "Joint " << (j+1);
+        labelStream << "Joint " << (j + 1);
         matplotlibcpp::named_plot(labelStream.str(), x, positions[j]);
     }
 
     matplotlibcpp::legend("upper left", {1.05, 1});
-    matplotlibcpp::subplot(2, 1, 2 );
+    matplotlibcpp::subplot(2, 1, 2);
     matplotlibcpp::title("Velocity:");
 
     // Plot all the joints
     for (int j = 0; j < NUM_JOINTS; j++) {
         std::ostringstream labelStream;
-        labelStream << "Joint " << (j+1);
+        labelStream << "Joint " << (j + 1);
         matplotlibcpp::named_plot(labelStream.str(), x, velocities[j]);
     }
 
     matplotlibcpp::legend("upper left", {1.05, 1});
-    matplotlibcpp::subplots_adjust({{"hspace", 0.35}, {"right", 0.75}});
+    matplotlibcpp::subplots_adjust({{"hspace", 0.35},
+                                    {"right",  0.75}});
     matplotlibcpp::show();
 }
