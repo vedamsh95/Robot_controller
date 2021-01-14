@@ -422,7 +422,7 @@ std::array<double, 4> InvKinematics::inv_forwardcase(double dpx, double dpy){
     std::cout << "d3: " << d3 << std::endl;
     double d2 = sqrt(o * o + b * b);
     std::cout << "d2: " << d2 << std::endl;
-    double beta = (acos(((d3 * d3) - (a * a) - (d2 * d2)) / (-2 * a * d2)));
+    double beta = (acos(((d3 * d3) - (a * a) - (d2 * d2)) / ((-1)*2 * a * d2)));
     std::cout << "beta: " <<  beta << std::endl;
     double pre_alpha1 = sin(beta)*(d2/d3);
     std::cout << "pre_alpha1: " << pre_alpha1 << endl;
@@ -431,9 +431,9 @@ std::array<double, 4> InvKinematics::inv_forwardcase(double dpx, double dpy){
     double alpha2 = (asin(dpy / d3))*180/M_PI;
     std::cout << "alpha2: " << alpha2 << std::endl;
 
-    double theta2_f_u = -1 * (alpha1 + alpha2);                                                                       //for forward elbow up
+    double theta2_f_u = (-1) * (alpha1 + alpha2);                                                                       //for forward elbow up
     cout << "theta2_f_u: " << theta2_f_u << endl;
-    double theta2_f_d = -1 * (alpha2 - alpha1);                                                                       //for forward elbow down
+    double theta2_f_d = (-1) * (alpha2 - alpha1);                                                                       //for forward elbow down
     cout << "theta2_f_d: " << theta2_f_d << endl;
 
     double theta3_f_u = 360 - beta * 180 / M_PI - asin(b / d2) * 180 / M_PI - 90;                                                            //for forward elbow up
@@ -451,11 +451,11 @@ std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
     std::cout << "d3: " << d3 << std::endl;
     double d2 = sqrt(o * o + b * b);
     std::cout << "d2: " << d2 << std::endl;
-    double beta = (acos(((d3 * d3) - (a * a) - (d2 * d2)) / (-2 * a * d2)));
+    double beta = (acos(((d3 * d3) - (a * a) - (d2 * d2)) / ((-1)*2 * a * d2)));
     std::cout << "beta: " <<  beta << std::endl;
-    double alpha1 = (asin(sin(beta) * (d2 / d3)));
+    double alpha1 = (asin(sin(beta) * (d2 / d3)))*180/M_PI;
     std::cout << "alpha1: " << alpha1 << std::endl;
-    double alpha2 = (asin(dpy / d3));
+    double alpha2 = (asin(dpy / d3))*180/M_PI;
     std::cout << "alpha2: " << alpha2 << std::endl;
 
     double theta2_b_u = -1 * (180 - (alpha1 + alpha2));          //for backwards elbow up
@@ -554,7 +554,6 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
     Configuration *upward_config;
     Configuration *downward_config;
     Configuration *single_config;
-    //solution_standard = inv_standardcase(theta1, d1, wcp);
     solution_standard = solutions_vec;
     std::cout << solution_standard.at(0).at(1);
     id = solution_standard.at(0).at(0);
@@ -584,28 +583,46 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
         //get the number of configurations
 
         double num_config1 = sol_theta_4_5_6_T03_1.at(0).at(0);
-        double num_config2 = sol_theta_4_5_6_T03_1.at(0).at(0);
+        std::cout << "num_config1: " << num_config1 << std::endl;
+        double num_config2 = sol_theta_4_5_6_T03_2.at(0).at(0);
+        std::cout << "num_config2: " << num_config2 << std::endl;
 
-        for (int i = 1; i <= num_config1; i++){
-            //Case: elbow down and elbow up forward or backward
-            //Transfer the angles to the GUI in radian
-            upward_config = new Configuration({solution_standard.at(0).at(1) * M_PI / 180,
-                                               solution_standard.at(0).at(2) * M_PI / 180,
-                                               solution_standard.at(0).at(3) * M_PI / 180,
-                                               sol_theta_4_5_6_T03_1.at(i).at(0)*M_PI/180,
-                                               sol_theta_4_5_6_T03_1.at(i).at(1)*M_PI/180,
-                                               sol_theta_4_5_6_T03_1.at(i).at(2)*M_PI/180});
-            config_vec->push_back(upward_config);
+            for (int i = 1; i <= num_config1; i++) {
+                //Case: elbow down and elbow up forward or backward
+                //Transfer the angles to the GUI in radian
+                upward_config = new Configuration({solution_standard.at(0).at(1) * M_PI / 180,
+                                                   solution_standard.at(0).at(2) * M_PI / 180,
+                                                   solution_standard.at(0).at(3) * M_PI / 180,
+                                                   sol_theta_4_5_6_T03_1.at(i).at(0) * M_PI / 180,
+                                                   sol_theta_4_5_6_T03_1.at(i).at(1) * M_PI / 180,
+                                                   sol_theta_4_5_6_T03_1.at(i).at(2) * M_PI / 180});
+                config_vec->push_back(upward_config);
+                std::cout << "Configuration upward: " << i << ": " << upward_config->get_configuration().at(0) << ", "
+                          << upward_config->get_configuration().at(1) << ", "
+                          << upward_config->get_configuration().at(2) << ", "
+                          << upward_config->get_configuration().at(3)
+                          << ", "
+                          << upward_config->get_configuration().at(4) << ", "
+                          << upward_config->get_configuration().at(5)
+                          << endl;
+            }
 
-            downward_config = new Configuration({solution_standard.at(0).at(1) * M_PI / 180,
-                                               solution_standard.at(0).at(2) * M_PI / 180,
-                                               solution_standard.at(0).at(3) * M_PI / 180,
-                                               sol_theta_4_5_6_T03_1.at(i).at(0)*M_PI/180,
-                                               sol_theta_4_5_6_T03_1.at(i).at(1)*M_PI/180,
-                                               sol_theta_4_5_6_T03_1.at(i).at(2)*M_PI/180});
-            config_vec->push_back(downward_config);
+
+                for (int i = 1; i <= num_config2; i++){
+                     downward_config = new Configuration({solution_standard.at(0).at(1) * M_PI / 180,
+                                                   solution_standard.at(0).at(2) * M_PI / 180,
+                                                   solution_standard.at(0).at(3) * M_PI / 180,
+                                                   sol_theta_4_5_6_T03_2.at(i).at(0)*M_PI/180,
+                                                   sol_theta_4_5_6_T03_2.at(i).at(1)*M_PI/180,
+                                                   sol_theta_4_5_6_T03_2.at(i).at(2)*M_PI/180});
+                    config_vec->push_back(downward_config);
+                    std::cout << "Configuration downward: " << i << ": " << downward_config->get_configuration().at(0) << ", "<< downward_config->get_configuration().at(1) << ", "
+                              << downward_config->get_configuration().at(2) << ", "<< downward_config->get_configuration().at(3) << ", "
+                              << downward_config->get_configuration().at(4) << ", "<< downward_config->get_configuration().at(5) << endl;
+                }
+
         }
-    }
+
 
     else if (id == 102 || id == 103 || id == 202 || id == 203) {
 
@@ -785,6 +802,7 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
 }
 
 std::vector<Configuration*>* InvKinematics::inv_othercase_1(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos){
+    std::cout << "Other case 1: " << std::endl;
     std::vector<Configuration*>* sol_othercase_1_vec_config;
     double dpx = d1 + m;
     double dpy = wcp[2] -n;
@@ -808,6 +826,7 @@ std::vector<Configuration*>* InvKinematics::inv_othercase_1(double theta1, doubl
 }
 
 std::vector<Configuration*>* InvKinematics::inv_othercase_2(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos){
+    std::cout << "Other case 2: " << std::endl;
     std::vector<Configuration*>* sol_othercase_2_vec_config;
     double dpx = d1 + m;
     double dpy = wcp[2] -n;
