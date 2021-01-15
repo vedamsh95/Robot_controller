@@ -28,7 +28,7 @@ vector<Configuration*>* SdirCtrl::get_config_from_pos(SixDPos* pos)
 Trajectory* SdirCtrl::move_robot_ptp(SixDPos* start, SixDPos* end)
 {
     //ToDo: IMPLEMENT!
-
+    // not needed because function is not used in main.cpp
     return NULL;
 }
 
@@ -43,6 +43,7 @@ Trajectory* SdirCtrl::move_robot_ptp(Configuration* start, Configuration* end, b
 Trajectory* SdirCtrl::move_robot_lin(SixDPos* start, SixDPos* end)
 {
     //ToDo: IMPLEMENT!
+    // not needed because function is not used in main.cpp
     return NULL;
 }
 

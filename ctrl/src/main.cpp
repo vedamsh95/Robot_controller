@@ -38,7 +38,9 @@ extern "C" {
  */
 
 using namespace std;
-
+std::vector<double> x_vec;
+std::vector<double> y_vec;
+std::vector<double> z_vec;
 simxInt* jh = new simxInt[6];
 
 simxInt Initial()
@@ -207,12 +209,25 @@ int main() {
                 //double test = jsonHandler.get_data()["x1"].asDouble();
 
                 //std::cout<< "test" << test << std::endl;
-
                 Spline sp((jsonHandler.get_data())[0],(jsonHandler.get_data())[1]);
+
                 sp.get_value();
 
+                x_vec.push_back( sp.get_x());
+                y_vec.push_back( sp.get_y());
+                z_vec.push_back( sp.get_z());
 
+                std::cout << "maincpp: " << x_vec.at(0) << y_vec.at(0) << z_vec.at(0) << std::endl;
+                if(x_vec.size() == 2){
+                    std::cout << "maincpp: " << x_vec.at(0) << y_vec.at(0) << z_vec.at(0) << std::endl;
+                    std::cout << "maincpp: " << x_vec.at(1) << y_vec.at(1) << z_vec.at(1) << std::endl;
+                }
 
+                //implement calling spline function!! with x_vec
+                if((jsonHandler.get_data())[0]["finish_spline"].asDouble() == 9999){
+
+                    std::cout << "finish_spline: " << std::endl;
+                }
 
             }
 
