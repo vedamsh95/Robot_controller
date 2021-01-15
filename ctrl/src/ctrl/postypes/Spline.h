@@ -16,5 +16,6 @@ public:
    Spline(Json::Value _jv,Json::Value _jv1);
     void deserialize_from_json_config(Json::Value _jv,Json::Value _jv1);
     void get_value();
+    //
 
 };

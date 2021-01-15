@@ -20,4 +20,5 @@ void Spline::get_value()
 {
     std::cout << this->x << " " << this->y << " " << this->z <<" " << std::endl;
 }
+//
 
