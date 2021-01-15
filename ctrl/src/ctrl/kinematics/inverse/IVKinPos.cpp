@@ -14,7 +14,7 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 {
 	double phi1;
 	//Wrist Point
-	_pos = new SixDPos(0.0, 0.0, 1.5, 0.0, 1.0, 1.0);
+	//_pos = new SixDPos(0.0, 0.0, 1.5, 0.0, 1.0, 1.0);
 	TMatrix m_transEndeffector2Wrist = TMatrix(_pos->get_A(), _pos->get_B(), _pos->get_C(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
 	Position wristPoint;
 	wristPoint.x = _pos->get_X() - d_6 * m_transEndeffector2Wrist.get(0, 2);
