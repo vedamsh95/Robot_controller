@@ -2,6 +2,49 @@
 This code repository consists of two parts: the ctrl and the sim part. The ctrl folder contains all necessary code files for your controler. The sim folder contains the [VREP](https://www.coppeliarobotics.com/) .ttt file with all necessary implementation for your simulation.
 For the implementation, you are free to add any additional files. Please, however, do not change the given interfaces without highlight the changes to the course supervisors. This is, because we will come back on your generated libraries for testing and evaluation purposes. In case you change the interfaces, automated testing might not work propper.
 
+## Information for testing the code
+
+The controller supports plotting a vector of configurations. To do so it makes use of a wrapper library
+called matplotlibcpp (https://github.com/lava/matplotlib-cpp) which uses the python library matplotlib.
+To be able to use this functionality, one has to install python3 and matplotlib. However, this functionality
+can be disabled completely in the root cmake script so that none of this is required. Additionally one can
+disabled the plotting functionality in code in PTP.cpp in the constructor. This might be useful since
+showing the plots blocks the controller.
+
+Others changes to the internal API that need to be considered:
+1. SixDPos* get_pos_from_config(Configuration* config);
+   
+   -> Unchanged
+   
+
+2. vector<Configuration*>* get_config_from_pos(SixDPos* pos);
+   
+   -> Unchanged
+   
+
+3. Trajectory* move_robot_ptp(SixDPos* start, SixDPos* end);
+   
+    -> Not implemented since it does not get used
+   
+
+4. Trajectory* move_robot_ptp(Configuration* start, Configuration* end, bool sync = false);
+   
+    -> One can choose the operation mode. If it is not specify, it will perform an asynchronous movement.
+   
+
+5. Trajectory* move_robot_lin(SixDPos* start, SixDPos* end);
+
+   -> Requires a velocity and an acceleration
+   
+
+6. Trajectory* move_robot_lin(Configuration* start, Configuration* end, double velocity, double acceleration);
+
+   -> Not implemented since it does not get used
+   
+
+7. Trajectory* move_robot_spline(vector<SixDPos*> &points, double velocity, double acceleration);
+
+    -> Requires a velocity and an acceleration
 
 ## Build
 For building your code, please use the contained [cmake](https://cmake.org/) files.
