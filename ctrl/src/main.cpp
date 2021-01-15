@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <chrono>
 #include <thread>
+#include <Spline.h>
 
 
 extern "C" {
@@ -200,6 +201,19 @@ int main() {
                     // synchronize with vrep simulation environment
                     this_thread::sleep_for(std::chrono::milliseconds(50));
                 }
+            }
+
+            if(jsonHandler.get_op_mode() == OpMode::SPLINE){
+                //double test = jsonHandler.get_data()["x1"].asDouble();
+
+                //std::cout<< "test" << test << std::endl;
+
+                Spline sp((jsonHandler.get_data())[0],(jsonHandler.get_data())[1]);
+                sp.get_value();
+
+
+
+
             }
 
             simxClearStringSignal(ID, "callsignal", simx_opmode_blocking);

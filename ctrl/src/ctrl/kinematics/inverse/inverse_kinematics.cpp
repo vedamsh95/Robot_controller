@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 
 #include "inverse_kinematics.h"
-#include <math.h>
+#include <cmath>
 #include <iostream>
 
 double o = 115;

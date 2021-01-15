@@ -21,10 +21,11 @@ void Configuration::deserialize_from_json(Json::Value _jv){
     this->set_configuration({_jv["j0"].asDouble(), _jv["j1"].asDouble(), _jv["j2"].asDouble(), _jv["j3"].asDouble(), _jv["j4"].asDouble(), _jv["j5"].asDouble()});
 }
 
-
 Configuration::Configuration(Json::Value _jv){
     this->deserialize_from_json(_jv);
 }
+
+
 
 
 Configuration::Configuration() : joints{0,0,0,0,0,0}
