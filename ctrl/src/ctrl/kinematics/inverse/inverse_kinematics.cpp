@@ -12,6 +12,8 @@
 #define o 115
 #define a 1150
 #define b 1220
+#define M_PI 3.14159265
+
 
 //1.  get final TCP details from the pointer sent to get_inv_kinematics function
 //2.  take the overall transformation matrix from TMatrix function
@@ -29,7 +31,9 @@
 vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 {
 
-    vector<Configuration*>* solutions = new vector<Configuration*>();
+    //Input of inverse kinematics is the TCP’s position (x,y,z) and orientation 
+    //in terms of yaw, pitch and roll abbreviated by (e1, e2, e3)
+
 //1.
     double Xp =_pos->get_X();
     double Yp =_pos->get_Y();
@@ -39,11 +43,12 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     double e3 = _pos->get_C();
 
     //transformation matrix
+
     TMatrix Trans(Xp,Yp,Zp,e1,e2,e3);
     double* ptr = Trans.get_matrix();
 
-    //2. take the overall transformation matrix from pointer returned from TMatrix class
- 
+    //take the overall transformation matrix from pointer returned from TMatrix class
+//2. 
     double Tansformationmatrix[4][4];
     for (int i = 0; i < 4; i++)
             {
@@ -90,7 +95,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 
                     vector<double> phi4, phi5, phi6;
                     findphi3phi4phi5(phi1, arrayphi2[j], arrayphi3[j], phi4, phi5, phi6, ptr);
-                    
+                    vector<Configuration*>* solutions = new vector<Configuration*>();
 //8. 
                     for(double r = 0; r<phi4.size(); r++)    
                                 solutions->push_back(new Configuration({phi1, arrayphi2[j],arrayphi3[j],phi4[r], phi5[r],phi6[r] }));
@@ -103,14 +108,14 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             }
         }
     }
-    return solutions;
+
 }
 
 
 //9. finding arrayPhi1 with various conditions, ARRAY OF possible Phi1 angles
 
 
-vector<double> findphi1(double Xc, double Yc, vector<double>& point)
+vector<double> InvKinematics:: findphi1(double Xc, double Yc, vector<double>& point)
 {
     double phi1 = atan2(Yc, Xc) * 180 / M_PI;   // in angles
 
@@ -175,7 +180,7 @@ vector<double> findphi1(double Xc, double Yc, vector<double>& point)
 
 //10. PHI2 and PHI3 returns 2 values at the same time
 
-void findphi2phi3(double Xc, double Yc, double Zc, double phi1, vector<double>& point2, vector<double>& point3)
+void InvKinematics:: findphi2phi3(double Xc, double Yc, double Zc, double phi1, vector<double>& point2, vector<double>& point3)
 {
 
     double d1 = sqrt(Xc * Xc + Yc * Yc);
@@ -352,7 +357,7 @@ tuple<double, double> BackwardsElbowup(double d1, double Zc)
 
 //11. find phi3, phi4 and phi5
 
-void findphi3phi4phi5(double phi1, double phi2, double phi3, vector<double>& phi4, vector<double>& phi5, vector<double>& phi6, double* ptr)
+void InvKinematics:: findphi3phi4phi5(double phi1, double phi2, double phi3, vector<double>& phi4, vector<double>& phi5, vector<double>& phi6, double* ptr)
 {
 
     //find 0R3 rotation about phi1 to find the first rotational matrix
