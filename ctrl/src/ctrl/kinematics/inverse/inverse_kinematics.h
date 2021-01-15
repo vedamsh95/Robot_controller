@@ -1,7 +1,7 @@
 #ifndef SDRI_CTRL2019_INVERSE_KINEMATICS_H
 #define SDRI_CTRL2019_INVERSE_KINEMATICS_H
 
-
+#include<inverse_kinematics.cpp>
 #include <SixDPos.h>
 #include <TMatrix.h>
 #include <Configuration.h>
@@ -22,5 +22,9 @@ public:
      * @return  a reference to a <code>vector<code> containing all possible configurations for the passed position
      */
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
+    vector<double> findphi1(double Xc, double Yc, vector<double>& point);
+    void findphi2phi3(double Xc, double Yc, double Zc, double phi1, vector<double>& point2, vector<double>& point3);
+    void findphi3phi4phi5(double phi1, double phi2, double phi3, vector<double>& phi4, vector<double>& phi5, vector<double>& phi6, double* ptr);
+
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
