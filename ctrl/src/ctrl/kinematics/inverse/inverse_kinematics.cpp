@@ -12,9 +12,9 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     vector<Configuration*>* solutions = new vector<Configuration*>();
     
     //TODO: Get first three joints from IVKinPos
-	IVKinPos Position(_pos->get_X(), _pos->get_Y(), _pos->get_Z());
+	IVKinPos Position;
     vector<array<double, 3>*>* IVpos = new vector<array<double, 3>*>();
-    IVpos = Position.get_IVKinPos();
+    IVpos = Position.get_IVKinPos(_pos);
     
     
     //Test values:
