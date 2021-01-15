@@ -15,7 +15,7 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 	double phi1;
 	//Wrist Point
 	//_pos = new SixDPos(0.0, 0.0, 1.5, 0.0, 1.0, 1.0);
-	TMatrix m_transEndeffector2Wrist = TMatrix(_pos->get_A(), _pos->get_B(), _pos->get_C(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
+	TMatrix m_transEndeffector2Wrist = TMatrix(_pos->get_C(), _pos->get_B(), _pos->get_A(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
 	Position wristPoint;
 	wristPoint.x = _pos->get_X() - d_6 * m_transEndeffector2Wrist.get(0, 2);
 	wristPoint.y = _pos->get_Y() - d_6 * m_transEndeffector2Wrist.get(1, 2);
@@ -27,14 +27,14 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 	if (wristPoint.x > -marginSingularity && wristPoint.x < marginSingularity &&
 		wristPoint.y > -marginSingularity && wristPoint.y < marginSingularity)
 	{
-		phi1 = 0.0;
+		phi1 = 90.0;
 		std::cout << "Overhead Singularity" << endl;
 	}
 	else
-		phi1 = rad2Deg(atan2(wristPoint.y, wristPoint.x));
+		phi1 = rad2Deg(atan2(wristPoint.y, wristPoint.x));//vielleicht noch - zeichen, da clockwise vs counterclockwise
 	
 	std::cout << "phi1 " << phi1 << endl;
-	return standardCase_phi1(phi1, wristPoint);
+	return calc_configurations(phi1, wristPoint);
 	////1 Quadrant
 	//if ((wristPoint.x > 0 && wristPoint.y > 0))
 	//{
@@ -128,36 +128,50 @@ void IVKinPos::checkLimits(double _phi1, std::array<double, 4>* _solution, std::
 
 
 
-std::vector<std::array<double, 3>*>* IVKinPos::standardCase_phi1(double _phi1, Position _wristPoint)
+std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1, Position _wristPoint)
 {
-	std::array<double, 4>* backAndDownwardSolutions;
+	std::array<double, 4>* forwardSolutions;
+	std::array<double, 4>* backwardSolutions;
 	std::vector<std::array<double, 3>*>* sol;
 	std::vector<std::array<double, 3>*>* ans = new std::vector<std::array<double, 3>*>();
+
+
 	double d1 = std::sqrt(_wristPoint.x * _wristPoint.x + _wristPoint.y * _wristPoint.y);
-	if ((-175.0) <= _phi1 && _phi1 <= (175.0))
+
+
+	forwardSolutions = forward_calc(d1, _wristPoint);
+	
+
+	checkLimits(_phi1, forwardSolutions, ans);
+
+	if ((-185.0) <= _phi1 && _phi1 <= (-175.0))
 	{
-		//double  backward_ph1 = wristPoint.y > 0 ? (180 - _phi1) : -(180 + _phi1);
-	
+		checkLimits(360.0 +_phi1, forwardSolutions, ans);
 	}
-	if ((-185.0) < _phi1 && _phi1 < (-175.0))
+	if ((185.0) >= _phi1 && _phi1 >= (175.0))
 	{
-		std::cout << "Phi1 is between 175 to 185 or between 175 to 185 we have 2 forward solution and only one backwards solution" << endl;
-		
+		checkLimits(-(360.0- _phi1), forwardSolutions, ans);
 	}
 
 
 
-	backAndDownwardSolutions = forward_calc(d1,_wristPoint);
-	checkLimits(_phi1, backAndDownwardSolutions, ans);
-
-	double phi1_backward = rad2Deg(atan2(-_wristPoint.y, -_wristPoint.x));
-	backAndDownwardSolutions = backward_calc(d1, _wristPoint);
-	checkLimits(phi1_backward, backAndDownwardSolutions, ans);
-	
-	
+	backwardSolutions = backward_calc(d1, _wristPoint);
 	
 
-	return ans;
+	if ((5) >= _phi1 && _phi1 >= (-5.0))
+	{
+		checkLimits(-(_phi1+180.0), backwardSolutions, ans);
+		checkLimits(+(_phi1 + 180.0), backwardSolutions, ans);
+
+	}
+	else
+	{
+		double phi1_backward = rad2Deg(atan2(-_wristPoint.y, -_wristPoint.x));// oder if anweisungen welcher Quadrant
+		checkLimits(phi1_backward, backwardSolutions, ans);
+	}
+	
+
+
 }
 
 
