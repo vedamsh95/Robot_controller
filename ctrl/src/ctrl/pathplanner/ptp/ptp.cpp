@@ -6,8 +6,9 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
 {
     //TODO: IMPLEMENT! implement the computation of a ptp trajectory with the corresponding velocity profile
 
-    double t_fin = 1;
-    double max_acc = 1;
+    double t_fin = 0;
+    double t_c = 0;
+    double max_acc = 300;
 
     Trajectory* trajectory = new Trajectory();
 
@@ -17,11 +18,19 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
 
     double max_vel_phi1 = 120;
 
+    t_fin = max_vel_phi1 / max_acc + (fin_phi1 - in_phi1) / max_vel_phi1;
+    t_c = max_vel_phi1 / max_acc;
+
     double in_phi2 = _start_cfg->get_configuration()[1] * 180 / PI;
 
     double fin_phi2 = _end_cfg->get_configuration()[1] * 180 / PI;
 
     double max_vel_phi2 = 115;
+
+    if (max_vel_phi2 / max_acc + (fin_phi2 - in_phi2) / max_vel_phi2 > t_fin) {
+        t_fin = max_vel_phi2 / max_acc + (fin_phi2 - in_phi2) / max_vel_phi1;
+        t_c = max_vel_phi2 / max_acc;
+    }
 
     double in_phi3 = _start_cfg->get_configuration()[2] * 180 / PI;
 
@@ -29,11 +38,21 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
 
     double max_vel_phi3 = 120;
 
+    if (max_vel_phi3 / max_acc + (fin_phi3 - in_phi3) / max_vel_phi3 > t_fin) {
+        t_fin = max_vel_phi3 / max_acc + (fin_phi3 - in_phi3) / max_vel_phi3;
+        t_c = max_vel_phi3 / max_acc;
+    }
+
     double in_phi4 = _start_cfg->get_configuration()[3] * 180 / PI;
 
     double fin_phi4 = _end_cfg->get_configuration()[3] * 180 / PI;
 
     double max_vel_phi4 = 190;
+
+    if (max_vel_phi4 / max_acc + (fin_phi4 - in_phi4) / max_vel_phi4 > t_fin) {
+        t_fin = max_vel_phi4 / max_acc + (fin_phi4 - in_phi4) / max_vel_phi4;
+        t_c = max_vel_phi4 / max_acc;
+    }
 
     double in_phi5 = _start_cfg->get_configuration()[4] * 180 / PI;
 
@@ -41,14 +60,43 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
 
     double max_vel_phi5 = 180;
 
+    if (max_vel_phi5 / max_acc + (fin_phi5 - in_phi5) / max_vel_phi5 > t_fin) {
+        t_fin = max_vel_phi5 / max_acc + (fin_phi5 - in_phi5) / max_vel_phi5;
+        t_c = max_vel_phi5 / max_acc;
+    }
+
     double in_phi6 = _start_cfg->get_configuration()[5] * 180 / PI;
 
     double fin_phi6 = _end_cfg->get_configuration()[5] * 180 / PI;
 
     double max_vel_phi6 = 260;
 
+    if (max_vel_phi6 / max_acc + (fin_phi6 - in_phi6) / max_vel_phi6 > t_fin) {
+        t_fin = max_vel_phi6 / max_acc + (fin_phi6 - in_phi6) / max_vel_phi6;
+        t_c = max_vel_phi6 / max_acc;
+    }
+
+    max_vel_phi1 = (fin_phi1 - in_phi1) / (t_fin - t_c);
+    double max_acc1 = max_vel_phi1 / t_c;
+
+    max_vel_phi2 = (fin_phi2 - in_phi2) / (t_fin - t_c);
+    double max_acc2 = max_vel_phi2 / t_c;
+
+    max_vel_phi3 = (fin_phi3 - in_phi3) / (t_fin - t_c);
+    double max_acc3 = max_vel_phi3 / t_c;
+
+    max_vel_phi4 = (fin_phi4 - in_phi4) / (t_fin - t_c);
+    double max_acc4 = max_vel_phi4 / t_c;
+
+    max_vel_phi5 = (fin_phi5 - in_phi5) / (t_fin - t_c);
+    double max_acc5 = max_vel_phi5 / t_c;
+
+    max_vel_phi6 = (fin_phi6 - in_phi6) / (t_fin - t_c);
+    double max_acc6 = max_vel_phi6 / t_c;
+
+
     for (int i = 0; i <= t_fin; i = i + 0.5) {
-        trajectory->add_configuration(new Configuration({ trap_prof(max_vel_phi1 ,max_acc ,in_phi1 ,fin_phi1 ,i,max_vel_phi1 / max_acc),trap_prof(max_vel_phi2 ,max_acc ,in_phi2 ,fin_phi2 ,i,max_vel_phi2 / max_acc),trap_prof(max_vel_phi3 ,max_acc ,in_phi3 ,fin_phi3 ,i,max_vel_phi3 / max_acc),trap_prof(max_vel_phi4 ,max_acc ,in_phi4 ,fin_phi4 ,i,max_vel_phi4 / max_acc),trap_prof(max_vel_phi5 ,max_acc ,in_phi5 ,fin_phi5 ,i,max_vel_phi5 / max_acc),trap_prof(max_vel_phi6 ,max_acc ,in_phi6 ,fin_phi6 ,i,max_vel_phi6 / max_acc) }));
+        trajectory->add_configuration(new Configuration({ trap_prof(max_vel_phi1 ,max_acc1 ,in_phi1 ,fin_phi1 ,i,t_c, t_fin),trap_prof(max_vel_phi2 ,max_acc2 ,in_phi2 ,fin_phi2 ,i,t_c, t_fin),trap_prof(max_vel_phi3 ,max_acc3 ,in_phi3 ,fin_phi3 ,i,t_c, t_fin),trap_prof(max_vel_phi4 ,max_acc4 ,in_phi4 ,fin_phi4 ,i,t_c, t_fin),trap_prof(max_vel_phi5 ,max_acc5 ,in_phi5 ,fin_phi5 ,i,t_c, t_fin),trap_prof(max_vel_phi6 ,max_acc6 ,in_phi6 ,fin_phi6 ,i,t_c, t_fin) }));
     }
 
     //Dummy trajectory
@@ -60,8 +108,8 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
 }
 
 
-double Ptp::trap_prof(double max_velo, double max_acc, double in_angle, double fin_angle, double time, double t_c) {
-    double t_fin = t_c + (fin_angle - in_angle) / max_velo;
+double Ptp::trap_prof(double max_velo, double max_acc, double in_angle, double fin_angle, double time, double t_c, double t_fin) {
+    
     if (time < t_c) {
         return (in_angle + 0, 5 * max_acc * time * time);
     }
