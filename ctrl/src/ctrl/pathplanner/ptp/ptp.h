@@ -22,7 +22,7 @@ public:
      */
     Trajectory* get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg);
 
-    double trap_prof(double max_velo, double max_acc, double in_angle, double fin_angle, double time, double t_c);
+    double trap_prof(double max_velo, double max_acc, double in_angle, double fin_angle, double time, double t_c, double t_fin);
 };
 
 
