@@ -38,11 +38,11 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
 
         //calculate rotation matrix for first 3 joints.
-        TMatrix R_03(actPos->at(0), actPos->at(1), actPos->at(2), 0, 0, 0);
+        TMatrix R_03(actPos->at(2), actPos->at(1), actPos->at(0), 0, 0, 0);
         cout << "Matrix R_03: " << R_03 << endl;
 
         //calcualte rotation matrix for all joints.
-        TMatrix R_06 = TMatrix(_pos->get_A(), _pos->get_B(), _pos->get_C(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
+        TMatrix R_06 = TMatrix(_pos->get_C(), _pos->get_B(), _pos->get_A(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
         cout << "Matrix R_06: " << R_06 << endl;
 
         //calculate rotation matrix for last 3 joints.
@@ -72,7 +72,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             {theta4[3], theta5[2], theta6[3]},
         };
 
-
+        solutions->clear();
         for (int i = 0; i < 8; i++)
         {
             solutions->push_back(new Configuration({actPos->at(0), actPos->at(1),actPos->at(2),Configs[i][0],Configs[i][1],Configs[i][2]}));
