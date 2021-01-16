@@ -43,7 +43,7 @@ private:
 	double rad2Deg(double _rad);
 	void checkLimits(double _phi1, std::array<double, 4>* _solution, std::vector<std::array<double, 3>*>* _ans);
 
-	std::vector<std::array<double, 3>*>* standardCase_phi1(double _phi1, Position _P);
+	std::vector<std::array<double, 3>*>* calc_configurations(double _phi1, Position _P);
 	
 
 

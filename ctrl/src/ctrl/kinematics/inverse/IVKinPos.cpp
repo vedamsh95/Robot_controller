@@ -171,7 +171,7 @@ std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1,
 	}
 	
 
-
+	return ans;
 }
 
 
