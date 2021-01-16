@@ -32,32 +32,68 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         actPos = IVpos->at(i);
         
         //convert actPos from degree to radian
-        for (int i =0; i <3; i++)
+        for (int j =0; j <3; j++)
         {
-            actPos->at(i) = actPos->at(i)*M_PI/180;
+            actPos->at(j) = actPos->at(j)*M_PI/180;
+        }
+        
+        //calculate rotation matrix for first 3 joints using fwKinematics.
+        FwKinematics fw;
+
+        // These are the first four Denavit-Hartenberg parameters for our robot
+        double dh_table[4][4] = {
+                {0,       M_PI,   0,    645},
+                {0,       M_PI_2, 330,  0},
+                {0, 0,            1150, 0},
+                {-M_PI_2, M_PI_2, 115,  0},
+        };
+
+        // Transformation matrix from the base coordinate system
+        // to the coordinate system of the first joint. This does
+        // not depend on any variables.
+        TMatrix R_03 = fw.create_single_t_matrix(
+                dh_table[0][0],
+                dh_table[0][1],
+                dh_table[0][2],
+                dh_table[0][3]
+        );
+
+        // Create and multiply the individual transformation matrices
+        // from one joint to the next one.
+        for (int j = 0; j < 3; j++) {
+            TMatrix next = fw.create_single_t_matrix(
+                    dh_table[j + 1][0] + actPos->at(j),
+                    dh_table[j + 1][1],
+                    dh_table[j + 1][2],
+                    dh_table[j + 1][3]
+            );
+            R_03 = R_03.multiply(next);
         }
 
-        //calculate rotation matrix for first 3 joints.
-        TMatrix R_03(actPos->at(2), actPos->at(1), actPos->at(0), 0, 0, 0);
-        cout << "Matrix R_03: " << R_03 << endl;
 
         //calcualte rotation matrix for all joints.
-        TMatrix R_06 = TMatrix(_pos->get_C(), _pos->get_B(), _pos->get_A(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
+        TMatrix R_06 = TMatrix(
+                               _pos->get_C(),
+                               _pos->get_B(),
+                               _pos->get_A(),
+                               _pos->get_X(),
+                               _pos->get_Y(),
+                               _pos->get_Z());
         cout << "Matrix R_06: " << R_06 << endl;
 
         //calculate rotation matrix for last 3 joints.
         TMatrix R_36 = (R_03.transpose()).multiply(R_06);
 
         double theta4[4], theta5[4], theta6[4];
-        for (int i = 0; i < 2; i++)
+        for (int j = 0; j < 2; j++)
         {
-            theta4[i] = atan2(-R_36.get(1, 2), -R_36.get(0, 2)) + 2* M_PI * i;
-            theta5[i] = atan2(sqrt(1-pow(R_36.get(2, 2), 2)), -R_36.get(2, 2));
-            theta6[i] = atan2(R_36.get(2, 1), R_36.get(2, 0)) + 2* M_PI * i;
+            theta4[j] = atan2(-R_36.get(1, 2), -R_36.get(0, 2)) + 2* M_PI * j;
+            theta5[j] = atan2(sqrt(1-pow(R_36.get(2, 2), 2)), -R_36.get(2, 2));
+            theta6[j] = atan2(R_36.get(2, 1), R_36.get(2, 0)) + 2* M_PI * j;
 
-            theta4[i+2] = atan2(R_36.get(1, 2), R_36.get(0, 2)) + 2* M_PI * i;
-            theta5[i+2] = atan2(-sqrt(1-pow(R_36.get(2, 2), 2)), -R_36.get(2, 2));
-            theta6[i+2] = atan2(-R_36.get(2, 1), -R_36.get(2, 0)) + 2* M_PI * i;
+            theta4[j+2] = atan2(R_36.get(1, 2), R_36.get(0, 2)) + 2* M_PI * j;
+            theta5[j+2] = atan2(-sqrt(1-pow(R_36.get(2, 2), 2)), -R_36.get(2, 2));
+            theta6[j+2] = atan2(-R_36.get(2, 1), -R_36.get(2, 0)) + 2* M_PI * j;
         }
 
         double Configs[8][3]=
@@ -73,11 +109,12 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         };
 
         solutions->clear();
-        for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8;j++)
         {
-            solutions->push_back(new Configuration({actPos->at(0), actPos->at(1),actPos->at(2),Configs[i][0],Configs[i][1],Configs[i][2]}));
+            solutions->push_back(new Configuration({actPos->at(0), actPos->at(1),actPos->at(2),Configs[j][0],Configs[j][1],Configs[j][2]}));
             
             //Display configuration
+            cout << "Configuratio: " << i << endl;
             cout << "Theta 1: " << actPos->at(0) << endl;
             cout << "Theta 2: " << actPos->at(1) << endl;
             cout << "Theta 3: " << actPos->at(2) << endl;
