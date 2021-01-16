@@ -5,7 +5,10 @@
 #include <stdio.h>
 #include <chrono>
 #include <thread>
-#include <Spline.h>
+#include "Vector.h"
+#include <vector>
+#include <cerrno>
+#include "ctrl/Splines/spline.h"
 
 
 extern "C" {
@@ -38,9 +41,8 @@ extern "C" {
  */
 
 using namespace std;
-std::vector<double> x_vec;
-std::vector<double> y_vec;
-std::vector<double> z_vec;
+std::vector<Vector<double,3>> *points = new std::vector<Vector<double,3>>;
+std::vector<SixDPos> *ppts = new std::vector<SixDPos>;
 simxInt* jh = new simxInt[6];
 
 simxInt Initial()
@@ -206,27 +208,51 @@ int main() {
             }
 
             if(jsonHandler.get_op_mode() == OpMode::SPLINE){
-                //double test = jsonHandler.get_data()["x1"].asDouble();
+                Json::Value val = jsonHandler.get_data()[0];
 
-                //std::cout<< "test" << test << std::endl;
-                Spline sp((jsonHandler.get_data())[0],(jsonHandler.get_data())[1]);
+                if(val["spMod"].asInt() == 1)
+                {
 
-                sp.get_value();
-
-                x_vec.push_back( sp.get_x());
-                y_vec.push_back( sp.get_y());
-                z_vec.push_back( sp.get_z());
-
-                std::cout << "maincpp: " << x_vec.at(0) << y_vec.at(0) << z_vec.at(0) << std::endl;
-                if(x_vec.size() == 2){
-                    std::cout << "maincpp: " << x_vec.at(0) << y_vec.at(0) << z_vec.at(0) << std::endl;
-                    std::cout << "maincpp: " << x_vec.at(1) << y_vec.at(1) << z_vec.at(1) << std::endl;
+                    Vector<double, 3> vec((jsonHandler.get_data())[1]);
+                    points->push_back(vec);
                 }
+                else if(val["spMod"].asInt() == 2)
+                {
+                    val = jsonHandler.get_data()[1];
+                    Vector<double, 3> curr_pos, curr_ori;
+                    double speed, acceleration;
 
-                //implement calling spline function!! with x_vec
-                if((jsonHandler.get_data())[0]["finish_spline"].asDouble() == 9999){
+                    curr_pos[0]= val["m_a"].asDouble();
+                    curr_pos[1]= val["m_b"].asDouble();
+                    curr_pos[2]= val["m_c"].asDouble();
+                    curr_ori[0]= val["m_x"].asDouble();
+                    curr_ori[1]= val["m_y"].asDouble();
+                    curr_ori[2]= val["m_z"].asDouble();
 
-                    std::cout << "finish_spline: " << std::endl;
+
+                    speed = val["speed"].asDouble();
+                    acceleration = val["acceleration"].asDouble();
+
+                    curr_ori.output();
+                    curr_pos.output();
+                    std::cout << "Speed" << speed << std::endl;
+                    std::cout << "acceleration" << acceleration << std::endl;
+
+
+
+                    Spline spline(curr_pos, curr_ori, points, speed,acceleration);
+                    spline.out();
+
+                /*
+                   for(Vector<double, 3> &t : *points)
+                   {
+                    t.output();
+                   }
+                   */
+                }
+                else
+                {
+                    perror("Error");
                 }
 
             }

@@ -1,6 +1,6 @@
 add_library(Ctrl
             sdir_ctrl.cpp
-        Splines/spline.cpp Splines/spline.h Splines/Vector.h)
+        Splines/spline.cpp Splines/spline.h postypes/Vector.h)
 
 add_subdirectory(com)
 add_dependencies(Ctrl Com)

@@ -3,7 +3,7 @@ add_library(PosTypes
             SixDPos.cpp
             TMatrix.cpp
             Trajectory.cpp
-        Spline.cpp Spline.h)
+        )
 
 target_include_directories(FWKin
         PUBLIC

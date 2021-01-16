@@ -3,12 +3,45 @@
 //
 
 #include "spline.h"
-
-#include "Spline.h"
 #include "Vector.h"
 #include <iostream>
 
+Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientation,
+               std::vector<Vector<double, 3>> *points, double speed, double acceleration) {
 
+    this->start_position[0] = start_point[0];
+    this->start_position[1] = start_point[1];
+    this->start_position[2] = start_point[2];
+
+    this->start_orientation[0] = start_orientation[0];
+    this->start_orientation[1] = start_orientation[1];
+    this->start_orientation[2] = start_orientation[2];
+
+    this->speed = speed;
+    this->acceleration = acceleration;
+
+    this->points = points;
+
+
+}
+
+void Spline::out() {
+    std::cout << "Spline is defined: " << std::endl;
+    std::cout << "Start Position: " << std::endl;
+    start_position.output();
+    std::cout << "Current Orientation " << std::endl;
+    start_orientation.output();
+    std::cout << "" << std::endl;
+    std::cout << "Speed: " << speed <<std::endl;
+    std::cout << "Acceleration: " << acceleration <<std::endl;
+    std::cout << "Current Points are entered: " << std::endl;
+    for(auto &tmp : *points){
+        tmp.output();
+    }
+
+}
+
+/*
 Spline::Spline(double _t, double _ts, double _te, double _as, double _ae, Vector<double,3> start, Vector<double,3> end) {
     this->current_timestamp = 0;
     this->t =_t;
@@ -91,6 +124,9 @@ std::vector<Vector<double, 3>> Spline::calc_spline() {
 
     return spline ;
 }
+
+
+
 
 // -----------How to handle----------- //
 /*

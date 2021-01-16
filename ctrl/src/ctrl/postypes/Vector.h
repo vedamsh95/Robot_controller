@@ -8,17 +8,26 @@
 #pragma once
 
 #include <cstdint>
+#include <json.h>
 
 
 template<class T, int N>
 class Vector{
 public:
+    Vector(Json::Value value){
+        this->data[0] = value["x"].asDouble();
+        this->data[1] = value["y"].asDouble();
+        this->data[2] = value["z"].asDouble();
+    }
+
     Vector() : data() {}
+
 
     T& operator[](int i)
     {
         return this->data[i];
     }
+
 
 
     Vector operator- (Vector<T,N>& vec) const
@@ -50,6 +59,17 @@ public:
             tmpVec[i] = this->data[i] +vec[i];
         }
         return tmpVec;
+    }
+
+    Vector<T,N>& operator=(const Vector<T,N>&vec)
+    {
+        if(this != &vec)
+        {
+            for(int i =0; i < N, i++)
+            {
+                this->data[i] = vec[i];
+            }
+        }
     }
 
     void output() const{
