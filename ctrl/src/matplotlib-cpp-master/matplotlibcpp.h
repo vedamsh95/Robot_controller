@@ -1,5 +1,5 @@
 #pragma once
-
+#ifdef PLOT
 // Python headers must be included before any system headers, since
 // they define _POSIX_C_SOURCE
 #ifdef _DEBUG
@@ -2597,3 +2597,4 @@ private:
 };
 
 } // end namespace matplotlibcpp
+#endif

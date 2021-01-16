@@ -1,9 +1,7 @@
 #include "ptp.h"
 
 // Choose whether the trajectories should be plotted (blocking).
-//#define PLOT
-
-Ptp::Ptp() {
+Ptp::Ptp() :plot(false){
     robot = &Robot::getInstance();
     trajectory = new Trajectory();
 }
@@ -96,9 +94,9 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
 
     trajectory->set_trajectory(configs);
 
-#ifdef PLOT
-    plot_movement(configs);
-#endif
+    if(plot) {
+        plot_movement(configs);
+    }
 
     for (auto tra : single_trajectories) {
         delete tra;
@@ -128,7 +126,10 @@ void Ptp::make_feasible(Configuration *cfg) {
 }
 
 void Ptp::plot_movement(vector<Configuration *> &configs) {
-
+    // The corresponding define can be found in the cmake script. If plotting
+    // is not supported on a system, it can be deactivated there to still be
+    // abel to build and execute this program.
+#ifdef PLOT
     if (configs.empty()) {
         std::cout << "[PTP] Cannot plot configs: Empty!" << std::endl;
         return;
@@ -194,4 +195,8 @@ void Ptp::plot_movement(vector<Configuration *> &configs) {
     matplotlibcpp::subplots_adjust({{"hspace", 0.35},
                                     {"right",  0.75}});
     matplotlibcpp::show();
+#else
+    std::cout << "The plotting functionality of configurations is disabled in the cmake script!" << std::endl;
+#endif
+
 }

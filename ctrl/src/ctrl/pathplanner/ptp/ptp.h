@@ -51,6 +51,7 @@ private:
 
     Robot *robot;
     Trajectory *trajectory;
+    bool plot;
 
 public:
 

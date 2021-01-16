@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(sdir_ctrl2020)
 
 set(CMAKE_CXX_STANDARD 11)
+set(USE_PYTHON_PLOT False)
 
 include_directories(postype src/ctrl/postypes)
 include_directories(json include/json)
