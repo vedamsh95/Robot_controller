@@ -5,6 +5,7 @@
 #include "spline.h"
 #include "Vector.h"
 #include <iostream>
+#include "Trajectory.h"
 
 Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientation,
                std::vector<Vector<double, 3>> *points, double speed, double acceleration) {
@@ -21,8 +22,6 @@ Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientatio
     this->acceleration = acceleration;
 
     this->points = points;
-
-
 }
 
 void Spline::out() {
@@ -40,6 +39,62 @@ void Spline::out() {
     }
 
 }
+
+Trajectory* Spline::calculateSpline() {
+    Trajectory* trajectory = new Trajectory();
+    std::vector<double> distance_i;
+    std::vector<double> boundary_i;
+    double di =0, tmp=0;                                                                                                                             // contains distances between point n and n-1
+    double time_for_accel = this->acceleration/this->speed;
+    double d_for_accel = 0.5*this->acceleration*(time_for_accel*time_for_accel);
+    double
+
+
+
+
+        for(int i =0; i<3 ; i++){
+           // std::cout << "Start at i: "<< this->start_position[i] << std::endl;
+           // std::cout << "points at i: "<< this->points->at(0)[i] << std::endl;
+            tmp += (this->start_position[i] - this->points->at(0)[i])*(this->start_position[i] - this->points->at(0)[i]);
+        }
+        di = sqrt(tmp);
+        std::cout << "Distances for first segment: " << di << std::endl;
+        distance_i.push_back(di);
+
+    for (int i = 0; i < this->points->size()-1; ++i) {
+        tmp = 0;
+        for(int j =0; j<3 ; j++){
+            tmp += (this->points->at(i)[j] - this->points->at(i+1)[j])*(this->points->at(i)[j] - this->points->at(i+1)[j]);
+        }
+        di = sqrt(tmp);
+        std::cout << "Distances for segment i: " << i << " : "<< di << std::endl;
+        distance_i.push_back(di);
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return nullptr;
+}
+
+
+
+
+
+
+
 
 /*
 Spline::Spline(double _t, double _ts, double _te, double _as, double _ae, Vector<double,3> start, Vector<double,3> end) {

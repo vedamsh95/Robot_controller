@@ -222,12 +222,12 @@ int main() {
                     Vector<double, 3> curr_pos, curr_ori;
                     double speed, acceleration;
 
-                    curr_pos[0]= val["m_a"].asDouble();
-                    curr_pos[1]= val["m_b"].asDouble();
-                    curr_pos[2]= val["m_c"].asDouble();
-                    curr_ori[0]= val["m_x"].asDouble();
-                    curr_ori[1]= val["m_y"].asDouble();
-                    curr_ori[2]= val["m_z"].asDouble();
+                    curr_pos[0]= val["m_x"].asDouble();
+                    curr_pos[1]= val["m_y"].asDouble();
+                    curr_pos[2]= val["m_z"].asDouble();
+                    curr_ori[0]= val["m_a"].asDouble();
+                    curr_ori[1]= val["m_b"].asDouble();
+                    curr_ori[2]= val["m_c"].asDouble();
 
 
                     speed = val["speed"].asDouble();
@@ -241,7 +241,8 @@ int main() {
 
 
                     Spline spline(curr_pos, curr_ori, points, speed,acceleration);
-                    spline.out();
+                   // spline.out();
+                    spline.calculateSpline();
 
                 /*
                    for(Vector<double, 3> &t : *points)

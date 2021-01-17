@@ -9,6 +9,7 @@
 #include "Vector.h"
 #include <vector>
 #include <json.h>
+#include "Trajectory.h"
 
 
 class Spline {
@@ -23,6 +24,7 @@ private:
 public:
     Spline(Vector<double,3> start_point, Vector<double,3> start_orientation,std::vector<Vector<double, 3>> *points, double speed, double acceleration);
     void out();
+    Trajectory* calculateSpline();
 
 
     Spline(double _t, double _ts, double _te, double _as, double _ae, Vector<double,3> start, Vector<double,3> end);
