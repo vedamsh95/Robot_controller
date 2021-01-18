@@ -25,7 +25,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
                            _pos->get_X(),
                            _pos->get_Y(),
                            _pos->get_Z());
-    cout << "Matrix R_06: " << R_06 << endl
+    cout << "Matrix R_06: " << R_06 << endl;
 
     for (int i = 0; i < IVpos->size(); i++)
     {
