@@ -10,20 +10,22 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 {
 //  //TODO: IMPLEMENT Compute the inverse kinematics for a given position
     vector<Configuration*>* solutions = new vector<Configuration*>();
+    solutions->clear();
     
     //TODO: Get first three joints from IVKinPos
 	IVKinPos Position;
     vector<array<double, 3>*>* IVpos = new vector<array<double, 3>*>();
 	    IVpos = Position.get_IVKinPos(_pos);
     
-    
-    //Test values:
-    /*array<double, 3> a1, a2;
-    a1 = {0, 0, 0};
-    a2 = {1, 2, 3};
-    IVpos->push_back(&a1);
-    IVpos->push_back(&a2);*/
-
+    //calcualte rotation matrix for all joints.
+    TMatrix R_06 = TMatrix(
+                           _pos->get_C(),
+                           _pos->get_B(),
+                           _pos->get_A(),
+                           _pos->get_X(),
+                           _pos->get_Y(),
+                           _pos->get_Z());
+    cout << "Matrix R_06: " << R_06 << endl
 
     for (int i = 0; i < IVpos->size(); i++)
     {
@@ -70,17 +72,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             R_03 = R_03.multiply(next);
         }
 
-
-        //calcualte rotation matrix for all joints.
-        TMatrix R_06 = TMatrix(
-                               _pos->get_C(),
-                               _pos->get_B(),
-                               _pos->get_A(),
-                               _pos->get_X(),
-                               _pos->get_Y(),
-                               _pos->get_Z());
-        cout << "Matrix R_06: " << R_06 << endl;
-
         //calculate rotation matrix for last 3 joints.
         TMatrix R_36 = (R_03.transpose()).multiply(R_06);
 
@@ -108,7 +99,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             {theta4[3], theta5[2], theta6[3]},
         };
 
-        solutions->clear();
+
         for (int j = 0; j < 8;j++)
         {
             solutions->push_back(new Configuration({actPos->at(0), actPos->at(1),actPos->at(2),Configs[j][0],Configs[j][1],Configs[j][2]}));
