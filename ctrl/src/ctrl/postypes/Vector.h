@@ -65,7 +65,7 @@ public:
     {
         if(this != &vec)
         {
-            for(int i =0; i < N, i++)
+            for(int i =0; i < N; i++)
             {
                 this->data[i] = vec[i];
             }

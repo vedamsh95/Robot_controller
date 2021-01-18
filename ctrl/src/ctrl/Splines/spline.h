@@ -16,7 +16,8 @@ class Spline {
 
 private:
     Vector<double,3> start_position, start_orientation;
-    double speed, acceleration, num_points;
+    double speed, acceleration;
+    int num_points;
     std::vector<Vector<double, 3>> *points;
 
     double current_timestamp, a_s, a_e,t_s, t_e,t;

@@ -241,7 +241,7 @@ int main() {
 
 
                     Spline spline(curr_pos, curr_ori, points, speed,acceleration);
-                   // spline.out();
+                    spline.out();
                     spline.calculateSpline();
 
                 /*

@@ -22,6 +22,7 @@ Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientatio
     this->acceleration = acceleration;
 
     this->points = points;
+    this->num_points = points->size();
 }
 
 void Spline::out() {
@@ -47,19 +48,19 @@ Trajectory* Spline::calculateSpline() {
     double di =0, tmp=0;                                                                                                                             // contains distances between point n and n-1
     double time_for_accel = this->acceleration/this->speed;
     double d_for_accel = 0.5*this->acceleration*(time_for_accel*time_for_accel);
-    double
 
 
 
 
-        for(int i =0; i<3 ; i++){
-           // std::cout << "Start at i: "<< this->start_position[i] << std::endl;
-           // std::cout << "points at i: "<< this->points->at(0)[i] << std::endl;
-            tmp += (this->start_position[i] - this->points->at(0)[i])*(this->start_position[i] - this->points->at(0)[i]);
-        }
-        di = sqrt(tmp);
-        std::cout << "Distances for first segment: " << di << std::endl;
-        distance_i.push_back(di);
+
+    for(int i =0; i<3 ; i++){
+       // std::cout << "Start at i: "<< this->start_position[i] << std::endl;
+       // std::cout << "points at i: "<< this->points->at(0)[i] << std::endl;
+        tmp += (this->start_position[i] - this->points->at(0)[i])*(this->start_position[i] - this->points->at(0)[i]);
+    }
+    di = sqrt(tmp);
+    std::cout << "Distances for first segment: " << di << std::endl;
+    distance_i.push_back(di);
 
     for (int i = 0; i < this->points->size()-1; ++i) {
         tmp = 0;
@@ -69,15 +70,57 @@ Trajectory* Spline::calculateSpline() {
         di = sqrt(tmp);
         std::cout << "Distances for segment i: " << i << " : "<< di << std::endl;
         distance_i.push_back(di);
-        }
-
     }
 
+    // First Derivative Heuristic
+    std::cout << "" << std::endl;
+    std::cout << "First Derivative Heuristic: " << std::endl;
+    // for first point
+    // Determine direction of trajectory from first to second point (straight line) and Scale with 0.5
+    Vector<double, 3> p1_direction_vec;
+    std::cout << "number of points = " << num_points << std::endl;
+
+    for (int i = 0; i < 3; ++i) {
+        p1_direction_vec[i] = 0.5 * (points->at(0)[i] - start_position[i]);
+    }
+
+    std::cout << "Spline: Direction of StartPoint: " << p1_direction_vec[0] << ", " << p1_direction_vec[1] << ", " << p1_direction_vec[2] << std::endl;
+
+    // for last point
+    // Determine direction of trajectory from last to previous point (straight line)
+    Vector<double, 3> p_last_direction_vec;
+//    // check if we only have 2 points entered. Special Case!!
+    if(num_points == 1){
+        for (int i = 0; i < 3; ++i) {
+            p_last_direction_vec[i] = 0.5 * (points->at(num_points-1)[i] - start_position[i]);
+        }
+        std::cout << "Spline: Direction of Last Point (Special Case): " << p_last_direction_vec[0]
+        << ", " << p_last_direction_vec[1] << ", " << p_last_direction_vec[2] << std::endl;
+    }else {             // check if we have more than 2 points. Normal Case!!!
+        for (int i = 0; i < 3; ++i) {
+            p_last_direction_vec[i] = 0.5 * (points->at(num_points-1)[i] - points->at(num_points - 2)[i]);
+        }
+        std::cout << "Spline: Direction of Last Point (Normal Case): " << p_last_direction_vec[0]
+                  << ", " << p_last_direction_vec[1] << ", " << p_last_direction_vec[2] << std::endl;
+  }
+
+    // inner Waypoints
+    std::cout << "" << std::endl;
+    std::cout << "Spline: Inner Waypoints: " << std::endl;
+    std::vector<Vector<double, 3>> inner_waypoint_dir_vec;
+    Vector<double, 3> temporary_vec;
+    if(num_points > 1){
+        for (int i = 0; i < num_points-1; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                temporary_vec[j] = 0.5 * (points->at(i+1)[j] - points->at(i)[j]);
+            }
+            inner_waypoint_dir_vec.push_back(temporary_vec);
+            std::cout << "Spline: Waypoint " << i+1 << ": ";
+            inner_waypoint_dir_vec.at(i).output();
+        }
 
 
-
-
-
+    }
 
 
 
