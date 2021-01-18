@@ -100,7 +100,7 @@ double* FwKinematics::matrix_mult(double* mat_a, double* mat_b) {
 
     double mat[16];
 
-    double sum;
+    double sum = 0;
 
     for (int i=0; i < 4; i++) {
         for (int k=0; k < 4; k++) {
