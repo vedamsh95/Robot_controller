@@ -100,7 +100,7 @@ int main() {
         {
             // cast vrep data to string
             string t = string(reinterpret_cast<const char*>(value), length);
-//            cout << t << endl;
+            cout << t << endl;
             // deserialize the json input
             JsonHandler jsonHandler(t);
 
@@ -210,6 +210,7 @@ int main() {
             if(jsonHandler.get_op_mode() == OpMode::SPLINE) {
               double vel = jsonHandler.get_velocity();
               double acc = jsonHandler.get_acceleration();
+              Configuration start_cfg(jsonHandler.get_start_configuration());
               vector<SixDPos*> points;
               size_t count = jsonHandler.get_data().size();
               for(size_t i = 0; i < count; i++) {

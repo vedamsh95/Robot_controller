@@ -83,3 +83,11 @@ double JsonHandler::get_acceleration() {
     }
     return m_json_value["acc"].asDouble();
 }
+
+Json::Value JsonHandler::get_start_configuration()
+{
+  if (m_json_value["start_config"].isNull()) {
+    return Json::Value();
+  }
+  return m_json_value["start_config"];
+}

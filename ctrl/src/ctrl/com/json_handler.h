@@ -103,6 +103,13 @@ public:
     * @return Acceleration, default = 0.0
     */
     double get_acceleration();
+
+    /**
+     * Returns the data for the start configuration from the parsed json string
+     *
+     * @return Json::Value containing the data from the parsed json string
+     */
+    Json::Value get_start_configuration();
 private:
     /** json value parsed from the json string */
     Json::Value m_json_value;

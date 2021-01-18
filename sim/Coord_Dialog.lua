@@ -328,6 +328,20 @@ function sendSplineData()
     tip_pos = sim.getObjectPosition(tip,robot)
     tip_ori = sim.getObjectOrientation(tip,robot)
 
+    local curr_c = {}
+    for i=1,#joints do
+        curr_c[i] = sim.getJointPosition(jh[i])
+    end
+
+    start_config = {
+        j0 = tonumber(curr_c[1]),
+        j1 = tonumber(curr_c[2]),
+        j2 = tonumber(curr_c[3]),
+        j3 = tonumber(curr_c[4]),
+        j4 = tonumber(curr_c[5]),
+        j5 = tonumber(curr_c[6])
+    }
+
     data_arr = {{
         m_a = tip_ori[1],
         m_b = tip_ori[2],
@@ -354,6 +368,7 @@ function sendSplineData()
         data = data_arr,
         vel = tonumber(simUI.getEditValue(ui_1, 3020)),   -- The velocity for the spline movement
         acc = tonumber(simUI.getEditValue(ui_1, 3021)),   -- The acceleration for the spline movement
+        start_config = start_config
     }
 
     local str = json.encode (js, { indent = true })
