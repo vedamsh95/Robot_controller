@@ -19,10 +19,8 @@ Trajectory* Ptp::get_ptp_trajectory(Configuration* _start_cfg, Configuration* _e
                  start_cfg[3] + (end_cfg[3] - start_cfg[3]) * (i),
                  start_cfg[4] + (end_cfg[4] - start_cfg[4]) * (i),
                  start_cfg[5] + (end_cfg[5] - start_cfg[5]) * (i)})
-
                 );
     }
-
 
     trajectory->set_trajectory(config);
 

@@ -102,3 +102,19 @@ TMatrix* TMatrix::multiply(TMatrix* b) {
     return result;
 }
 
+TMatrix * TMatrix::transpose() {
+
+    TMatrix *result = new TMatrix();
+    double b[4][4];
+    //TMatrix* transpose =new TMatrix();
+
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++){
+      result->m_transformation[row][col] = m_transformation[col][row];
+
+        }
+    }
+return result;
+}
+
+

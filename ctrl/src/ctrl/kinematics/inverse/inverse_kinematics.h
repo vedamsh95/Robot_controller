@@ -26,5 +26,6 @@ public:
     double angles_phi1();
     double angles_phi2();
     double angles_phi3();
+    TMatrix R36Matrix();
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H

@@ -88,6 +88,8 @@ public:
     TMatrix *multiply(TMatrix *m2);
 
     void print();
+
+    TMatrix * transpose();
 };
 
 
