@@ -3,6 +3,7 @@
 
 #include <Configuration.h>
 #include <Trajectory.h>
+#include <fw_kinematics.h>
 
 /**
  * This class implementes the lin movement from to given {@ref Configuration}, one for the start configuration and one
