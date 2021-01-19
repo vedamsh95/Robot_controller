@@ -3,7 +3,59 @@
 #include <math.h>
 #include "fw_kinematics.h"
 #include <iostream>
+#include <vector>
 
+vector<vector<double>> construct_transformation(double theta, double alpha, double r, double d)
+{
+    vector<vector<double>> result = {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    };
+
+    result[0][0] = cos(theta);
+    result[0][1] = -sin(theta) * cos(alpha);
+    result[0][2] = sin(theta) * sin(alpha);
+    result[0][3] = r * cos(theta);
+
+    result[1][0] = sin(theta);
+    result[1][1] = cos(theta) * cos(alpha);
+    result[1][2] = -cos(theta) * sin(alpha);
+    result[1][3] = r * sin(theta);
+
+    result[2][0] = 0;
+    result[2][1] = sin(alpha);
+    result[2][2] = cos(alpha);
+    result[2][3] = d;
+
+    result[3][0] = 0;
+    result[3][1] = 0;
+    result[3][1] = 0;
+    result[3][3] = 1;
+
+    return result;
+}
+
+
+vector<vector<double>> mat_mul4x4(vector<vector<double>> M1, vector<vector<double>> M2)
+{
+    vector<vector<double>> Result = {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    };
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            Result[i][j] = M1[i][0] * M2[0][j] + M1[i][1] * M2[1][j] + M1[i][2] * M2[2][j] + M1[i][3] * M2[3][j];
+        }
+    }
+
+    return Result;
+}
 
 SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
 {
@@ -60,11 +112,29 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     DHC_Matrix[6][2] = 0;
     DHC_Matrix[6][3] = -215;
 
-    double* A[4][4];
-    double* B[4][4];
-    double* result[4][4];
-
     // calcualte transformation matricies
+    vector<vector<double>> A = 
+    {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    };
+    vector<vector<double>> B =
+    {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    };
+    vector<vector<double>> Result =
+    {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    };
+
     for (int i = 0; i <= 6; i++)
     {
     
@@ -73,39 +143,27 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
         double r = DHC_Matrix[i][2];
         double d = DHC_Matrix[i][3];
 
-        construct_transformation(theta, alpha, r, d, A);
+        A = construct_transformation(theta, alpha, r, d);
         
         if (i == 0)
         {
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    *B[i][j] = *A[i][j];
-                }
-            }
+            B = A;
         }
         else
         {
-            mat_mul4x4(A, B, result);
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    *B[i][j] = *result[i][j];
-                }
-            }
+            Result = mat_mul4x4(A, B);
+            B = Result;
         }
     }
 
     // Calculate X, Y and Z form Position Matrix
-    double x = *result[0][3];
-    double y = *result[1][3];
-    double z = *result[2][3];
+    double x = Result[0][3];
+    double y = Result[1][3];
+    double z = Result[2][3];
 
-    double roll = atan2(*result[1][0], *result[0][0]);
-    double pitch = atan2(-*result[2][0], sqrt(pow(*result[2][1], 2) + pow(*result[2][2], 2)));
-    double yaw = atan2(*result[2][1], *result[2][2]);
+    double roll = atan2(Result[1][0], Result[0][0]);
+    double pitch = atan2(-Result[2][0], sqrt(pow(Result[2][1], 2) + pow(Result[2][2], 2)));
+    double yaw = atan2(Result[2][1], Result[2][2]);
 
     cout << "x:" << x << " y:" << y << " z:" << z << endl;
     cout << "roll:" << roll << " pitch:" << pitch << " yaw:" << yaw << endl;
@@ -113,39 +171,3 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     return new SixDPos(x, y, z, roll, pitch, yaw);
 }
 
-
-void construct_transformation(double theta, double alpha, double r, double d, double* A[4][4])
-{
-    *A[0][0] = cos(theta);
-    *A[0][1] = -sin(theta) * cos(alpha);
-    *A[0][2] = sin(theta) * sin(alpha);
-    *A[0][3] = r * cos(theta);
-
-    *A[1][0] = sin(theta);
-    *A[1][1] = cos(theta) * cos(alpha);
-    *A[1][2] = -cos(theta) * sin(alpha);
-    *A[1][3] = r * sin(theta);
-
-    *A[2][0] = 0;
-    *A[2][1] = sin(alpha);
-    *A[2][2] = cos(alpha);
-    *A[2][3] = d;
-
-    *A[3][0] = 0;
-    *A[3][1] = 0;
-    *A[3][1] = 0;
-    *A[3][3] = 1;
-
-}
-
-
-void mat_mul4x4(double* m1[4][4], double* m2[4][4], double* result[4][4])
-{
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            *result[i][j] = *m1[i][0] * *m2[0][j] + *m1[i][1] * *m2[1][j] + *m1[i][2] * *m2[2][j] + *m1[i][3] * *m2[3][j];
-        }
-    }
-}
