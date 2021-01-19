@@ -98,6 +98,7 @@ void IVKinPos::checkLimits(double _phi1, std::array<double, 4>* _solution, std::
 		phi3_backward_upward,
 		phi3_backward_downward,
 		phi3_backward_downward_1*/
+	//TODO Werte in Roboter Klasse nehmen
 	std::cout << "checkLimits " << endl;
 	std::array<double, 3>* config = new std::array<double, 3>();
 	if (-185.0 < _phi1 && _phi1 < (185.0))
