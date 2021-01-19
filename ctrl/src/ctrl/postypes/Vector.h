@@ -30,6 +30,34 @@ public:
 
 
 
+    Vector<T,N>& operator+= (Vector<T,N>& vec)
+    {
+        for(int i =0; i < N; i++)
+        {
+            this->data[i] += vec[i];
+        }
+        return *this;
+    }
+
+    Vector<T,N> operator+ (Vector<T,N>& vec)
+    {
+        Vector<T,N> tmpVec;
+        for(int i =0; i < N; i++)
+        {
+            tmpVec[i] = this->data[i] + vec[i];
+        }
+        return tmpVec;
+    }
+
+    Vector<T,N>& operator-= (Vector<T,N>& vec )
+    {
+        for(int i =0; i < N; i++)
+        {
+            this->data[i] -= vec[i];
+        }
+        return *this;
+    }
+
     Vector operator- (Vector<T,N>& vec) const
     {
         Vector<T,N> tmpVec;
@@ -50,18 +78,16 @@ public:
         return tmpVec;
     }
 
-
-    Vector operator+ (Vector<T,N>& vec) const
-    {
-        Vector<T,N> tmpVec;
+    Vector<T,N>& operator*= (const T scal){
         for(int i =0; i < N; i++)
         {
-            tmpVec[i] = this->data[i] +vec[i];
+            this->data[i] *= scal;
         }
-        return tmpVec;
+        return *this;
     }
 
-    Vector<T,N>& operator=(const Vector<T,N>&vec)
+    /*
+    Vector<T,N>& operator=(const Vector<T,N> &vec)
     {
         if(this != &vec)
         {
@@ -70,6 +96,18 @@ public:
                 this->data[i] = vec[i];
             }
         }
+    }
+*/
+    bool operator==(Vector<T,N>& vec) {
+        bool tmp = true;
+        for (int i = 0; i < N; ++i) {
+            if (this->data[i] != vec[i])
+            {
+                tmp = false;
+                break;
+            }
+        }
+        return tmp;
     }
 
     void output() const{
@@ -81,6 +119,23 @@ public:
                 std::cout << this->data[i] << std::endl;
             }
         }
+    }
+
+    double length(){
+        double tmp = 0;
+        for(int i = 0; i<N; i++)
+        {
+            tmp += (this->data[i] * this->data[i]);
+        }
+        return (sqrt(tmp));
+    }
+
+    double dot_product(Vector<T,N> &vec){
+        double tmp = 0;
+        for (int i = 0; i < N; ++i) {
+            tmp += this->data[i] * vec[i];
+        }
+        return tmp;
     }
 
 
@@ -130,6 +185,14 @@ Vector<T, N> operator+(Vector<T, N> &vec1, Vector<T, N> &vec2) {
     Vector<T, N> tmpVec;
     for (int i = 0; i < N; i++)
         tmpVec[i] = vec1[i]+vec2[i];
+    return tmpVec;
+}
+
+template <class T, int N>
+Vector<T, N> operator-(Vector<T, N> &vec1, Vector<T, N> &vec2) {
+    Vector<T, N> tmpVec;
+    for (int i = 0; i < N; i++)
+        tmpVec[i] = vec1[i]-vec2[i];
     return tmpVec;
 }
 
