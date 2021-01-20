@@ -16,6 +16,7 @@ private:
 public:
 
     TMatrix();
+    TMatrix::TMatrix(std::array<double,16>);
     TMatrix(double theta_n, double alpha_n, double r_n, double d_n);
 
 	/**

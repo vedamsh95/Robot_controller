@@ -107,6 +107,25 @@ TMatrix::TMatrix(double _one, double _two, double _three, double _four, double _
 	m_transformation[3][3] = _sixteen;
 }
 
+TMatrix::TMatrix(std::array<double,16> arr) {
+    m_transformation[0][0] = arr[0];
+    m_transformation[0][1] = arr[1];
+    m_transformation[0][2] = arr[2];
+    m_transformation[0][3] = arr[3];
+    m_transformation[1][0] = arr[4];
+    m_transformation[1][1] = arr[5];
+    m_transformation[1][2] = arr[6];
+    m_transformation[1][3] = arr[7];
+    m_transformation[2][0] = arr[8];
+    m_transformation[2][1] = arr[9];
+    m_transformation[2][2] = arr[10];
+    m_transformation[2][3] = arr[11];
+    m_transformation[3][0] = arr[12];
+    m_transformation[3][1] = arr[13];
+    m_transformation[3][2] = arr[14];
+    m_transformation[3][3] = arr[15];
+}
+
 
 
 
