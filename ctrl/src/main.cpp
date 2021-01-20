@@ -189,6 +189,12 @@ int main() {
             if(jsonHandler.get_op_mode() == OpMode::LIN){
                 Configuration start_cfg((jsonHandler.get_data())[0]);
                 Configuration end_cfg((jsonHandler.get_data())[1]);
+                Json::Value val = jsonHandler.get_data()[2];
+                double speed = val["sp"].asDouble();
+                double acceleration = val["ac"].asDouble();
+
+                std::cout << "LIN Speed from GUI: " << speed << std::endl;
+                std::cout << "LIN Accel from GUI: " << acceleration << std::endl;
 //                cout << "Path Configuration" << endl;
 //                cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
 //                cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
@@ -242,7 +248,7 @@ int main() {
 
                     Spline spline(curr_pos, curr_ori, points, speed,acceleration);
                     spline.out();
-                    spline.calculateSpline();
+                    //spline.calculateSpline();
 
                 /*
                    for(Vector<double, 3> &t : *points)
