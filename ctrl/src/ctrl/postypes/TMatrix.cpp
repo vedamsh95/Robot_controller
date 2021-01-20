@@ -332,8 +332,8 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
     for (int i = 0; i < 3; ++i) {
         if(a[i] < 0.000000001 && a[i] > -0.000000001){
             a[i] = 0;
+            std::cout << "rounding of euler angle: " << i << std::endl;
         }
-        std::cout << "rounding of euler angle: " << i << std::endl;
     }
     return a;
 }
