@@ -34,6 +34,7 @@ std::array<double, 10> inv_gettheta4_5_6(TMatrix R36);
 std::vector<Configuration*>* inv_add_case_to_vec(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos, vector<vector<double>> solutions_vec);
 std::vector<std::vector<double>> inv_vec_sol_theta4_5_6(TMatrix T03, SixDPos* _pos);
 std::vector<std::vector<double>> inv_checklimits_theta4_5_6(std::array<double, 10> solution_standard_4_5_6);
+TMatrix invertmatrix(TMatrix T03);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
 

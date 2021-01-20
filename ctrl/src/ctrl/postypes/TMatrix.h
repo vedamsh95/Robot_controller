@@ -18,7 +18,6 @@ public:
     TMatrix();
     TMatrix::TMatrix(std::array<double,16>);
     TMatrix(double theta_n, double alpha_n, double r_n, double d_n);
-
 	/**
 	 * Constructor for the the TMatrix set up with the passed array containing the rotation and translation of a position.
 	 *  - _trans[0]: rotation around x-axis
@@ -80,8 +79,6 @@ public:
 	std::array<double, 3> convertToEulerAngles();
 
 	std::array<double,4> operator*(const std::array<double, 4>&vec);
-
-    std::array<double, 6> inverse();
 
 };
 

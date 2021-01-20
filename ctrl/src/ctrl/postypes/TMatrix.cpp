@@ -274,20 +274,56 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
     double phi, theta, psi;
     std::array<double, 3> a;
     double u = 0.0001;
+    double trans_0_0 = this->m_transformation[0][0];
+    double trans_0_1 = this->m_transformation[0][1];
+    double trans_1_0 = this->m_transformation[1][0];
+    double trans_2_0 = this->m_transformation[2][0];
+    double trans_2_1 = this->m_transformation[2][1];
+    double trans_2_2 = this->m_transformation[2][2];
 
+    bool trans_20_is_0 = false;
+
+    if(trans_0_0 <= 0.000001 && trans_0_0 >= -0.000001){
+        trans_0_0 = 0;
+    }
+
+    else if(trans_0_1 <= 0.000001 && trans_0_1 >= -0.000001){
+        trans_0_1 = 0;
+    }
+
+    else if(trans_1_0 <= 0.000001 && trans_1_0 >= -0.000001){
+        trans_1_0 = 0;
+    }
+
+    else if(trans_2_0 <= 0.000001 && trans_2_0 >= -0.000001){
+        trans_2_0 = 0;
+        trans_20_is_0 = true;
+    }
+
+    else if(trans_2_1 <= 0.000001 && trans_2_1 >= -0.000001){
+        trans_2_1 = 0;
+    }
+
+    else if(trans_2_2 <= 0.000001 && trans_2_2 >= -0.000001){
+        trans_2_2 = 0;
+    }
     // Error case
-    if ( (this->m_transformation[0][0] <= 0 + u || this->m_transformation[0][0] >= 0 - u)
-    && (this->m_transformation[1][0] <= 0 + u || this->m_transformation[1][0] >= 0 - u)) {
-        phi = asin( - this->m_transformation[0][1] );
-        theta = - this->m_transformation[2][0] * M_PI/2;
+    if ((trans_0_0 <= 0 + u && trans_0_0 >= 0 - u) && (trans_1_0 <= 0 + u && trans_1_0 >= 0 - u)) {
+        phi = asin( (-1)* trans_0_1);
+        theta = - trans_2_0 * M_PI/2;
         psi = 0;
-        std::cout << "errorCASTEEEE!!!E!11" << std::endl;
+        std::cout << "Errorcase for Euler Angles." << std::endl;
     }
     else {  // normal case
-        phi = atan2(this->m_transformation[1][0], this->m_transformation[0][0]);
-        theta = atan2(- this->m_transformation[2][0], sqrt( this->m_transformation[2][1]*this->m_transformation[2][1]
-        + this->m_transformation[2][2]*this->m_transformation[2][2] ));
-        psi = atan2(this->m_transformation[2][0], this->m_transformation[2][2]);
+        phi = atan2(trans_1_0, trans_0_0);
+        if(trans_20_is_0 = true){
+            theta = atan2(trans_2_0, sqrt( trans_2_1*trans_2_1 + trans_2_2*trans_2_2 ));
+        }
+        else{
+            theta = atan2((-1)*trans_2_0, sqrt( trans_2_1*trans_2_1 + trans_2_2*trans_2_2 ));
+        }
+        //theta = atan2((-1)* trans_2_0, sqrt( trans_2_1*trans_2_1 + trans_2_2*trans_2_2 ));
+        psi = atan2(trans_2_1, trans_2_2);
     }
     // add values to array
     a[0] = phi;
