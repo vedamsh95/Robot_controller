@@ -51,7 +51,7 @@ public:
      * @param end   target {@ref SixDPos}
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_lin(SixDPos* start, SixDPos* end);
+    Trajectory* move_robot_lin(SixDPos* start, SixDPos* end, double speed, double acceleration);
 
     /**
      * Computes a trajectory for a lin movement from a start and target configuration
@@ -60,7 +60,7 @@ public:
      * @param end   target {@ref Configuration}
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_lin(Configuration* start, Configuration* end);
+    Trajectory* move_robot_lin(Configuration* start, Configuration* end, double speed, double acceleration);
 };
 
 

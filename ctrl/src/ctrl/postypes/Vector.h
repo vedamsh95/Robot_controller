@@ -120,6 +120,16 @@ public:
             }
         }
     }
+    void output_for_mac() const{
+        if(N == 3){
+            std::cout << this->data[0] << "," << this->data[1] << "," << this->data[2] << std::endl;
+        }
+        else {
+            for (int i = 0; i < N; ++i) {
+                std::cout << this->data[i] << std::endl;
+            }
+        }
+    }
 
     double length(){
         double tmp = 0;
