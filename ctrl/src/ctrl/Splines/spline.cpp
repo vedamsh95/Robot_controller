@@ -119,7 +119,6 @@ Trajectory* Spline::calculateSpline() {
             inner_waypoint_dir_vec.at(i).output();
         }
 
-
     }
 
 

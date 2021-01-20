@@ -193,13 +193,11 @@ int main() {
                 double speed = val["sp"].asDouble();
                 double acceleration = val["ac"].asDouble();
 
-                std::cout << "LIN Speed from GUI: " << speed << std::endl;
-                std::cout << "LIN Accel from GUI: " << acceleration << std::endl;
 //                cout << "Path Configuration" << endl;
 //                cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
 //                cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
 
-                Trajectory* trajectory = ctrl.move_robot_lin(&start_cfg, &end_cfg);
+                Trajectory* trajectory = ctrl.move_robot_lin(&start_cfg, &end_cfg, speed, acceleration);
                 for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
                     c[0] = (*cur_cfg)[0];
                     c[1] = (*cur_cfg)[1];

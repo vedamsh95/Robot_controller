@@ -41,7 +41,7 @@ Trajectory* SdirCtrl::move_robot_ptp(Configuration* start, Configuration* end, b
 }
 
 
-Trajectory* SdirCtrl::move_robot_lin(SixDPos* start, SixDPos* end)
+Trajectory* SdirCtrl::move_robot_lin(SixDPos* start, SixDPos* end, double speed, double acceleration)
 {
     //ToDo: IMPLEMENT!
     // not needed because function is not used in main.cpp
@@ -49,9 +49,9 @@ Trajectory* SdirCtrl::move_robot_lin(SixDPos* start, SixDPos* end)
 }
 
 
-Trajectory* SdirCtrl::move_robot_lin(Configuration* start, Configuration* end)
+Trajectory* SdirCtrl::move_robot_lin(Configuration* start, Configuration* end, double speed, double acceleration)
 {
     //ToDo: IMPLEMENT!
     Lin lin;
-    return lin.get_lin_trajectoy(start, end);
+    return lin.get_lin_trajectoy(start, end, speed, acceleration);
 }

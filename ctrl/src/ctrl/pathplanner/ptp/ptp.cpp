@@ -14,7 +14,7 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
     Trajectory res;
     vector<Configuration*> config_vec;
     double M_PII = 3.14159;
-    double a_max = 200;     // max acceleration
+    double a_max = 250;     // max acceleration
     double timesteps = 100; // 0.001s; so r = 1000 = 1s
 
     // initialize all the arrays

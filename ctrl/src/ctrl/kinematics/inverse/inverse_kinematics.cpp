@@ -996,12 +996,12 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     double id = 0;
     std::array<double, 4> dTCP = {0,0,-215,1};                                                                        //Vector of the distance from TCP to WCP
 
-    std::cout << "X of sixDPos" <<_pos->get_X() << std::endl;
-    std::cout << "Y of sixDPos" <<_pos->get_Y() << std::endl;
-    std::cout << "Z of sixDPos" <<_pos->get_Z() << std::endl;
-    std::cout << "A of sixDPos" <<_pos->get_A() << std::endl;
-    std::cout << "B of sixDPos" <<_pos->get_B() << std::endl;
-    std::cout << "C of sixDPos" <<_pos->get_C() << std::endl;
+    std::cout << "X of sixDPos " <<_pos->get_X() << std::endl;
+    std::cout << "Y of sixDPos " <<_pos->get_Y() << std::endl;
+    std::cout << "Z of sixDPos " <<_pos->get_Z() << std::endl;
+    std::cout << "A of sixDPos " <<_pos->get_A() << std::endl;
+    std::cout << "B of sixDPos " <<_pos->get_B() << std::endl;
+    std::cout << "C of sixDPos " <<_pos->get_C() << std::endl;
 
     TMatrix TCP(_pos->get_A(),_pos->get_B(),_pos->get_C(),_pos->get_X()*1000,_pos->get_Y()*1000,_pos->get_Z()*1000);                                                            //Transformation Matrix for the TCP inside of the global coordinate system
                                                                                                                                                     //Calculation of wrist center point

@@ -6,6 +6,7 @@
 #include <TMatrix.h>
 #include <Configuration.h>
 
+
 /**
  * This class is intended to handle the direct kinematic computation from a given configuration
  */
