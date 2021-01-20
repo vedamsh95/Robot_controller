@@ -6,7 +6,7 @@
 #include "pathplanner/ptp/ptp.h"
 #include "pathplanner/lin/lin.h"
 #include <Trajectory.h>
-
+#include <iostream>
 SixDPos* SdirCtrl::get_pos_from_config(Configuration* _cfg)
 {
     //ToDo: IMPLEMENT!
@@ -21,6 +21,7 @@ vector<Configuration*>* SdirCtrl::get_config_from_pos(SixDPos* pos)
     //ToDo: IMPLEMENT!
     InvKinematics invKinematics;
     vector<Configuration*>* new_cfg = invKinematics.get_inv_kinematics(pos);
+    std::cout << new_cfg->at(0)->get_configuration().at(1) << std::endl;
     return new_cfg;
 }
 
