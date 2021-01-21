@@ -67,9 +67,9 @@ function applyDummy(ui,id)
         js = {
             op = 1,
             data = {{
-                m_a = tonumber(math.rad(new_ori[1])),
-                m_b = tonumber(math.rad(new_ori[2])),
-                m_c = tonumber(math.rad(new_ori[3])),
+                m_a = tonumber(new_ori[1]),
+                m_b = tonumber(new_ori[2]),
+                m_c = tonumber(new_ori[3]),
                 m_x = tonumber(new_pos[1]),
                 m_y = tonumber(new_pos[2]),
                 m_z = tonumber(new_pos[3])
