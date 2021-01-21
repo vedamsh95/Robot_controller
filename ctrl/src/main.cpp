@@ -246,7 +246,7 @@ int main() {
 
                     Spline spline(curr_pos, curr_ori, points, speed,acceleration);
                     spline.out();
-                    //spline.calculateSpline();
+                    spline.calculateSpline();
 
                 /*
                    for(Vector<double, 3> &t : *points)

@@ -155,8 +155,8 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         double x = t_pos_vec[0];
         double y = t_pos_vec[1];
         double z = t_pos_vec[2];
-    //    new_cfg = invKinematics.get_inv_kinematics(new SixDPos(1.5, 0.5, 1.6, 0, 0, 0 ));
-        new_cfg = invKinematics.get_inv_kinematics(new SixDPos(x, y, z, a, b, c ));
+      //  new_cfg = invKinematics.get_inv_kinematics(new SixDPos(1.5, 0.5, 1.6, 0, 0, 0 ));
+      //  new_cfg = invKinematics.get_inv_kinematics(new SixDPos(x, y, z, 0, 0, 0 ));
         std::cout << "X: " << position_sixdpos->get_X() << " Y: " << position_sixdpos->get_Y() << " Z: " << position_sixdpos->get_Z() <<
         " A: " << position_sixdpos->get_A() << " B: " << position_sixdpos->get_B() << " C: " << position_sixdpos->get_C() << std::endl;
 
@@ -172,8 +172,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
        // cfg_t_pos.push_back(invKinematics.get_inv_kinematics(positions.at(i)));
     }
 
-   // cfg_t_pos2.push_back(ctrl.get_config_from_pos(position_sixdpos));
-    cfg_t_pos.push_back(invKinematics.get_inv_kinematics(position_sixdpos));
+
 
 
 
