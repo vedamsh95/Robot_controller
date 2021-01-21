@@ -217,7 +217,7 @@ int main() {
                 auto *pos = new SixDPos( jsonHandler.get_data()[static_cast<int>(i)]);
                 points.push_back(pos);
               }
-              Trajectory* trajectory = ctrl.move_robot_spline(points, vel, acc);
+              Trajectory* trajectory = ctrl.move_robot_spline(points, &start_cfg, vel, acc);
               for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
                 c[0] = (*cur_cfg)[0];
                 c[1] = (*cur_cfg)[1];

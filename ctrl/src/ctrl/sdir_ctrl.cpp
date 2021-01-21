@@ -5,6 +5,7 @@
 #include "kinematics/inverse/inverse_kinematics.h"
 #include "pathplanner/ptp/ptp.h"
 #include "pathplanner/lin/lin.h"
+#include "pathplanner/splines/splines.h"
 #include <Trajectory.h>
 
 SixDPos* SdirCtrl::get_pos_from_config(Configuration* _cfg)
@@ -54,11 +55,13 @@ Trajectory* SdirCtrl::move_robot_lin(Configuration* start, Configuration* end, d
     return lin.get_lin_trajectory(start, end, velocity, acceleration);
 }
 
-Trajectory* SdirCtrl::move_robot_spline(vector<SixDPos*> &points, double velocity, double acceleration)
+Trajectory* SdirCtrl::move_robot_spline(vector<SixDPos*> &points, Configuration * start, double velocity, double acceleration)
 {
   //ToDO: IMPLEMENT!
   for ( auto pos : points ) {
-    //std::cout << (*pos)[0] << ", " << (*pos)[1] << ", " << (*pos)[2] << std::endl;
+    std::cout << (*pos)[0] << ", " << (*pos)[1] << ", " << (*pos)[2] << std::endl;
   }
-  return nullptr;
+  Splines splines;
+  return splines.getSpline(points, start, velocity, acceleration);;
+  
 }
