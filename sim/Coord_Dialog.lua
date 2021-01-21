@@ -62,8 +62,8 @@ function applyDummy(ui,id)
                 new_ori[i] = math.rad(editvalues[edit_ids[i+3]])
             end
         end
-        sim.setObjectPosition(ik_test, robot, new_pos)
-        sim.setObjectOrientation(ik_test, robot, new_ori)
+        sim.setObjectPosition(ik_target, robot, new_pos)
+        sim.setObjectOrientation(ik_target, robot, new_ori)
         js = {
             op = 1,
             data = {{
@@ -110,7 +110,11 @@ function applyDummy(ui,id)
         str = json.encode (js, { indent = true })
         sim.setStringSignal("callsignal",str)
     end
+end
+
+function returnSignal()
     local ret = sim.getStringSignal("returnsignal")
+    local ui = ui_1
     if ret then
         local obj, pos, err = json.decode (ret, 1, nil)
         --print(#obj.data)
@@ -118,7 +122,7 @@ function applyDummy(ui,id)
             sim.addStatusbarMessage("Error:", err)
         else
             if (obj.op==0) then
-                if (id==2007) then
+                if (simUI.getRadiobuttonValue(ui,2007)==1) then
                     simUI.setEditValue(ui,2000,tostring(math.deg(obj.data[1].j0)))
                     simUI.setEditValue(ui,2001,tostring(math.deg(obj.data[1].j1)))
                     simUI.setEditValue(ui,2002,tostring(math.deg(obj.data[1].j2)))
@@ -150,6 +154,7 @@ function applyDummy(ui,id)
         print("No Return-Signal. Try again or Restart the Programm!")
     end
     changeEnabled(ui,true)
+    return {},{},{},''
 end
 
 --[[
@@ -221,8 +226,8 @@ function CalculateIK(ui,id)
         return
     end
 
-    local new_pos = sim.getObjectPosition(ik_test,robot)
-    local new_ori = sim.getObjectOrientation(ik_test, robot)
+    local new_pos = sim.getObjectPosition(ik_target,robot)
+    local new_ori = sim.getObjectOrientation(ik_target, robot)
 
     sim.setObjectPosition(ik_target, robot, new_pos)
     sim.setObjectOrientation(ik_target, robot, new_ori)
@@ -404,7 +409,7 @@ Input:
 function switchConfig(ui,id,newValue)
     if (newValue ~= 0) then
         for i=1,6 do
-            if (id==2007) then
+            if (simUI.getRadiobuttonValue(ui,2007)==1) then
                 simUI.setEditValue(ui,1999+i,tostring(math.deg(cconf[newValue][i])))
                 editjp(ui,1999+i,tostring(math.deg(cconf[newValue][i])))
             else

@@ -115,6 +115,7 @@ int main() {
 //                cout << json_return_string << endl;
                 simxSetStringSignal(ID, "returnsignal",
                                     reinterpret_cast<const simxUChar *>(json_return_string.c_str()), json_return_string.length(), simx_opmode_oneshot);
+                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "returnSignal", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
             }
 
             /*
@@ -128,6 +129,7 @@ int main() {
 //                cout << json_return_string << endl;
                 simxSetStringSignal(ID, "returnsignal",
                                     reinterpret_cast<const simxUChar *>(json_return_string.c_str()), json_return_string.length(), simx_opmode_oneshot);
+                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "returnSignal", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
             }
 
             /*
