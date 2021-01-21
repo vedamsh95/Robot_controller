@@ -61,7 +61,7 @@ function applyDummy(ui,id)
             end
         end
         sim.setObjectPosition(ik_target, robot, new_pos)
-        sim.setObjectOrientation(ik_target, robot, new_ori)
+        set_orientation(ik_target, robot, new_ori)
         js = {
             op = 1,
             data = {{
@@ -202,11 +202,12 @@ function setConfigEndPoint(ui,c)
     sim.setObjectOrientation(ik_target,-1,tip_ori)
     local new_pos = sim.getObjectPosition(tip,robot)
     local new_ori = sim.getObjectOrientation(tip,robot)
+    local our_ori = get_orientation(tip, robot)
     for i=1,6 do
         if i <=3 then
             simUI.setEditValue(ui,999+i,tostring(math.round(new_pos[i],3)))
         else
-            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(new_ori[i-3]),3)))
+            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(our_ori[i-3]),3)))
         end
     end
     for i=1,#joints do
@@ -231,6 +232,7 @@ function CalculateIK(ui,id)
 
     local new_pos = sim.getObjectPosition(ik_target,robot)
     local new_ori = sim.getObjectOrientation(ik_target, robot)
+    local our_ori = get_orientation(ik_target, robot)
 
     sim.setObjectPosition(ik_target, robot, new_pos)
     sim.setObjectOrientation(ik_target, robot, new_ori)
@@ -239,7 +241,7 @@ function CalculateIK(ui,id)
         if i <=3 then
             simUI.setEditValue(ui,999+i,tostring(math.round(new_pos[i],3)))
         else
-            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(new_ori[i-3]),3)))
+            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(our_ori[i-3]),3)))
         end
     end
     local curr_c = {}
@@ -334,7 +336,7 @@ the movement.
 function sendSplineData()
 
     tip_pos = sim.getObjectPosition(tip,robot)
-    tip_ori = sim.getObjectOrientation(tip,robot)
+    tip_ori = get_orientation(tip, robot)
 
     local curr_c = {}
     for i=1,#joints do
@@ -403,7 +405,7 @@ function switchMVMode(ui,id)
 end
 
 --[[
-Use that funtion to switch between the different Configurations that where calcutated for
+Use that function to switch between the different Configurations that where calcutated for
 a target point in the C++-Environment.
 Input:
     ui = UI Handler Value
@@ -470,14 +472,20 @@ Input:
 --]]
 function radiobuttonClick(ui,id)
     if (id==2007) then
-        for i=1,6 do
-            local value = simUI.getEditValue(ui,i+1999)
-            simUI.setEditValue(ui,i+1999,tostring(math.deg(value)))
+        if not degree then
+            for i=1,6 do
+                local value = simUI.getEditValue(ui,i+1999)
+                simUI.setEditValue(ui,i+1999,tostring(math.deg(value)))
+            end
+            degree = true
         end
     else
-        for i=1,6 do
-            local value = simUI.getEditValue(ui,i+1999)
-            simUI.setEditValue(ui,i+1999,tostring(math.rad(value)))
+        if degree then
+            for i=1,6 do
+                local value = simUI.getEditValue(ui,i+1999)
+                simUI.setEditValue(ui,i+1999,tostring(math.rad(value)))
+            end
+            degree = false
         end
     end
 end
@@ -784,6 +792,37 @@ function math.round(number, decimals, method)
     else return tonumber(("%."..decimals.."f"):format(number)) end
 end
 
+--[[
+This function calculates the euler angles according to our convention (Roll, Pitch, Yaw)
+Input:
+    handle      = handle of the object
+    id          = objective to calculate orientation relative to, or -1 for absolut
+--]]
+function get_orientation(handle, relative)
+    mat = sim.getObjectMatrix(handle, relative)
+    local epsilon = 0.00174532925            -- 0.1 degrees
+    local phi, theta, psi
+    if (math.abs(mat[1]) < epsilon and math.abs(mat[5]) < epsilon) then
+        phi = math.asin(-mat[2])
+        theta = -mat[9] * math.pi * 0.5
+        psi = 0
+    else
+        phi = math.atan2(mat[5], mat[1]);
+        theta = math.atan2(-mat[9], math.sqrt(math.pow(mat[10], 2) + math.pow(mat[11], 2)));
+        psi = math.atan2(mat[10], mat[11]);
+    end
+    return {phi, theta, psi}
+end
+
+function set_orientation(handle, relative, angles)
+    mat = sim.buildIdentityMatrix()
+    mat = sim.rotateAroundAxis(mat, {1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, angles[3]) -- um x mit psi
+    mat = sim.rotateAroundAxis(mat, {0, 1, 0}, {0, 0, 0}, angles[2])-- um y mit theta
+    mat = sim.rotateAroundAxis(mat, {0, 0, 1}, {0, 0, 0}, angles[1])-- um z mit phi
+    new_angles = sim.getEulerAnglesFromMatrix(mat)
+    sim.setObjectOrientation(handle, relative, new_angles)
+end
+
 --Initialize the UI
 if (sim_call_type==sim.syscb_init) then
 
@@ -974,6 +1013,7 @@ or export the current points to a file."></label>
     jpeditvalues = {}
     c = {}
     cconf={}
+    degree = false
 
     json=require("dkjson")
 
@@ -995,7 +1035,7 @@ or export the current points to a file."></label>
 
     ik_dummy = sim.getObjectHandle('ik_target')
     ik_target = sim.getObjectHandle('testTarget1')
-    ik_test = sim.getObjectHandle('testTarget2')
+    --ik_test = sim.getObjectHandle('testTarget2')
     tip = sim.getObjectHandle('KR120_2700_2_tip')
     robot = sim.getObjectHandle('Graph')
     joints = {  'KR120_2700_2_joint1','KR120_2700_2_joint2',
@@ -1038,5 +1078,5 @@ if (sim_call_type==sim.syscb_cleanup) then
     simUI.destroy(ui_1)
     simUI.destroy(ui_2)
     simUI.destroy(ui_3)
-    sim.removeObjectFromSelection(sim.handle_single, ik_test)
+    --sim.removeObjectFromSelection(sim.handle_single, ik_test)
 end
