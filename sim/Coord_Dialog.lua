@@ -202,11 +202,12 @@ function setConfigEndPoint(ui,c)
     sim.setObjectOrientation(ik_target,-1,tip_ori)
     local new_pos = sim.getObjectPosition(tip,robot)
     local new_ori = sim.getObjectOrientation(tip,robot)
+    local our_ori = get_orientation(tip, robot)
     for i=1,6 do
         if i <=3 then
             simUI.setEditValue(ui,999+i,tostring(math.round(new_pos[i],3)))
         else
-            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(new_ori[i-3]),3)))
+            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(our_ori[i-3]),3)))
         end
     end
     for i=1,#joints do
