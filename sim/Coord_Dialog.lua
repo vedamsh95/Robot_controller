@@ -470,14 +470,20 @@ Input:
 --]]
 function radiobuttonClick(ui,id)
     if (id==2007) then
-        for i=1,6 do
-            local value = simUI.getEditValue(ui,i+1999)
-            simUI.setEditValue(ui,i+1999,tostring(math.deg(value)))
+        if not degree then
+            for i=1,6 do
+                local value = simUI.getEditValue(ui,i+1999)
+                simUI.setEditValue(ui,i+1999,tostring(math.deg(value)))
+            end
+            degree = true
         end
     else
-        for i=1,6 do
-            local value = simUI.getEditValue(ui,i+1999)
-            simUI.setEditValue(ui,i+1999,tostring(math.rad(value)))
+        if degree then
+            for i=1,6 do
+                local value = simUI.getEditValue(ui,i+1999)
+                simUI.setEditValue(ui,i+1999,tostring(math.rad(value)))
+            end
+            degree = false
         end
     end
 end
@@ -974,6 +980,7 @@ or export the current points to a file."></label>
     jpeditvalues = {}
     c = {}
     cconf={}
+    degree = false
 
     json=require("dkjson")
 
