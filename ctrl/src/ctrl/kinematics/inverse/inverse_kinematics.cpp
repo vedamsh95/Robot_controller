@@ -193,6 +193,7 @@ std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
 
 std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos) {
     std::vector<Configuration*>* sol_theta1_specialcases_vec{};
+    double id = 0;
     if(-185 < theta1 && theta1 < -175) {
         std::cout << "theta1: (-185 < theta1 && theta1 < -175)" << std::endl;
         //initialize dpx and dpy (as needed in first if statement)
@@ -200,12 +201,23 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
         double dpy = wcp[2] - n;
 
         if(d1 > m && wcp[2] > n){
-            // dpx and dpy do not change here
-            theta2_theta3 = inv_backwardcase(dpx, dpy);
-            sol_specialcase1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+
             //step1
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_1.at(0).at(0) = 100+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_1.at(0).at(0) = 100+id;
+                sol_theta1_special1_1.at(1).at(0) = 100+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
             // size1_1 is the number of configurations inside the vector
             double size1_1 = sol_specialcase1_1_vec->size();
@@ -221,6 +233,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             double theta1_2 = theta1 + 360;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_2.at(0).at(0) = 100+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_2.at(0).at(0) = 100+id;
+                sol_theta1_special1_2.at(1).at(0) = 100+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_2_vec = inv_add_case_to_vec(theta1_2, d1, wcp, _pos, sol_theta1_special1_2);
             // size1_1 is the number of configurations inside the vector
             double size1_2 = sol_specialcase1_2_vec->size();
@@ -237,6 +262,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             dpx = d1 + m;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_3.at(0).at(0) = 200+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_3.at(0).at(0) = 200+id;
+                sol_theta1_special1_3.at(1).at(0) = 200+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_3_vec = inv_add_case_to_vec(theta1_3, d1, wcp, _pos, sol_theta1_special1_3);
             // size1_1 is the number of configurations inside the vector
             double size1_3 = sol_specialcase1_3_vec->size();
@@ -254,6 +292,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             dpy = wcp[2] - n;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_1.at(0).at(0) = 200+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_1.at(0).at(0) = 200+id;
+                sol_theta1_special1_1.at(1).at(0) = 200+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
             // size1_1 is the number of configurations inside the vector
             double size1_1 = sol_specialcase1_1_vec->size();
@@ -268,6 +319,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             double theta1_2 = theta1 + 360;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_2.at(0).at(0) = 200+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_2.at(0).at(0) = 200+id;
+                sol_theta1_special1_2.at(1).at(0) = 200+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_2_vec = inv_add_case_to_vec(theta1_2, d1, wcp, _pos, sol_theta1_special1_2);
             // size1_1 is the number of configurations inside the vector
             double size1_2 = sol_specialcase1_2_vec->size();
@@ -284,6 +348,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             dpx = d1 + m;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_3.at(0).at(0) = 100+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_3.at(0).at(0) = 100+id;
+                sol_theta1_special1_3.at(1).at(0) = 100+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_3_vec = inv_add_case_to_vec(theta1_3, d1, wcp, _pos, sol_theta1_special1_3);
             // size1_1 is the number of configurations inside the vector
             double size1_3 = sol_specialcase1_3_vec->size();
@@ -305,6 +382,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
         if(d1 > m && wcp[2] > n){
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_1.at(0).at(0) = 100+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_1.at(0).at(0) = 100+id;
+                sol_theta1_special1_1.at(1).at(0) = 100+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
             // size1_1 is the number of configurations inside the vector
             double size1_1 = sol_specialcase1_1_vec->size();
@@ -320,6 +410,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             double theta1_2 = theta1 - 360;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_2.at(0).at(0) = 100+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_2.at(0).at(0) = 100+id;
+                sol_theta1_special1_2.at(1).at(0) = 100+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_2_vec = inv_add_case_to_vec(theta1_2, d1, wcp, _pos, sol_theta1_special1_2);
             // size1_1 is the number of configurations inside the vector
             double size1_2 = sol_specialcase1_2_vec->size();
@@ -336,6 +439,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             dpx = d1 + m;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_3.at(0).at(0) = 200+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_3.at(0).at(0) = 200+id;
+                sol_theta1_special1_3.at(1).at(0) = 200+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_3_vec = inv_add_case_to_vec(theta1_3, d1, wcp, _pos, sol_theta1_special1_3);
             // size1_1 is the number of configurations inside the vector
             double size1_3 = sol_specialcase1_3_vec->size();
@@ -354,6 +470,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             dpy = wcp[2] - n;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_1.at(0).at(0) = 200+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_1.at(0).at(0) = 200+id;
+                sol_theta1_special1_1.at(1).at(0) = 200+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
             // size1_1 is the number of configurations inside the vector
             double size1_1 = sol_specialcase1_1_vec->size();
@@ -368,6 +497,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             double theta1_2 = theta1 - 360;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_2.at(0).at(0) = 200+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_2.at(0).at(0) = 200+id;
+                sol_theta1_special1_2.at(1).at(0) = 200+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_2_vec = inv_add_case_to_vec(theta1_2, d1, wcp, _pos, sol_theta1_special1_2);
             // size1_1 is the number of configurations inside the vector
             double size1_2 = sol_specialcase1_2_vec->size();
@@ -385,6 +527,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             dpx = d1 + m;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_3.at(0).at(0) = 100+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_3.at(0).at(0) = 100+id;
+                sol_theta1_special1_3.at(1).at(0) = 100+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_3_vec = inv_add_case_to_vec(theta1_3, d1, wcp, _pos, sol_theta1_special1_3);
             // size1_1 is the number of configurations inside the vector
             double size1_3 = sol_specialcase1_3_vec->size();
@@ -404,6 +559,19 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
         if(d1 > m && wcp[2] > n){
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            id = sol_theta1_special1_1.at(0).at(0);
+            if(id == 2 || id == 3){
+                sol_theta1_special1_1.at(0).at(0) = 100+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_1.at(0).at(0) = 100+id;
+                sol_theta1_special1_1.at(1).at(0) = 100+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
             // size1_1 is the number of configurations inside the vector
             double size1_1 = sol_specialcase1_1_vec->size();
@@ -419,6 +587,18 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             double theta1_2 = theta1 - 360;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
+            if(id == 2 || id == 3){
+                sol_theta1_special1_2.at(0).at(0) = 200+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_2.at(0).at(0) = 200+id;
+                sol_theta1_special1_2.at(1).at(0) = 200+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_2_vec = inv_add_case_to_vec(theta1_2, d1, wcp, _pos, sol_theta1_special1_2);
             // size1_1 is the number of configurations inside the vector
             double size1_2 = sol_specialcase1_2_vec->size();
@@ -431,10 +611,22 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             }
 
 
-            double theta1_3 = theta1 - 180;
+            double theta1_3 = theta1 + 360;
             dpx = d1 + m;
-            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
+            if(id == 2 || id == 3){
+                sol_theta1_special1_3.at(0).at(0) = 200+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_3.at(0).at(0) = 200+id;
+                sol_theta1_special1_3.at(1).at(0) = 200+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_3_vec = inv_add_case_to_vec(theta1_3, d1, wcp, _pos, sol_theta1_special1_3);
             // size1_1 is the number of configurations inside the vector
             double size1_3 = sol_specialcase1_3_vec->size();
@@ -451,8 +643,20 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
         if(d1 < m){
             dpx = m - d1;
             dpy = wcp[2] - n;
-            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_1 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
+            if(id == 2 || id == 3){
+                sol_theta1_special1_1.at(0).at(0) = 200+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_1.at(0).at(0) = 200+id;
+                sol_theta1_special1_1.at(1).at(0) = 200+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
             // size1_1 is the number of configurations inside the vector
             double size1_1 = sol_specialcase1_1_vec->size();
@@ -467,6 +671,18 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             double theta1_2 = theta1 - 360;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
+            if(id == 2 || id == 3){
+                sol_theta1_special1_2.at(0).at(0) = 100+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_2.at(0).at(0) = 100+id;
+                sol_theta1_special1_2.at(1).at(0) = 100+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_2_vec = inv_add_case_to_vec(theta1_2, d1, wcp, _pos, sol_theta1_special1_2);
             // size1_1 is the number of configurations inside the vector
             double size1_2 = sol_specialcase1_2_vec->size();
@@ -480,10 +696,23 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
 
 
 
-            double theta1_3 = theta1 - 180;
+            double theta1_3 = theta1 + 360;
             dpx = d1 + m;
-            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
+            //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
+            if(id == 2 || id == 3){
+                sol_theta1_special1_3.at(0).at(0) = 100+id;
+            }
+
+            else if(id == 11){
+                sol_theta1_special1_3.at(0).at(0) = 100+id;
+                sol_theta1_special1_3.at(1).at(0) = 100+12;
+            }
+
+            else if(id == 4){
+                std::cout << "No possible configuration for the robot" << endl;
+            }
             sol_specialcase1_3_vec = inv_add_case_to_vec(theta1_3, d1, wcp, _pos, sol_theta1_special1_3);
             // size1_1 is the number of configurations inside the vector
             double size1_3 = sol_specialcase1_3_vec->size();
@@ -627,9 +856,9 @@ double id = 0;
             }
 
         }
-       else if (-140 < theta2_theta3[1] && theta2_theta3[1] < -5) {
+       if (-140 <= theta2_theta3[1] && theta2_theta3[1] <= -5) {
             std::cout << "theta2: " << theta2_theta3[1] << std::endl;
-            if (-120 < theta2_theta3[3] && theta2_theta3[3] < 168) {
+            if (-120 <= theta2_theta3[3] && theta2_theta3[3] <= 168) {
                 std::cout << "theta3: " << theta2_theta3[3] << std::endl;
                 elbowdown = true;
             }
@@ -689,6 +918,7 @@ double id = 0;
 
 std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos, vector<vector<double>> solutions_vec){
     double id = 0;
+    std::cout << "TEst" << std::endl;
     vector<Configuration *>* config_vec = new vector<Configuration *>();
     Configuration *upward_config;
     Configuration *downward_config;
@@ -751,19 +981,20 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
 
 
             for (int i = 1; i <= num_config2; i++){
-                     downward_config = new Configuration({solution_standard.at(0).at(1) * M_PI / 180,
-                                                   solution_standard.at(0).at(2) * M_PI / 180,
-                                                   solution_standard.at(0).at(3) * M_PI / 180,
+                     downward_config = new Configuration({solution_standard.at(1).at(1) * M_PI / 180,
+                                                   solution_standard.at(1).at(2) * M_PI / 180,
+                                                   solution_standard.at(1).at(3) * M_PI / 180,
                                                    sol_theta_4_5_6_T03_2.at(i).at(0)*M_PI/180,
                                                    sol_theta_4_5_6_T03_2.at(i).at(1)*M_PI/180,
                                                    sol_theta_4_5_6_T03_2.at(i).at(2)*M_PI/180});
                     config_vec->push_back(downward_config);
+                    //std::cout << "Test" << std::endl;
                     std::cout << "Configuration downward: " << i << ": " << downward_config->get_configuration().at(0) << ", "
                     << downward_config->get_configuration().at(1) << ", "
                               << downward_config->get_configuration().at(2) << ", "
                               << downward_config->get_configuration().at(3) << ", "
                               << downward_config->get_configuration().at(4) << ", "
-                              << downward_config->get_configuration().at(5) << endl;
+                              << downward_config->get_configuration().at(5) << std::endl;
                 }
 
         }
@@ -1008,16 +1239,16 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
       std::array<double, 3> wcp;
       TCP.output();
 
-      //if(_pos->get_X() > 0) {
+      //if(_pos->get_X() >= 0) {
           wcp[0] = _pos->get_X() * 1000 - (215 * TCP.get_element(0, 2));
           wcp[1] = _pos->get_Y() * 1000 - (215 * TCP.get_element(1, 2));
           wcp[2] = _pos->get_Z() * 1000 - (215 * TCP.get_element(2, 2));
+       // }
+      //else{
+      //    wcp[0] = _pos->get_X() * 1000 + (215 * TCP.get_element(0, 2));
+      //    wcp[1] = _pos->get_Y() * 1000 - (215 * TCP.get_element(1, 2));
+      //    wcp[2] = _pos->get_Z() * 1000 - (215 * TCP.get_element(2, 2));
       //}
-//      else{
-//          wcp[0] = _pos->get_X() * 1000 + (215 * TCP.get_element(0, 2));
-//          wcp[1] = _pos->get_Y() * 1000 - (215 * TCP.get_element(1, 2));
-//          wcp[2] = _pos->get_Z() * 1000 - (215 * TCP.get_element(2, 2));
-//      }
 
     for (int i = 0; i < 3; ++i) {
         std::cout << "wcp :" << wcp[i] << std::endl;
@@ -1114,12 +1345,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             //solution_vec contains the possible configurations for a standardcase for all joints
             solution_standard = inv_standardcase(theta1, d1, wcp);
             solution_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, solution_standard);
-            std::cout << "theta 1: " << theta1 << std::endl;
-            std::cout << "theta 2: " << theta2_theta3[0] << std::endl;
-            std::cout << "theta 3: " << theta2_theta3[2] << std::endl;
-            std::cout << "theta 4: " << theta4_5_6[0] << std::endl;
-            std::cout << "theta 5: " << theta4_5_6[4] << std::endl;
-            std::cout << "theta 6: " << theta4_5_6[6] << std::endl;
         }
 
         //othercases
@@ -1146,7 +1371,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     else if(wcp[0]<0 && wcp[1]>=0)
     {
         cout << "Fall 4" << endl;
-        theta1= 180 - atan(wcp[1] / (-1 * wcp[0])) * 180 / M_PI;
+        theta1= (-1)*(180 - atan(wcp[1] / (-1 * wcp[0])) * 180 / M_PI);
         std::cout << "theta1: " << theta1 << std::endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
