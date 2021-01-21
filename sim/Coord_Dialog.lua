@@ -27,8 +27,6 @@ end
 Setting up the Targetcoordinatesystem.
 Building a JSON-String from the Input.
 Sending the JSON-String to the C++-Environment via String Signal.
-Receiving a String-Signal from the C++-Einvironment.
-Decoding of that JSON-String and Ouput to the Editfields.
 Input:
     ui = UI Handler Value
     id = as Number of the Button
@@ -112,6 +110,11 @@ function applyDummy(ui,id)
     end
 end
 
+--[[
+Receiving a String-Signal from the C++-Environment.
+Decoding of that JSON-String and Output to the Editfields.
+This function gets be called by the controller.
+--]]
 function returnSignal()
     local ret = sim.getStringSignal("returnsignal")
     local ui = ui_1
@@ -373,6 +376,7 @@ function sendSplineData()
         data = data_arr,
         vel = tonumber(simUI.getEditValue(ui_1, 3020)),   -- The velocity for the spline movement
         acc = tonumber(simUI.getEditValue(ui_1, 3021)),   -- The acceleration for the spline movement
+        type = simUI.getComboboxSelectedIndex(ui_3, 5005),
         start_config = start_config
     }
 
@@ -923,7 +927,7 @@ for the lin and spline movement:"></label>
                 <button text="Insert" id="3007" onclick="splineInsert"></button>
             </group>
             <group>
-                <button text="CSV functionality" id="3008" onclick="splineIO"></button>
+                <button text="Advanced" id="3008" onclick="splineIO"></button>
             </group>
 
         </group>
@@ -951,7 +955,11 @@ or export the current points to a file."></label>
             <button text="Export" onclick="splineIO" id="5003"></button>
         </group>
     </group>
-    <button text="Cancel" onclick="splineIO" id="5004"></button>
+    <label text="You can select a spline type."></label>
+    <group layout="hbox">
+        <combobox id="5005" on-change="splineIO"></combobox>
+    </group>
+    <button text="OK" onclick="splineIO" id="5004"></button>
 </ui>]]
 
     movement_allowed = false    -- Whether apply has been pressed once
@@ -980,8 +988,10 @@ or export the current points to a file."></label>
     pathIntParams = { 7, 0, 0 }                                         -- First one is the size of the path
     pathColor = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }                  -- Color of the path
     pathHandle = sim.createPath(-1, pathIntParams, nullptr, pathColor)
-    simUI.setEditValue(ui_1, 3020, tostring(1.0))
-    simUI.setEditValue(ui_1, 3021, tostring(5.0))
+    simUI.setEditValue(ui_1, 3020, tostring(1.0))                   -- Default velocity
+    simUI.setEditValue(ui_1, 3021, tostring(5.0))                   -- Default acceleration
+    simUI.insertComboboxItem(ui_3, 5005, 0, "Cubic")                    -- Movement types for the spline functionality
+    simUI.insertComboboxItem(ui_3, 5005, 1, "Quintic")                  -- The indices here correspond to the sent ones
 
     ik_dummy = sim.getObjectHandle('ik_target')
     ik_target = sim.getObjectHandle('testTarget1')

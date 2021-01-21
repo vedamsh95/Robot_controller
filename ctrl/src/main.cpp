@@ -213,6 +213,7 @@ int main() {
               double vel = jsonHandler.get_velocity();
               double acc = jsonHandler.get_acceleration();
               Configuration start_cfg(jsonHandler.get_start_configuration());
+              int spline_type = jsonHandler.get_spline_type();
               vector<SixDPos*> points;
               size_t count = jsonHandler.get_data().size();
               for(size_t i = 0; i < count; i++) {

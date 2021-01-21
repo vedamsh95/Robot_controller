@@ -91,3 +91,10 @@ Json::Value JsonHandler::get_start_configuration()
   }
   return m_json_value["start_config"];
 }
+
+int JsonHandler::get_spline_type() {
+    if (m_json_value["type"].isNull()) {
+        return -1;
+    }
+    return m_json_value["type"].asInt();
+}
