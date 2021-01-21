@@ -19,9 +19,9 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 	    IVpos = Position.get_IVKinPos(_pos);
     
     //calcualte rotation matrix for all joints.
-    TMatrix R_06 = TMatrix(_pos->get_C()*180/M_PI,
-                           _pos->get_B()*180/M_PI,
-                           _pos->get_A()*180/M_PI,
+    TMatrix R_06 = TMatrix(_pos->get_C(),
+                           _pos->get_B(),
+                           _pos->get_A(),
                            _pos->get_X(),
                            _pos->get_Y(),
                            _pos->get_Z());
