@@ -2,12 +2,18 @@
 #include "Vector.h"
 #include "iostream"
 
+
 Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg, double speed, double acceleration)
 {
     //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
     Trajectory* trajectory = new Trajectory();
     // Step1: Calculate start position and end position from the configs with direct kinematics
     FwKinematics fwKinematics;
+    InvKinematics invKinematics;
+    SdirCtrl ctrl;
+    vector<SixDPos*> positions;
+    SixDPos* position_sixdpos;
+    vector<vector<Configuration*>*> cfg_t_pos;
     SixDPos* start_pos = fwKinematics.get_fw_kinematics(_start_cfg);
     SixDPos* end_pos = fwKinematics.get_fw_kinematics(_end_cfg);
 
@@ -74,9 +80,9 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     start_pos_vec.output();
     std::cout << "End Position (X,Y,Z)" << std::endl;
     end_pos_vec.output();
-    std::cout << "Start Position (A,B,C)" << std::endl;
+    std::cout << "Start Orientation (A,B,C)" << std::endl;
     start_ori_vec.output();
-    std::cout << "End Position (A,B,C)" << std::endl;
+    std::cout << "End Orientation (A,B,C)" << std::endl;
     end_ori_vec.output();
     std::cout << "maximum acceleration of Endeffector = " << a_max << std::endl;
     std::cout << "maximum velocity of Endeffector = " << v_max << std::endl;
@@ -127,6 +133,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     double b_steps = b_diff/number_steps;
     double c_steps = c_diff/number_steps;
     //------------------------------------------------------------------------------------------------------------------
+    vector<Configuration*>* new_cfg;
     for (int i = 0; i < t_f*timesteps; ++i) {
         double t = double(i)/timesteps;
         double a = start_ori_vec[0] + a_steps * t;
@@ -143,12 +150,30 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         std::cout << "Point at time: " << t << std::endl;
 
        // Write Position vector to SixDPos
-        SixDPos* position_sixdpos = new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], a, b, c );
+        position_sixdpos = new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], a, b, c );
+      //  positions.push_back(position_sixdpos);
+        double x = t_pos_vec[0];
+        double y = t_pos_vec[1];
+        double z = t_pos_vec[2];
+    //    new_cfg = invKinematics.get_inv_kinematics(new SixDPos(1.5, 0.5, 1.6, 0, 0, 0 ));
+        new_cfg = invKinematics.get_inv_kinematics(new SixDPos(x, y, z, a, b, c ));
         std::cout << "X: " << position_sixdpos->get_X() << " Y: " << position_sixdpos->get_Y() << " Z: " << position_sixdpos->get_Z() <<
         " A: " << position_sixdpos->get_A() << " B: " << position_sixdpos->get_B() << " C: " << position_sixdpos->get_C() << std::endl;
 
-        t_pos_vec.output_for_mac();
+       // t_pos_vec.output();
+        // Get configurations for the SixDPos
+
     }
+
+    cfg_t_pos.reserve(positions.size());
+
+    for (int i = 0; i < positions.size(); ++i) {
+        new_cfg = invKinematics.get_inv_kinematics(positions.at(i));
+       // cfg_t_pos.push_back(invKinematics.get_inv_kinematics(positions.at(i)));
+    }
+
+   // cfg_t_pos2.push_back(ctrl.get_config_from_pos(position_sixdpos));
+    cfg_t_pos.push_back(invKinematics.get_inv_kinematics(position_sixdpos));
 
 
 

@@ -4,6 +4,8 @@
 #include <Configuration.h>
 #include <Trajectory.h>
 #include <fw_kinematics.h>
+#include <sdir_ctrl.h>
+#include "inverse_kinematics.h"
 #include "Vector.h"
 
 /**
