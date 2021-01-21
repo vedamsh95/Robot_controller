@@ -34,3 +34,7 @@ void Trajectory::set_trajectory(const vector<Configuration*> _configurations)
     this->m_configs.clear();
     this->m_configs = _configurations;
 }
+void Trajectory::add_configuration(Configuration* config)
+{
+	this->m_configs.push_back(config);
+}
