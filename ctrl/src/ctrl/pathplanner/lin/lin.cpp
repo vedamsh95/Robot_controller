@@ -124,10 +124,14 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
 
     //Calculate points for Endeffector along linear path ---------------------------------------------------------------
     std::array<double,3> t_pos_vec;
-    t_pos_vec[0] = 0.0;
-    t_pos_vec[1] = 0.0;
-    t_pos_vec[2] = 0.0;
+    std::array<double,3> t_ori_vec;
+    t_pos_vec[0] = -0.718376830;
+    t_pos_vec[1] = 1.89742719;
+    t_pos_vec[2] = 0.232490439;
 
+    t_ori_vec[0] = 2.664878255;
+    t_ori_vec[1] = -0.962452349;
+    t_ori_vec[2] = 2.87449;
 
     int timesteps = 100;
     //get size of steps for orientation---------------------------------------------------------------------------------
@@ -164,30 +168,34 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             t_pos_vec = max_vel_profile(start_pos_vec, total_distance, t_f, t_m, t, path_dir_vec );
         }
         x = t_pos_vec[0];
+
         y = t_pos_vec[1];
+
         z = t_pos_vec[2];
+
+
         std::cout << "Point at time: " << t << std::endl;
         //t_pos_vec.output();
         std::cout << "Orientations at time: " << t << std::endl;
         std::cout << "a:  " << a << " b:  " << b << " c:  " << c << std::endl;
 
-        //positions.push_back(new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], a , b, c));
-        positions.push_back(new SixDPos(x, y,z, a , b, c));
+        positions.push_back(new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], a , b, c));
+        //positions.push_back(new SixDPos(x, y,z, a , b, c));
     }
 
 
     //double s = positions.size();
     InvKinematics invKin;
-    //std::vector<vector<Configuration*>*> nconf;
+    std::vector<vector<Configuration*>*> nconf;
     vector<Configuration*>* test;
-    test = invKin.get_inv_kinematics(new SixDPos(1.7650, -0.000033, 1.909975,-0.000001906,1.5707,0));
 
-    /*nconf.reserve(positions.size());
+
+    nconf.reserve(positions.size());
     for(int i =0; i < positions.size(); i++)
     {
         nconf.push_back(invKin.get_inv_kinematics(positions.at(i)));
     }
-*/
+
    // double s = nconf.size();
    // vector<Configuration*>* new_cfg = invKin.get_inv_kinematics(new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], a , b, c));
 

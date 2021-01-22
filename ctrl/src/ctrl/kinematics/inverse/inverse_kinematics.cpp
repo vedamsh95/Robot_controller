@@ -596,8 +596,12 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             }
             sol_specialcase1_1_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, sol_theta1_special1_1);
             // size1_1 is the number of configurations inside the vector
-            double size1_1 = sol_specialcase1_1_vec->size();
-            sol_theta1_specialcases_vec->reserve(size1_1);
+            double size1_1 = 0;
+            if(sol_specialcase1_1_vec != NULL){
+                size1_1 = sol_specialcase1_1_vec->size();
+                sol_theta1_specialcases_vec->reserve(size1_1);
+            }
+
             for(int i = 0; i < size1_1; i++){
                 // push every configuration into the complete vector
                 sol_theta1_specialcases_vec->push_back(sol_specialcase1_1_vec->at(i));
@@ -1243,9 +1247,6 @@ std::vector<Configuration*>* InvKinematics::inv_othercase_2(double theta1, doubl
     double theta1_1 = theta1 - 180;
     theta2_theta3 = inv_backwardcase(dpx, dpy);
     sol_othercase_2_vec = inv_checklimits_theta1_2_3(theta1_1, theta2_theta3);
-    std::cout << sol_othercase_2_vec.at(0).at(1) << std::endl;
-    std::cout << sol_othercase_2_vec.at(0).at(2) << std::endl;
-    std::cout << sol_othercase_2_vec.at(0).at(3) << std::endl;
     id = sol_othercase_2_vec.at(0).at(0);
     if(id == 4){
         std::cout << "No possible configuration for the robot" << endl;
@@ -1651,7 +1652,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));*/
 
-    if(solution_vec->size() > 0 ) {//return solutions;
+    if(solution_vec != nullptr ) {//return solutions;
         std::cout << "There are " << solution_vec->size() << " possible configurations." << std::endl;
         return solution_vec;
     }
@@ -1659,8 +1660,8 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     else{
         Configuration *no_config;
         std::cout << "There are no possible configurations for this position." << std::endl;
-        no_config = new Configuration({8,0,0,8,5,0});
-        solution_vec->push_back(no_config);
-        return solution_vec;
+//        no_config = new Configuration({8,0,0,8,5,0});
+//        solution_vec->push_back(no_config);
+        return nullptr;
     }
 }
