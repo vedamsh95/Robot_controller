@@ -25,6 +25,10 @@ public:
     void add_configuration(Configuration* config);
 
     void set_trajectory(vector<Configuration*> _trajectory);
+    
+    int get_length();
+    
+    void append(Trajectory* endTrajectory);
 
 };
 

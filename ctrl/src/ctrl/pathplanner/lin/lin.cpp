@@ -7,6 +7,8 @@ Lin::Lin() :plot(false){
 
 Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration)
 {
+    bool AdjustOrientation = false;
+    
     //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
     // Perform the feasibility checks for the two configurations,
     // i.e. that all joint angles are within the possible range.
@@ -39,16 +41,10 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
     //Get Trajectory of distances from the start pos.
     Single_trajectory* StepTrajectory;
     if(type == Single_trajectory::Type::MAX_VEL){
-        StepTrajectory = new Max_vel_trajectory(velocity,
-                                                acceleration,
-                                                0,
-                                                distance);
+        StepTrajectory = new Max_vel_trajectory(velocity, acceleration, 0, distance);
     }
     else if (type == Single_trajectory::Type::TRAPEZOIDAL){
-        StepTrajectory = new Trapezoidal_trajectory(velocity,
-                                                    acceleration,
-                                                    0,
-                                                    distance);
+        StepTrajectory = new Trapezoidal_trajectory(velocity,acceleration,0,distance);
     }
     
     auto tmp = static_cast<float> (StepTrajectory->get_duration()/Robot::getInstance().time_interval);
@@ -69,11 +65,26 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
         t += Robot::getInstance().time_interval;
     }
     
+    //convert SixDPoses along the trajectory to configurations.
     IVMovement ivm;
     Trajectory* trajectory = new Trajectory();
     trajectory = ivm.getMovement(&points, _start_cfg);
+    
+    if(AdjustOrientation == true)
+    {
+        Configuration * lastConfig;
+        lastConfig = trajectory->get_configuration((trajectory->get_length())-1);
 
+        //Get configuration to achive orientation.
+        Configuration * TargetOrientationConfig;
+        TargetOrientationConfig = GetConfigurations(end_pos, lastConfig);
 
+        //append ptp movement to adjust the orientation
+        Ptp ptp;
+        trajectory->append(ptp.get_ptp_trajectory(lastConfig, TargetOrientationConfig, false));
+    }
+
+    
     return trajectory;
 }
 
@@ -103,67 +114,36 @@ SixDPos* Lin::NextPos(SixDPos *PosA, SixDPos *PosB, double factor){
     
 }
 
+Configuration* Lin::GetConfigurations(SixDPos *SixDPos, Configuration *StartConfig)
+{
+    vector<Configuration*>* ActConfigurations;
+    InvKinematics Inv;
+    ActConfigurations = Inv.get_inv_kinematics(SixDPos);
+    return GetClosestConfiguration(ActConfigurations, StartConfig);
+}
 
+Configuration* Lin::GetClosestConfiguration(vector<Configuration*>* Configs, Configuration* PrevConfig){
+    vector<Configuration*>::size_type NbConfigs = Configs->size();
+    double minDist = 1000;
+    int minConfig = 0;
+    for (int i = 0; i<NbConfigs; i++){
+        Configuration* ActConfig = Configs->at(i);
+        double actDist = 0;
+        for (int j = 0; j >6; j++){
+            if(j<3){
+                actDist += pow((*ActConfig)[j] - (*PrevConfig)[j], 2)*10;
+            }
+            else{
+                actDist += pow((*ActConfig)[j] - (*PrevConfig)[j], 2);
+            }
+        }
+        actDist = sqrt(actDist);
 
+        if(actDist < minDist){
+            minDist = actDist;
+            minConfig = i;
+        }
+    }
+    return Configs->at(minConfig);
 
-//void Lin::plot_SixDPos(vector<SixDPos *> &points){
-//#ifdef PLOT
-//    cout << "Plot Lin Movement " << endl;
-//    vector<double> x, y, z;
-//
-//    for(int i = 0; i < points.size(); i++)
-//    {
-//        x.push_back(points[i]->get_X());
-//        y.push_back(points[i]->get_Y());
-//        z.push_back(points[i]->get_Z());
-//    }
-//
-//    map<string, string> keywords;
-//    keywords.insert(pair<string, string>("label", "Lin Movement"));
-//    plt::plot(x, y);
-//    
-//
-//
-//
-//
-//
-//#endif
-//}
-
-
-
-
-//vector<Configuration*> Lin::GetConfigurations(vector<SixDPos*> SixDPoses, Configuration* StartConfig){
-//    vector<Configuration*>* ActConfigurations;
-//    vector<Configuration*>  Configurations;
-//    vector<SixDPos*>::size_type size = SixDPoses.size();
-//    InvKinematics Inv;
-//    
-//    Configurations.push_back(StartConfig);
-//    for(int i = 1; i < size; i++){
-//        //TODO: Look for Singularities
-//        ActConfigurations = Inv.get_inv_kinematics(SixDPoses[i]);
-//        Configurations.push_back(GetClosestConfiguration(ActConfigurations, Configurations.at(i-1)));
-//    }
-//}
-
-//Configuration* Lin::GetClosestConfiguration(vector<Configuration*>* Configs, Configuration* PrevConfig){
-//    vector<Configuration*>::size_type NbConfigs = Configs->size();
-//    double minDist = 1000;
-//    int minConfig = 0;
-//    for (int i = 0; i<NbConfigs; i++){
-//        Configuration* ActConfig = Configs->at(i);
-//        double actDist = 0;
-//        for (int j = 0; j >6; j++){
-//            actDist += pow((*ActConfig)[j] - (*PrevConfig)[j], 2);
-//        }
-//        actDist = sqrt(actDist);
-//
-//        if(actDist < minDist){
-//            minDist = actDist;
-//            minConfig = i;
-//        }
-//    }
-//    return Configs->at(minConfig);
-//
-//}
+}

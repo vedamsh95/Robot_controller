@@ -9,14 +9,14 @@
 #include <Robot.h>
 #include <functional>
 #include <cassert>
+#include "../ptp/ptp.h"
 #include "../ptp/Single_trajectory.h"
 #include "../ptp/Max_vel_trajectory.h"
 #include "../ptp/Trapezoidal_trajectory.h"
 #include "../../kinematics/direct/fw_kinematics.h"
 #include "../../kinematics/inverse/inverse_kinematics.h"
 #include "../../kinematics/inverse/IVMovement.h"
-//#include "../../../matplotlib-cpp-master/matplotlibcpp.h"
-//namespace plt = matplotlibcpp;
+
 
 /**
  * This class implementes the lin movement from to given {@ref Configuration}, one for the start configuration and one
@@ -64,21 +64,27 @@ public:
      * @param PosA SixDPos to keep orientation from
      * @param PosB SixDPos to add position from 
      *
-     */
-    
+     */    
     SixDPos* NextPos(SixDPos *PosA, SixDPos *PosB, double factor);
     
-    static void plot_SixDPos(vector<SixDPos *> &points);
+    /**
+     * Returns configuration of given SixDPos
+     *
+     * @param SixDPos SixDPos to convert to configuration
+     * @param StartConfig Config that result should be close to
+     *
+     */
+    Configuration* GetConfigurations(SixDPos* SixDPos, Configuration* StartConfig);
     
-    void test(vector<int> test);
-    
-
-    
-    
-
-    //vector<Configuration*> GetConfigurations(vector<SixDPos*> SixDPosTrajectory, Configuration* StartConfig);
-    
-    //Configuration* GetClosestConfiguration(vector<Configuration*>* Configurations, Configuration* PrevConfig);
+    /**
+     *Returns closest configuration out of a vector of configurations to a given configuration
+     *Difference to IVMovement::GetClosestConfiguration: the first 3 joints have a higher weight. 
+     *
+     * @param Configurations
+     * @param PrevConfig  Configuration that others need to be close to
+     *
+     */
+    Configuration* GetClosestConfiguration(vector<Configuration*>* Configurations, Configuration* PrevConfig);
     
 };
 
