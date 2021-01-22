@@ -7,12 +7,11 @@
 
 
 
+
 SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
 {
     //TODO: IMPLEMENT the computation of the forward kinematics and derive position and euler angles. Keep in mind your
     //                definition of the rotations and whether you are working in deg or rad as well as in m or cm.
-
-
     double theta1 = _cfg->operator[](0);    //getting theta 0
     std::cout << "Theta 1 from config: " <<  theta1<< std::endl;
     double theta2 = _cfg->operator[](1);    //getting theta 1

@@ -2,7 +2,8 @@ add_library(PTP
             ptp.cpp
         )
 
-target_include_directories(FWKin
+target_include_directories(PTP
         PUBLIC
         "${CMAKE_SOURCE_DIR}/src/ctrl/postypes"
+        "${CMAKE_SOURCE_DIR}/src/ctrl/Config"
         )

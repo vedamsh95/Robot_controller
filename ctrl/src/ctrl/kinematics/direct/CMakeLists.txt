@@ -5,4 +5,5 @@ add_library(FWKin
 target_include_directories(FWKin
         PUBLIC
         "${CMAKE_SOURCE_DIR}/src/ctrl/postypes"
+        "${CMAKE_SOURCE_DIR}/src/ctrl/Config"
         )

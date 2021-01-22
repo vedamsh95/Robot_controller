@@ -4,8 +4,11 @@
 
 #include "spline.h"
 #include "Vector.h"
+#include "math.h"
 #include <iostream>
 #include "Trajectory.h"
+#include "ConfigProvider.h"
+
 
 Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientation,
                std::vector<Vector<double, 3>> *points, double speed, double acceleration) {
@@ -38,9 +41,10 @@ void Spline::out() {
     for(auto &tmp : *points){
         tmp.output();
     }
-
 }
 
+
+/*
 Trajectory* Spline::calculateSpline() {
     Trajectory* trajectory = new Trajectory();
     std::vector<double> distance_i;
@@ -48,9 +52,7 @@ Trajectory* Spline::calculateSpline() {
     double di =0, tmp=0;                                                                                                                             // contains distances between point n and n-1
     double time_for_accel = this->acceleration/this->speed;
     double d_for_accel = 0.5*this->acceleration*(time_for_accel*time_for_accel);
-
-
-
+    double M_PII = 3.141592654;
 
 
     for(int i =0; i<3 ; i++){
@@ -77,14 +79,14 @@ Trajectory* Spline::calculateSpline() {
     std::cout << "First Derivative Heuristic: " << std::endl;
     // for first point
     // Determine direction of trajectory from first to second point (straight line) and Scale with 0.5
-    Vector<double, 3> p1_direction_vec;
+    Vector<double, 3> p_first_direction_vec;
     std::cout << "number of points = " << num_points << std::endl;
 
     for (int i = 0; i < 3; ++i) {
-        p1_direction_vec[i] = 0.5 * (points->at(0)[i] - start_position[i]);
+        p_first_direction_vec[i] = 0.5 * (points->at(0)[i] - start_position[i]);
     }
 
-    std::cout << "Spline: Direction of StartPoint: " << p1_direction_vec[0] << ", " << p1_direction_vec[1] << ", " << p1_direction_vec[2] << std::endl;
+    std::cout << "Spline: Direction of StartPoint: " << p_first_direction_vec[0] << ", " << p_first_direction_vec[1] << ", " << p_first_direction_vec[2] << std::endl;
 
     // for last point
     // Determine direction of trajectory from last to previous point (straight line)
@@ -109,17 +111,59 @@ Trajectory* Spline::calculateSpline() {
     std::cout << "Spline: Inner Waypoints: " << std::endl;
     std::vector<Vector<double, 3>> inner_waypoint_dir_vec;
     Vector<double, 3> temporary_vec;
-    if(num_points > 1){
-        for (int i = 0; i < num_points-1; ++i) {
+    if(num_points > 1) {
+        for (int i = 0; i < num_points - 1; ++i) {
             for (int j = 0; j < 3; ++j) {
-                temporary_vec[j] = 0.5 * (points->at(i+1)[j] - points->at(i)[j]);
+                temporary_vec[j] = 0.5 * (points->at(i + 1)[j] - points->at(i)[j]);
             }
             inner_waypoint_dir_vec.push_back(temporary_vec);
-            std::cout << "Spline: Waypoint " << i+1 << ": ";
+            std::cout << "Spline: Waypoint " << i + 1 << ": ";
             inner_waypoint_dir_vec.at(i).output();
         }
-
     }
+
+    //calculate angle between vectors at the waypoints------------------------------------------------------------------
+    std::vector<double> angles;
+    for (int i = 0; i < num_points-1; ++i) {
+        if(i == 0){
+            Vector<double ,3> p_first_direction_temp = p_first_direction_vec * -1.0;
+            angles.push_back( M_PII * 0.5 - 0.5 * acos( inner_waypoint_dir_vec.at(i).dot_product(p_first_direction_temp )
+                                            / (p_first_direction_vec.length() * inner_waypoint_dir_vec.at(i).length()) ) );
+            std::cout << "First angle: " << angles.at(0) << ". ";
+        }else{
+            Vector<double, 3> inner_waypoint_dir_temp = inner_waypoint_dir_vec.at(i-1) * -1.0;
+            double dot = inner_waypoint_dir_vec.at(i).dot_product(inner_waypoint_dir_temp);
+            double len = (inner_waypoint_dir_vec.at(i).length() * inner_waypoint_dir_temp.length());
+            double dot_len = dot/len;
+            //catch rounding error
+            if(dot_len > 1){
+                dot_len = 1;
+            }else if(dot_len < -1){
+                dot_len = -1;
+            }
+            angles.push_back(M_PII*0.5 - (acos(dot_len) * 0.5));
+
+            std::cout << "Next angle: " << angles.at(i) << ". ";
+        }
+    }
+    //with the angle we get calculate the tangent vectors at the inner_waypoints----------------------------------------
+    std::vector<Vector<double, 3>> tangents;
+    Vector<double, 3> tangent_temp;
+    tangents.reserve(inner_waypoint_dir_vec.size());
+    for (int i = 0; i < inner_waypoint_dir_vec.size(); ++i) {
+        //tangent_temp is our tangent, however the length is not 0.5 of the distance between the points
+        tangent_temp = (inner_waypoint_dir_vec.at(i) * (1/cos(angles.at(i))));
+        //wanted length is equal to the length of the inner_waypoints_dir_vec
+        double wanted_length = inner_waypoint_dir_vec.at(i).length();
+        double adjust_length = wanted_length/tangent_temp.length();
+        //push final tangent with adjusted length to the vector
+        tangents.push_back(tangent_temp * adjust_length);
+    }
+
+
+
+
+
 
 
 

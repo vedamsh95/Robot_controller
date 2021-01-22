@@ -6,4 +6,7 @@ target_include_directories(LIN
         PUBLIC
         "${CMAKE_SOURCE_DIR}/src/ctrl/postypes"
         "${CMAKE_SOURCE_DIR}/src/ctrl/kinematics/direct"
+        "${CMAKE_SOURCE_DIR}/src/ctrl/kinematics/inverse"
+        "${CMAKE_SOURCE_DIR}/src/ctrl"
+        "${CMAKE_SOURCE_DIR}/src/ctrl/Config"
         )

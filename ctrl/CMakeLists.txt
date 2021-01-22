@@ -16,7 +16,7 @@ endif (UNIX)
 
 add_subdirectory(src/ctrl)
 
-add_executable(sdir_ctrl2020 src/main.cpp)
+add_executable(sdir_ctrl2020 src/main.cpp src/ctrl/Config/ConfigProvider.h)
 
 add_dependencies(sdir_ctrl2020 Ctrl)
 target_link_libraries(sdir_ctrl2020 Ctrl)

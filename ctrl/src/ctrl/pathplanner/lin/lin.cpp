@@ -1,6 +1,11 @@
 #include "lin.h"
 #include "Vector.h"
 #include "iostream"
+#include "sdir_ctrl.h"
+#include <array>
+#include <ConfigProvider.h>
+
+
 
 Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg, double speed, double acceleration)
 {
@@ -8,6 +13,8 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     Trajectory* trajectory = new Trajectory();
     // Step1: Calculate start position and end position from the configs with direct kinematics
     FwKinematics fwKinematics;
+    SdirCtrl ctrl;
+
     SixDPos* start_pos = fwKinematics.get_fw_kinematics(_start_cfg);
     SixDPos* end_pos = fwKinematics.get_fw_kinematics(_end_cfg);
 
@@ -74,9 +81,9 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     start_pos_vec.output();
     std::cout << "End Position (X,Y,Z)" << std::endl;
     end_pos_vec.output();
-    std::cout << "Start Position (A,B,C)" << std::endl;
+    std::cout << "Start Orientation (A,B,C)" << std::endl;
     start_ori_vec.output();
-    std::cout << "End Position (A,B,C)" << std::endl;
+    std::cout << "End Orientation (A,B,C)" << std::endl;
     end_ori_vec.output();
     std::cout << "maximum acceleration of Endeffector = " << a_max << std::endl;
     std::cout << "maximum velocity of Endeffector = " << v_max << std::endl;
@@ -116,22 +123,39 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     //------------------------------------------------------------------------------------------------------------------
 
     //Calculate points for Endeffector along linear path ---------------------------------------------------------------
-    Vector<double, 3> t_pos_vec;
+    std::array<double,3> t_pos_vec;
     t_pos_vec[0] = 0.0;
     t_pos_vec[1] = 0.0;
     t_pos_vec[2] = 0.0;
+
+
     int timesteps = 100;
     //get size of steps for orientation---------------------------------------------------------------------------------
     double number_steps = t_f*timesteps;
     double a_steps = a_diff/number_steps;
     double b_steps = b_diff/number_steps;
     double c_steps = c_diff/number_steps;
+
     //------------------------------------------------------------------------------------------------------------------
+
+
+
+    std::vector<SixDPos*> positions;
+    double a = 0;
+    double b = 0;
+    double c = 0;
+    double t = 0;
+    double x = 0;
+    double y = 0;
+    double z = 0;
+
     for (int i = 0; i < t_f*timesteps; ++i) {
-        double t = double(i)/timesteps;
-        double a = start_ori_vec[0] + a_steps * t;
-        double b = start_ori_vec[1] + b_steps * t;
-        double c = start_ori_vec[2] + c_steps * t;
+        t = double(i)/timesteps;
+        a = start_ori_vec[0] + a_steps * t;
+        b = start_ori_vec[1] + b_steps * t;
+        c = start_ori_vec[2] + c_steps * t;
+
+
 
         if(trapez_profile){
             t_pos_vec = trapezoidal_prof(start_pos_vec, end_pos_vec, t_f, t, t_c, a_max, v_max, path_dir_vec);
@@ -139,16 +163,34 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             //implement a_max profile
             t_pos_vec = max_vel_profile(start_pos_vec, total_distance, t_f, t_m, t, path_dir_vec );
         }
-
+        x = t_pos_vec[0];
+        y = t_pos_vec[1];
+        z = t_pos_vec[2];
         std::cout << "Point at time: " << t << std::endl;
+        //t_pos_vec.output();
+        std::cout << "Orientations at time: " << t << std::endl;
+        std::cout << "a:  " << a << " b:  " << b << " c:  " << c << std::endl;
 
-       // Write Position vector to SixDPos
-        SixDPos* position_sixdpos = new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], a, b, c );
-        std::cout << "X: " << position_sixdpos->get_X() << " Y: " << position_sixdpos->get_Y() << " Z: " << position_sixdpos->get_Z() <<
-        " A: " << position_sixdpos->get_A() << " B: " << position_sixdpos->get_B() << " C: " << position_sixdpos->get_C() << std::endl;
-
-        t_pos_vec.output_for_mac();
+        //positions.push_back(new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], a , b, c));
+        positions.push_back(new SixDPos(x, y,z, a , b, c));
     }
+
+
+    //double s = positions.size();
+    InvKinematics invKin;
+    //std::vector<vector<Configuration*>*> nconf;
+    vector<Configuration*>* test;
+    test = invKin.get_inv_kinematics(new SixDPos(1.7650, -0.000033, 1.909975,-0.000001906,1.5707,0));
+
+    /*nconf.reserve(positions.size());
+    for(int i =0; i < positions.size(); i++)
+    {
+        nconf.push_back(invKin.get_inv_kinematics(positions.at(i)));
+    }
+*/
+   // double s = nconf.size();
+   // vector<Configuration*>* new_cfg = invKin.get_inv_kinematics(new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], a , b, c));
+
 
 
 
@@ -163,9 +205,9 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
 }
 
 //function that returns position of a joint at time t
-Vector<double, 3> Lin::max_vel_profile(Vector<double, 3> start_pos, double distance, double t_f, double t_m, double t,
+std::array<double,3> Lin::max_vel_profile(Vector<double, 3> start_pos, double distance, double t_f, double t_m, double t,
                                        Vector<double, 3> path_dir_vec ) {
-    Vector<double, 3> t_pos;
+    std::array<double,3> t_pos;
     //calculate t_m and t_f for max_vel_profile
     if (t < 0) {
         return t_pos;
@@ -187,10 +229,10 @@ Vector<double, 3> Lin::max_vel_profile(Vector<double, 3> start_pos, double dista
 
 }
 
-Vector<double, 3> Lin::trapezoidal_prof(Vector<double, 3> start_pos, Vector<double, 3> end_pos,
+std::array<double,3> Lin::trapezoidal_prof(Vector<double, 3> start_pos, Vector<double, 3> end_pos,
                                         double t_f, double t, double t_c, double a_max, double v_max, Vector<double, 3> path_dir_vec) {
-    Vector<double, 3> t_pos;
-    Vector<double, 3> sign;
+    std::array<double,3> t_pos;
+    std::array<double,3> sign;
     //----------------------------------------------getting direction of the path for x,y,z ----------------------------
     for (int i = 0; i < 3; ++i) {
         if(path_dir_vec[i] < 0){
