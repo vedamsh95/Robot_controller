@@ -11,7 +11,7 @@ public:
 	Trajectory* getMovement(vector<SixDPos *>* _positions, Configuration * start_cfg);
 
 private:
-	Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig);
+	Configuration* GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig);
 	InvKinematics* invK;
 	Trajectory * trajectory;
 };

@@ -24,7 +24,7 @@ add_subdirectory(postypes)
 add_dependencies(Ctrl PosTypes)
 
 if(USE_PYTHON_PLOT)
-    target_link_libraries(Ctrl Com FWKin IVKin PTP LIN SPLINES PosTypes Python3::Python Python3::NumPy)
+    target_link_libraries(Ctrl Com PTP LIN SPLINES FWKin IVKin PosTypes Python3::Python Python3::NumPy)
 else()
     target_link_libraries(Ctrl Com FWKin IVKin PTP LIN SPLINES PosTypes)
 endif()
