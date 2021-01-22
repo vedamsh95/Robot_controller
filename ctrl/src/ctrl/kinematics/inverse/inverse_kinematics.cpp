@@ -12,7 +12,7 @@ double a = 1150;
 double b = 1220;
 
 
-vector<Configuration*>* solution_vec = new vector<Configuration*>();
+std::vector<Configuration*>* solution_vec = new vector<Configuration*>();
 
 std::vector<vector<double>> solution;
 std::array<double, 4> theta2_theta3;
@@ -24,9 +24,9 @@ std::vector<std::vector<double>> sol_specialcase1_1;
 std::vector<std::vector<double>> sol_specialcase1_2;
 std::vector<std::vector<double>> sol_specialcase2_1;
 std::vector<std::vector<double>> sol_specialcase2_2;
-std::vector<Configuration*>* sol_specialcase1_1_vec;
-std::vector<Configuration*>* sol_specialcase1_2_vec;
-std::vector<Configuration*>* sol_specialcase1_3_vec;
+std::vector<Configuration*>* sol_specialcase1_1_vec = new vector<Configuration*>();
+std::vector<Configuration*>* sol_specialcase1_2_vec = new vector<Configuration*>();
+std::vector<Configuration*>* sol_specialcase1_3_vec = new vector<Configuration*>();
 
 std::vector<vector<double>> sol_theta1_special1_1;
 std::vector<vector<double>> sol_theta1_special1_2;
@@ -36,8 +36,8 @@ std::vector<vector<double>> sol_theta1_special1_3;
 vector<vector<double>> sol_othercase_1_vec;
 vector<vector<double>> sol_othercase_2_vec;
 //vectors are used to store solution from othercase functions in main function
-vector<Configuration *> *sol_othercase_1_vec_config;
-vector<Configuration *> *sol_othercase_2_vec_config;
+vector<Configuration *> *sol_othercase_1_vec_config = new vector<Configuration*>();
+vector<Configuration *> *sol_othercase_2_vec_config = new vector<Configuration*>();
 
 double _Trans03[6];
 
@@ -611,7 +611,6 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             double size1_1 = 0;
             if(sol_specialcase1_1_vec != NULL){
                 size1_1 = sol_specialcase1_1_vec->size();
-                sol_theta1_specialcases_vec->reserve(size1_1);
             }
 
             for(int i = 0; i < size1_1; i++){
@@ -1307,6 +1306,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     double id = 0;
     std::array<double, 4> dTCP = {0,0,-215,1};                                                                        //Vector of the distance from TCP to WCP
 
+    std::cout << "-----------Inverse Kinematics------------------------------" << std::endl;
     std::cout << "X of sixDPos " <<_pos->get_X() << std::endl;
     std::cout << "Y of sixDPos " <<_pos->get_Y() << std::endl;
     std::cout << "Z of sixDPos " <<_pos->get_Z() << std::endl;
