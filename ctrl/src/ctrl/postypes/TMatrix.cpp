@@ -126,9 +126,6 @@ TMatrix::TMatrix(std::array<double,16> arr) {
     m_transformation[3][3] = arr[15];
 }
 
-
-
-
 /*constructor transformation matrix of denavit hartenberg method
  *@ requires:   double array[6] -->
  *
@@ -327,7 +324,7 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
     }
     // add values to array
     a[0] = phi;
-    a[1] = theta;
+    a[1] = theta*(-1);
     a[2] = psi;
     for (int i = 0; i < 3; ++i) {
         if(a[i] < 0.000000001 && a[i] > -0.000000001){
