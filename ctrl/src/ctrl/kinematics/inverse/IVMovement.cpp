@@ -21,10 +21,10 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
 	{
 		t = _positions->at(i);
 		configs = invK->get_inv_kinematics(t);
-		trajectory->add_configuration(configs->at(0));
-	//	correctConfig =  GetClosestConfiguration(configs, prevConfig);
-	//	prevConfig = correctConfig;
-	//	trajectory->add_configuration(correctConfig);
+		//trajectory->add_configuration(configs->at(0));
+		correctConfig =  GetClosestConfiguration(configs, prevConfig);
+		prevConfig = correctConfig;
+		trajectory->add_configuration(correctConfig);
 	}
 	
 	
