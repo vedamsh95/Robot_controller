@@ -98,3 +98,11 @@ int JsonHandler::get_spline_type() {
     }
     return m_json_value["type"].asInt();
 }
+
+double JsonHandler::get_elongation()
+{
+  if (m_json_value["elong"].isNull()) {
+    return -1.0;
+  }
+  return m_json_value["elong"].asDouble();
+}

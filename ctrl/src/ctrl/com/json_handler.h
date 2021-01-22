@@ -120,6 +120,14 @@ public:
      *          1: Quintic
      */
      int get_spline_type();
+
+    /**
+     * Returns the scalar elongation factor for the spline movement
+     *
+     * @return Double denoting the scalar elongation factor
+     *         -1 in the error case
+     */
+     double get_elongation();
 private:
     /** json value parsed from the json string */
     Json::Value m_json_value;

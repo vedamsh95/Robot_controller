@@ -379,6 +379,7 @@ function sendSplineData()
         vel = tonumber(simUI.getEditValue(ui_1, 3020)),   -- The velocity for the spline movement
         acc = tonumber(simUI.getEditValue(ui_1, 3021)),   -- The acceleration for the spline movement
         type = simUI.getComboboxSelectedIndex(ui_3, 5005),
+        elong = tonumber(simUI.getEditValue(ui_3, 5006)),
         start_config = start_config
     }
 
@@ -989,23 +990,29 @@ for the lin and spline movement:"></label>
 </ui>]]
 
     splineIO = [[<ui closeable="false" on-close="splineIO" layout="vbox" title="CSV functionality">
-     <label text="You can either import spline points from a vsc file
+    <group layout="vbox">
+        <label text="You can either import spline points from a vsc file
 or export the current points to a file."></label>
-    <group layout="hbox">
-        <group layout="vbox">
-            <label text="Import"></label>
-            <combobox id="5000" on-change="splineIO"></combobox>
-            <button text="Import" onclick="splineIO" id="5001"></button>
-        </group>
-        <group layout="vbox">
-            <label text="Export"></label>
-            <edit id="5002" value=""></edit>
-            <button text="Export" onclick="splineIO" id="5003"></button>
+        <group layout="hbox">
+            <group layout="vbox">
+                <label text="Import"></label>
+                <combobox id="5000" on-change="splineIO"></combobox>
+                <button text="Import" onclick="splineIO" id="5001"></button>
+            </group>
+            <group layout="vbox">
+                <label text="Export"></label>
+                <edit id="5002" value=""></edit>
+                <button text="Export" onclick="splineIO" id="5003"></button>
+            </group>
         </group>
     </group>
-    <label text="You can select a spline type."></label>
-    <group layout="hbox">
+    <group layout="vbox">
+        <label text="You can select a spline type."></label>
         <combobox id="5005" on-change="splineIO"></combobox>
+    </group>
+    <group layout="vbox">
+        <label text="Choose the scalar elongation factor for the spline movement."></label>
+        <edit id="5006" value=""></edit>
     </group>
     <button text="OK" onclick="splineIO" id="5004"></button>
 </ui>]]
@@ -1038,9 +1045,10 @@ or export the current points to a file."></label>
     local pathColor = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }                  -- Color of the path
     pathHandle = sim.createPath(-1, pathIntParams, nullptr, pathColor)
     simUI.setEditValue(ui_1, 3020, tostring(1.0))                   -- Default velocity
-    simUI.setEditValue(ui_1, 3021, tostring(5.0))                   -- Default acceleration
+    simUI.setEditValue(ui_1, 3021, tostring(1.0))                   -- Default acceleration
     simUI.insertComboboxItem(ui_3, 5005, 0, "Cubic")                    -- Movement types for the spline functionality
     simUI.insertComboboxItem(ui_3, 5005, 1, "Quintic")                  -- The indices here correspond to the sent ones
+    simUI.setEditValue(ui_3, 5006, tostring(0.5))
 
     ik_dummy = sim.getObjectHandle('ik_target')
     ik_target = sim.getObjectHandle('testTarget1')
