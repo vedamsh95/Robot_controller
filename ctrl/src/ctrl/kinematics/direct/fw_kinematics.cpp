@@ -151,7 +151,7 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
         }
         else
         {
-            Result = mat_mul4x4(A, B);
+            Result = mat_mul4x4(B, A);
             B = Result;
         }
     }
