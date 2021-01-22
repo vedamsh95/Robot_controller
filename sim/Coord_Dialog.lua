@@ -457,10 +457,12 @@ function switchSplineMode(ui,id)
             simUI.setEnabled(ui,1011,false)
         end
         simUI.setEnabled(ui,1020,false)
+        hidePath(true)
     else
         simUI.setEnabled(ui,1019,false)
         simUI.setEnabled(ui,1020,true)
         simUI.setEnabled(ui,1011,true)
+        hidePath(false)
     end
 end
 
@@ -740,7 +742,7 @@ Input:
     id          = Points for the path, the first point however will be the current position
 --]]
 function updatePath(handle, values)
-
+    print(handle)
     if (#values == 0) then
         sim.cutPathCtrlPoints(handle, -1, 0)
         return
@@ -769,6 +771,14 @@ function updatePath(handle, values)
 
     sim.cutPathCtrlPoints(handle, -1, 0)
     sim.insertPathCtrlPoints(handle, 0, 0, #values+1, data)
+end
+
+function hidePath(should_hide)
+    if (should_hide) then
+        sim.cutPathCtrlPoints(pathHandle, -1, 0)
+    else
+        updatePath(pathHandle, spline_points_raw)
+    end
 end
 
 ---------------------------------------------
@@ -965,9 +975,8 @@ for the lin and spline movement:"></label>
                 <button text="Apply" id="3006" onclick="splineApply"></button>
                 <button text="Insert" id="3007" onclick="splineInsert"></button>
             </group>
-            <group>
-                <button text="Advanced" id="3008" onclick="splineIO"></button>
-            </group>
+            <button text="Advanced" id="3008" onclick="splineIO"></button>
+
 
         </group>
         <button text="Calculate and Move" id="1011" enabled="false" onclick="CalculateIK"></button>
@@ -1025,8 +1034,8 @@ or export the current points to a file."></label>
     sim.setStringSignal("uisignal",sim.packTable(myuis))
 
    -- Spline
-    pathIntParams = { 7, 0, 0 }                                         -- First one is the size of the path
-    pathColor = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }                  -- Color of the path
+    local pathIntParams = { 7, 0, 0 }                                         -- First one is the size of the path
+    local pathColor = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }                  -- Color of the path
     pathHandle = sim.createPath(-1, pathIntParams, nullptr, pathColor)
     simUI.setEditValue(ui_1, 3020, tostring(1.0))                   -- Default velocity
     simUI.setEditValue(ui_1, 3021, tostring(5.0))                   -- Default acceleration
