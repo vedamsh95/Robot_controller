@@ -131,8 +131,8 @@ void IVKinPos::checkLimits(double _phi1, std::array<double, 4>* _solution, std::
 
 std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1, Position _wristPoint)
 {
-	std::array<double, 4>* forwardSolutions;
-	std::array<double, 4>* backwardSolutions;
+	std::array<double, 4> forwardSolutions;
+	std::array<double, 4> backwardSolutions;
 	std::vector<std::array<double, 3>*>* sol;
 	std::vector<std::array<double, 3>*>* ans = new std::vector<std::array<double, 3>*>();
 
@@ -140,35 +140,35 @@ std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1,
 	double d1 = std::sqrt(_wristPoint.x * _wristPoint.x + _wristPoint.y * _wristPoint.y);
 
 
-	forwardSolutions = &forward_calc(d1, _wristPoint);
+	forwardSolutions = forward_calc(d1, _wristPoint);
 	
 
-	checkLimits(_phi1, forwardSolutions, ans);
+	checkLimits(_phi1, &forwardSolutions, ans);
 
 	if ((-185.0) <= _phi1 && _phi1 <= (-175.0))
 	{
-		checkLimits(360.0 +_phi1, forwardSolutions, ans);
+		checkLimits(360.0 +_phi1, &forwardSolutions, ans);
 	}
 	if ((185.0) >= _phi1 && _phi1 >= (175.0))
 	{
-		checkLimits(-(360.0- _phi1), forwardSolutions, ans);
+		checkLimits(-(360.0- _phi1), &forwardSolutions, ans);
 	}
 
 
 
-	backwardSolutions = &backward_calc(d1, _wristPoint);
+	backwardSolutions = backward_calc(d1, _wristPoint);
 	
 
 	if ((5) >= _phi1 && _phi1 >= (-5.0))
 	{
-		checkLimits(-(_phi1+180.0), backwardSolutions, ans);
-		checkLimits(+(_phi1 + 180.0), backwardSolutions, ans);
+		checkLimits(-(_phi1+180.0), &backwardSolutions, ans);
+		checkLimits(+(_phi1 + 180.0), &backwardSolutions, ans);
 
 	}
 	else
 	{
 		double phi1_backward = -rad2Deg(atan2(-_wristPoint.y, -_wristPoint.x));// oder if anweisungen welcher Quadrant
-		checkLimits(phi1_backward, backwardSolutions, ans);
+		checkLimits(phi1_backward, &backwardSolutions, ans);
 	}
 	
 
@@ -268,13 +268,14 @@ std::array<double, 4> IVKinPos::backward_calc(double _d1, Position _wristPoint)
 	std::cout << "phi2_backward_downward " << phi2_backward_downward << endl;
 	std::cout << "phi3_backward_upward " << phi3_backward_upward << endl;
 	std::cout << "phi3_backward_downward " << phi3_backward_downward << endl;
-	return std::array<double, 4>
+	std::array<double, 4> ans = 
 	{
 		phi2_backward_upward,
-		phi2_backward_downward,
-		phi3_backward_upward,
-		phi3_backward_downward,
+			phi2_backward_downward,
+			phi3_backward_upward,
+			phi3_backward_downward,
 	};
+	return ans;
 }
 
 
