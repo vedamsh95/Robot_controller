@@ -749,7 +749,32 @@ function show_spline_points(ui, id, selected_index)
     end
     simUI.setComboboxItems(ui,id,texts,selected_index-1)
     ui_spline_cancel(ui,UI_IDs.SPLINE.CANCEL)
-    update_spline_path(pathHandle, spline_points_raw)
+    update_spline_path(spline_path_handle, spline_points_raw)
+end
+
+function spline_init()
+
+    -- Default values
+    local path_size = 5                 -- The line thickness of the path
+    local path_color_r = 0              -- The red   component of the paths color
+    local path_color_g = 1              -- The green component of the paths color
+    local path_color_b = 0              -- The blue  component of the paths color
+    local spline_elongation = 0.5       -- The default scalar elongation factor for the spline calculation
+    local spline_types = {              -- The possible spline types. The default is the first the index
+        "Cubic",     -- type:0          -- to the value that will be sent to the controller, starting at 0
+        "Quintic"    -- type:1
+    }
+
+    local pathIntParams = { path_size, 0, 0 }
+    local pathColor = { path_color_r, path_color_g, path_color_b, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+
+    simUI.setEditValue(ui_3, UI_IDs.ADVANCED.ELONGATION, tostring(spline_elongation))
+
+    for i=0,#spline_types-1 do
+        simUI.insertComboboxItem(ui_3, UI_IDs.ADVANCED.TYPE, i, spline_types[i+1])
+    end
+
+    return sim.createPath(-1, pathIntParams, nullptr, pathColor)
 end
 
 --[[
@@ -798,9 +823,9 @@ Input:
 --]]
 function hidePath(should_hide)
     if (should_hide) then
-        sim.cutPathCtrlPoints(pathHandle, -1, 0)
+        sim.cutPathCtrlPoints(spline_path_handle, -1, 0)
     else
-        update_spline_path(pathHandle, spline_points_raw)
+        update_spline_path(spline_path_handle, spline_points_raw)
     end
 end
 
@@ -1078,11 +1103,6 @@ or export the current points to a file."></label>
     <button text="OK" onclick="ui_advanced_ok" id="5004"></button>
 </ui>]]
 
-    movement_allowed = false    -- Whether apply has been pressed once
-                                -- and the normal movement is allowed
-
-    spline_points_raw = {}
-
     edit_ids = {}
     editvalues = {}
     jpedit_ids = {}
@@ -1100,15 +1120,18 @@ or export the current points to a file."></label>
     local myuis = {ui_1,ui_2,ui_3}
     sim.setStringSignal("uisignal",sim.packTable(myuis))
 
-   -- Spline
-    local pathIntParams = { 7, 0, 0 }                                         -- First one is the size of the path
-    local pathColor = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }                  -- Color of the path
-    pathHandle = sim.createPath(-1, pathIntParams, nullptr, pathColor)
+    ----------Added variables---------
+    movement_allowed = false    -- Whether apply has been pressed once
+    -- and the normal movement is allowed
+
+    spline_points_raw = {}
+    spline_path_handle = spline_init()
+    ----------------------------------
+
+    ----------Added initialization---------
     simUI.setEditValue(ui_1, 3020, tostring(1.0))                   -- Default velocity
     simUI.setEditValue(ui_1, 3021, tostring(1.0))                   -- Default acceleration
-    simUI.insertComboboxItem(ui_3, 5005, 0, "Cubic")                    -- Movement types for the spline functionality
-    simUI.insertComboboxItem(ui_3, 5005, 1, "Quintic")                  -- The indices here correspond to the sent ones
-    simUI.setEditValue(ui_3, 5006, tostring(0.5))
+    ---------------------------------------
 
     ik_dummy = sim.getObjectHandle('ik_target')
     ik_target = sim.getObjectHandle('testTarget1')
