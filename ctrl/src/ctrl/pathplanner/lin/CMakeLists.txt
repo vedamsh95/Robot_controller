@@ -8,4 +8,5 @@ target_include_directories(LIN
         "${CMAKE_SOURCE_DIR}/src/ctrl/kinematics/direct"
         "${CMAKE_SOURCE_DIR}/src/ctrl/kinematics/inverse"
         "${CMAKE_SOURCE_DIR}/src/ctrl"
+        "${CMAKE_SOURCE_DIR}/src/ctrl/Config"
         )

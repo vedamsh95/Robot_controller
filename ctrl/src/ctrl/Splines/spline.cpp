@@ -7,6 +7,8 @@
 #include "math.h"
 #include <iostream>
 #include "Trajectory.h"
+#include "ConfigProvider.h"
+
 
 Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientation,
                std::vector<Vector<double, 3>> *points, double speed, double acceleration) {
@@ -39,9 +41,10 @@ void Spline::out() {
     for(auto &tmp : *points){
         tmp.output();
     }
-
 }
 
+
+/*
 Trajectory* Spline::calculateSpline() {
     Trajectory* trajectory = new Trajectory();
     std::vector<double> distance_i;

@@ -4,6 +4,7 @@
 
 #include <Trajectory.h>
 
+
 /**
  * This class implementes the ptp movement from to given {@ref Configuration}, one for the start configuration and one
  * for the target configuration.

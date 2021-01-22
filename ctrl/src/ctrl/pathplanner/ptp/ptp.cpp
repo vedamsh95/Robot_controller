@@ -1,5 +1,6 @@
 #include "ptp.h"
 #include<iostream>
+#include "ConfigProvider.h"
 
 
 Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg, bool sync)

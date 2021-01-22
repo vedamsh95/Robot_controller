@@ -3,6 +3,7 @@
 #include "inverse_kinematics.h"
 #include <cmath>
 #include <iostream>
+#include "ConfigProvider.h"
 
 double o = 115;
 double m = 330;

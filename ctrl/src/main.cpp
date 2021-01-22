@@ -9,7 +9,7 @@
 #include <vector>
 #include <cerrno>
 #include "ctrl/Splines/spline.h"
-
+#include "Config/ConfigProvider.h"
 
 extern "C" {
 #include "ctrl/com/remoteApi/extApi.h"
@@ -40,10 +40,12 @@ extern "C" {
  * be synchronized with VREP and your trajectory time resolution.
  */
 
+
 using namespace std;
 std::vector<Vector<double,3>> *points = new std::vector<Vector<double,3>>;
 std::vector<SixDPos> *ppts = new std::vector<SixDPos>;
 simxInt* jh = new simxInt[6];
+
 
 simxInt Initial()
 {
@@ -244,9 +246,9 @@ int main() {
 
 
 
-                    Spline spline(curr_pos, curr_ori, points, speed,acceleration);
-                    spline.out();
-                    spline.calculateSpline();
+                    //Spline spline(curr_pos, curr_ori, points, speed,acceleration);
+                    //spline.out();
+                    //spline.calculateSpline();
 
                 /*
                    for(Vector<double, 3> &t : *points)
