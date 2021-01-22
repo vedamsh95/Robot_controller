@@ -31,7 +31,7 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 		std::cout << "Overhead Singularity" << endl;
 	}
 	else
-		phi1 = rad2Deg(atan2(wristPoint.y, wristPoint.x));//vielleicht noch - zeichen, da clockwise vs counterclockwise
+		phi1 = -rad2Deg(atan2(wristPoint.y, wristPoint.x));//vielleicht noch - zeichen, da clockwise vs counterclockwise
 	
 	std::cout << "phi1 " << phi1 << endl;
 	return calc_configurations(phi1, wristPoint);
@@ -140,7 +140,7 @@ std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1,
 	double d1 = std::sqrt(_wristPoint.x * _wristPoint.x + _wristPoint.y * _wristPoint.y);
 
 
-	forwardSolutions = forward_calc(d1, _wristPoint);
+	forwardSolutions = &forward_calc(d1, _wristPoint);
 	
 
 	checkLimits(_phi1, forwardSolutions, ans);
@@ -156,7 +156,7 @@ std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1,
 
 
 
-	backwardSolutions = backward_calc(d1, _wristPoint);
+	backwardSolutions = &backward_calc(d1, _wristPoint);
 	
 
 	if ((5) >= _phi1 && _phi1 >= (-5.0))
@@ -167,7 +167,7 @@ std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1,
 	}
 	else
 	{
-		double phi1_backward = rad2Deg(atan2(-_wristPoint.y, -_wristPoint.x));// oder if anweisungen welcher Quadrant
+		double phi1_backward = -rad2Deg(atan2(-_wristPoint.y, -_wristPoint.x));// oder if anweisungen welcher Quadrant
 		checkLimits(phi1_backward, backwardSolutions, ans);
 	}
 	
@@ -183,7 +183,7 @@ bool IVKinPos::d1Condition(double _d1)
 	return (_d1 >= m || _d1 == 0);
 }
 
-std::array<double, 4>* IVKinPos::forward_calc(double _d1, Position _wristPoint)
+std::array<double, 4> IVKinPos::forward_calc(double _d1, Position _wristPoint)
 {
 	std::cout << "forward_calc: " << endl;
 	double px_dash, py_dash;
@@ -219,21 +219,21 @@ std::array<double, 4>* IVKinPos::forward_calc(double _d1, Position _wristPoint)
 	double phi3_forward_upward = 360.0 - beta - rad2Deg(asin(b / d2)) - 90.0;
 	double phi3_forward_downward = beta - rad2Deg(asin(b / d2)) - 90;
 
-	static std::array<double, 4> ans = 
-	{
+	//static std::array<double, 4> ans = 
+	
+	std::cout << "phi2_forward_upward " << phi2_forward_upward << endl;
+	std::cout << "phi2_forward_downward " << phi2_forward_downward << endl;
+	std::cout << "phi3_forward_upward " << phi3_forward_upward << endl;
+	std::cout << "phi3_forward_downward " << phi3_forward_downward << endl;
+	return std::array<double, 4> {
 		phi2_forward_upward,
 		phi2_forward_downward,
 		phi3_forward_upward,
 		phi3_forward_downward
 	};
-	std::cout << "phi2_forward_upward " << phi2_forward_upward << endl;
-	std::cout << "phi2_forward_downward " << phi2_forward_downward << endl;
-	std::cout << "phi3_forward_upward " << phi3_forward_upward << endl;
-	std::cout << "phi3_forward_downward " << phi3_forward_downward << endl;
-	return &ans;
 }
 
-std::array<double, 4>* IVKinPos::backward_calc(double _d1, Position _wristPoint)
+std::array<double, 4> IVKinPos::backward_calc(double _d1, Position _wristPoint)
 {
 	std::cout << "backward_calc: " << endl;
 
@@ -263,18 +263,18 @@ std::array<double, 4>* IVKinPos::backward_calc(double _d1, Position _wristPoint)
 	double phi3_backward_upward = -1.0 * (90.0 - 1.0 * (beta - rad2Deg(asin(b / d2))));
 	double phi3_backward_downward = 360.0 - beta - rad2Deg(asin(b / d2)) - 90.0;
 	double phi3_backward_downward_1 = 270.0 - beta - rad2Deg(asin(b / d2));
-	static std::array<double, 4> ans =
+	
+	std::cout << "phi2_backward_upward " << phi2_backward_upward << endl;
+	std::cout << "phi2_backward_downward " << phi2_backward_downward << endl;
+	std::cout << "phi3_backward_upward " << phi3_backward_upward << endl;
+	std::cout << "phi3_backward_downward " << phi3_backward_downward << endl;
+	return std::array<double, 4>
 	{
 		phi2_backward_upward,
 		phi2_backward_downward,
 		phi3_backward_upward,
 		phi3_backward_downward,
 	};
-	std::cout << "phi2_backward_upward " << phi2_backward_upward << endl;
-	std::cout << "phi2_backward_downward " << phi2_backward_downward << endl;
-	std::cout << "phi3_backward_upward " << phi3_backward_upward << endl;
-	std::cout << "phi3_backward_downward " << phi3_backward_downward << endl;
-	return &ans;
 }
 
 

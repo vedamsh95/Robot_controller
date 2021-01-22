@@ -115,6 +115,7 @@ int main() {
 //                cout << json_return_string << endl;
                 simxSetStringSignal(ID, "returnsignal",
                                     reinterpret_cast<const simxUChar *>(json_return_string.c_str()), json_return_string.length(), simx_opmode_oneshot);
+                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "returnSignal", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
             }
 
             /*
@@ -128,6 +129,7 @@ int main() {
 //                cout << json_return_string << endl;
                 simxSetStringSignal(ID, "returnsignal",
                                     reinterpret_cast<const simxUChar *>(json_return_string.c_str()), json_return_string.length(), simx_opmode_oneshot);
+                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "returnSignal", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
             }
 
             /*
@@ -211,13 +213,14 @@ int main() {
               double vel = jsonHandler.get_velocity();
               double acc = jsonHandler.get_acceleration();
               Configuration start_cfg(jsonHandler.get_start_configuration());
+              int spline_type = jsonHandler.get_spline_type();
               vector<SixDPos*> points;
               size_t count = jsonHandler.get_data().size();
               for(size_t i = 0; i < count; i++) {
                 auto *pos = new SixDPos( jsonHandler.get_data()[static_cast<int>(i)]);
                 points.push_back(pos);
               }
-              Trajectory* trajectory = ctrl.move_robot_spline(points, &start_cfg, vel, acc);
+              Trajectory* trajectory = ctrl.move_robot_spline(points, &start_cfg, vel, acc,spline_type);
               for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
                 c[0] = (*cur_cfg)[0];
                 c[1] = (*cur_cfg)[1];

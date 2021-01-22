@@ -15,16 +15,19 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
 	Configuration* prevConfig = start_cfg; 
 	Configuration* correctConfig;
 	vector<Configuration*>* configs;
-
+	SixDPos* t;
 
 	for (int i = 0; i< _positions->size(); i++)
 	{
-		configs = invK->get_inv_kinematics(_positions->at(i));
-		correctConfig =  GetClosestConfiguration(configs, prevConfig);
-		prevConfig = correctConfig;
-		trajectory->add_configuration(correctConfig);
+		t = _positions->at(i);
+		configs = invK->get_inv_kinematics(t);
+		trajectory->add_configuration(configs->at(0));
+	//	correctConfig =  GetClosestConfiguration(configs, prevConfig);
+	//	prevConfig = correctConfig;
+	//	trajectory->add_configuration(correctConfig);
 	}
-
+	
+	
 	return trajectory;
 }
 Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig) {

@@ -69,9 +69,9 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
     //cout << "Yaw   : " << euler_angles[2] << endl;
 
     return new SixDPos(
-            A.get(0, 3),
-            A.get(1, 3),
-            A.get(2, 3),
+            A.get(0, 3) / 1000.0,
+            A.get(1, 3) / 1000.0,
+            A.get(2, 3) / 1000.0,
             euler_angles[0],
             euler_angles[1],
             euler_angles[2]

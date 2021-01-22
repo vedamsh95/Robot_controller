@@ -110,6 +110,16 @@ public:
      * @return Json::Value containing the data from the parsed json string
      */
     Json::Value get_start_configuration();
+
+    /**
+     * Returns the type of the spline movement
+     *
+     * @return Integer denoting the type of movement:
+     *         -1: Error, type field is not contained
+     *          0: Cubic
+     *          1: Quintic
+     */
+     int get_spline_type();
 private:
     /** json value parsed from the json string */
     Json::Value m_json_value;

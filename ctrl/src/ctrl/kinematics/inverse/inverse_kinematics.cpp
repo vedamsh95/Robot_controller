@@ -8,24 +8,26 @@
 
 vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 {
-//  //TODO: IMPLEMENT Compute the inverse kinematics for a given position
+   //TODO: IMPLEMENT Compute the inverse kinematics for a given position
     vector<Configuration*>* solutions = new vector<Configuration*>();
     solutions->clear();
     
     //TODO: Get first three joints from IVKinPos
 	IVKinPos Position;
     vector<array<double, 3>*>* IVpos = new vector<array<double, 3>*>();
-	    IVpos = Position.get_IVKinPos(_pos);
+    //IVpos->clear();
+	IVpos = Position.get_IVKinPos(_pos);
     
     //calcualte rotation matrix for all joints.
-    TMatrix R_06 = TMatrix(
-                           _pos->get_C(),
+    TMatrix R_06 = TMatrix(_pos->get_C(),
                            _pos->get_B(),
                            _pos->get_A(),
                            _pos->get_X(),
                            _pos->get_Y(),
                            _pos->get_Z());
-    cout << "Matrix R_06: " << R_06 << endl;
+//    cout << "Matrix R_06: " << endl;
+//    cout << R_06 << endl;
+
 
     for (int i = 0; i < IVpos->size(); i++)
     {
@@ -71,6 +73,8 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             );
             R_03 = R_03.multiply(next);
         }
+//        cout << "Matrix R_03: " << endl;
+//        cout << R_03 << endl;
 
         //calculate rotation matrix for last 3 joints.
         TMatrix R_36 = (R_03.transpose()).multiply(R_06);
@@ -102,18 +106,32 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 
         for (int j = 0; j < 8;j++)
         {
-            solutions->push_back(new Configuration({actPos->at(0), actPos->at(1),actPos->at(2),Configs[j][0],Configs[j][1],Configs[j][2]}));
+            solutions->push_back(new Configuration({
+                actPos->at(0),
+                actPos->at(1),
+                actPos->at(2),
+                Configs[j][0],
+                Configs[j][1],
+                Configs[j][2]}));
             
             //Display configuration
-            cout << "Configuratio: " << i << endl;
-            cout << "Theta 1: " << actPos->at(0) << endl;
-            cout << "Theta 2: " << actPos->at(1) << endl;
-            cout << "Theta 3: " << actPos->at(2) << endl;
-            cout << "Theta 4: " << Configs[i][0] << endl;
-            cout << "Theta 5: " << Configs[i][1] << endl;
-            cout << "Theta 6: " << Configs[i][2] << endl;
+//            cout << "Configuration: " << (i+1)*(j+1) << endl;
+//            cout << "Theta 1: " << actPos->at(0) << endl;
+//            cout << "Theta 2: " << actPos->at(1) << endl;
+//            cout << "Theta 3: " << actPos->at(2) << endl;
+//            cout << "Theta 4: " << Configs[j][0] << endl;
+//            cout << "Theta 5: " << Configs[j][1] << endl;
+//            cout << "Theta 6: " << Configs[j][2] << endl;
             
         }
+//        cout << "Configuration: " << i*8 << endl;
+//        cout << "Theta 1: " << actPos->at(0) << endl;
+//        cout << "Theta 2: " << actPos->at(1) << endl;
+//        cout << "Theta 3: " << actPos->at(2) << endl;
+//        cout << "Theta 4: " << Configs[i*8][0] << endl;
+//        cout << "Theta 5: " << Configs[i*8][1] << endl;
+//        cout << "Theta 6: " << Configs[i*8][2] << endl;
+        
     }
     
     

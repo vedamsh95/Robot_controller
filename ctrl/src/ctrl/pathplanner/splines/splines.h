@@ -22,7 +22,7 @@ public:
 	//              Trajectory* trajectory = ctrl.move_robot_spline(points, vel, acc);
 	Splines();
 	~Splines();
-	Trajectory *getSpline(vector<SixDPos*> &_points, Configuration * start, double _velocity, double _acceleration);
+	Trajectory *getSpline(vector<SixDPos*> &_points, Configuration * start, double _velocity, double _acceleration, int _spline_type = 0);
 	struct Position
 	{
 		double x, y, z;
@@ -68,7 +68,7 @@ private:
 	//int operation2(int x, int y, std::function<int(int, int)> function) { return function(x, y); }
 	//int operation(int x, int y, int(*function)(int, int)) { return function(x, y); }
 	//int sub(int x, int y) { return x - y; }
-	double getSplineLength(std::vector<Position> _points, std::vector<Position> _tangents, std::vector<Position> _accelerations);
+	double getQuniticSplineLength(std::vector<Position> _points, std::vector<Position> _tangents, std::vector<Position> _accelerations);
 	//double getSplineLength(std::vector<Position> _points, std::vector<Position> _parameter1, std::vector<Position> _parameter2, std::function<Position(double _t, int _i,std::vector<Position>, std::vector<Position>, std::vector<Position>)> function);
 	double getSplineLengthCubic(std::vector<Position> _points, std::vector<Position> _firstControlPoints, std::vector<Position> _secondControlPoints);
 	vector<double> getTValues(double _distance, double _velocity, double _acceleration);

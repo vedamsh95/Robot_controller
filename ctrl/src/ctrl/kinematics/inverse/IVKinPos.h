@@ -48,7 +48,7 @@ private:
 
 
 	bool d1Condition(double _d1);
-	std::array<double,4>* forward_calc(double _d1, Position _wristPoint);
-	std::array<double,4>* backward_calc(double _d1, Position _wristPoint);
+	std::array<double,4> forward_calc(double _d1, Position _wristPoint);
+	std::array<double,4> backward_calc(double _d1, Position _wristPoint);
 };
 

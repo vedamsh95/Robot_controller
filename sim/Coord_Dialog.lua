@@ -27,8 +27,6 @@ end
 Setting up the Targetcoordinatesystem.
 Building a JSON-String from the Input.
 Sending the JSON-String to the C++-Environment via String Signal.
-Receiving a String-Signal from the C++-Einvironment.
-Decoding of that JSON-String and Ouput to the Editfields.
 Input:
     ui = UI Handler Value
     id = as Number of the Button
@@ -62,14 +60,14 @@ function applyDummy(ui,id)
                 new_ori[i] = math.rad(editvalues[edit_ids[i+3]])
             end
         end
-        sim.setObjectPosition(ik_test, robot, new_pos)
-        sim.setObjectOrientation(ik_test, robot, new_ori)
+        sim.setObjectPosition(ik_target, robot, new_pos)
+        set_orientation(ik_target, robot, new_ori)
         js = {
             op = 1,
             data = {{
-                m_a = tonumber(math.rad(new_ori[1])),
-                m_b = tonumber(math.rad(new_ori[2])),
-                m_c = tonumber(math.rad(new_ori[3])),
+                m_a = tonumber(new_ori[1]),
+                m_b = tonumber(new_ori[2]),
+                m_c = tonumber(new_ori[3]),
                 m_x = tonumber(new_pos[1]),
                 m_y = tonumber(new_pos[2]),
                 m_z = tonumber(new_pos[3])
@@ -110,7 +108,16 @@ function applyDummy(ui,id)
         str = json.encode (js, { indent = true })
         sim.setStringSignal("callsignal",str)
     end
+end
+
+--[[
+Receiving a String-Signal from the C++-Environment.
+Decoding of that JSON-String and Output to the Editfields.
+This function gets be called by the controller.
+--]]
+function returnSignal()
     local ret = sim.getStringSignal("returnsignal")
+    local ui = ui_1
     if ret then
         local obj, pos, err = json.decode (ret, 1, nil)
         --print(#obj.data)
@@ -118,7 +125,7 @@ function applyDummy(ui,id)
             sim.addStatusbarMessage("Error:", err)
         else
             if (obj.op==0) then
-                if (id==2007) then
+                if (simUI.getRadiobuttonValue(ui,2007)==1) then
                     simUI.setEditValue(ui,2000,tostring(math.deg(obj.data[1].j0)))
                     simUI.setEditValue(ui,2001,tostring(math.deg(obj.data[1].j1)))
                     simUI.setEditValue(ui,2002,tostring(math.deg(obj.data[1].j2)))
@@ -150,6 +157,7 @@ function applyDummy(ui,id)
         print("No Return-Signal. Try again or Restart the Programm!")
     end
     changeEnabled(ui,true)
+    return {},{},{},''
 end
 
 --[[
@@ -194,11 +202,12 @@ function setConfigEndPoint(ui,c)
     sim.setObjectOrientation(ik_target,-1,tip_ori)
     local new_pos = sim.getObjectPosition(tip,robot)
     local new_ori = sim.getObjectOrientation(tip,robot)
+    local our_ori = get_orientation(tip, robot)
     for i=1,6 do
         if i <=3 then
             simUI.setEditValue(ui,999+i,tostring(math.round(new_pos[i],3)))
         else
-            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(new_ori[i-3]),3)))
+            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(our_ori[i-3]),3)))
         end
     end
     for i=1,#joints do
@@ -221,8 +230,9 @@ function CalculateIK(ui,id)
         return
     end
 
-    local new_pos = sim.getObjectPosition(ik_test,robot)
-    local new_ori = sim.getObjectOrientation(ik_test, robot)
+    local new_pos = sim.getObjectPosition(ik_target,robot)
+    local new_ori = sim.getObjectOrientation(ik_target, robot)
+    local our_ori = get_orientation(ik_target, robot)
 
     sim.setObjectPosition(ik_target, robot, new_pos)
     sim.setObjectOrientation(ik_target, robot, new_ori)
@@ -231,7 +241,7 @@ function CalculateIK(ui,id)
         if i <=3 then
             simUI.setEditValue(ui,999+i,tostring(math.round(new_pos[i],3)))
         else
-            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(new_ori[i-3]),3)))
+            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(our_ori[i-3]),3)))
         end
     end
     local curr_c = {}
@@ -326,7 +336,7 @@ the movement.
 function sendSplineData()
 
     tip_pos = sim.getObjectPosition(tip,robot)
-    tip_ori = sim.getObjectOrientation(tip,robot)
+    tip_ori = get_orientation(tip, robot)
 
     local curr_c = {}
     for i=1,#joints do
@@ -368,6 +378,7 @@ function sendSplineData()
         data = data_arr,
         vel = tonumber(simUI.getEditValue(ui_1, 3020)),   -- The velocity for the spline movement
         acc = tonumber(simUI.getEditValue(ui_1, 3021)),   -- The acceleration for the spline movement
+        type = simUI.getComboboxSelectedIndex(ui_3, 5005),
         start_config = start_config
     }
 
@@ -394,7 +405,7 @@ function switchMVMode(ui,id)
 end
 
 --[[
-Use that funtion to switch between the different Configurations that where calcutated for
+Use that function to switch between the different Configurations that where calcutated for
 a target point in the C++-Environment.
 Input:
     ui = UI Handler Value
@@ -404,7 +415,7 @@ Input:
 function switchConfig(ui,id,newValue)
     if (newValue ~= 0) then
         for i=1,6 do
-            if (id==2007) then
+            if (simUI.getRadiobuttonValue(ui,2007)==1) then
                 simUI.setEditValue(ui,1999+i,tostring(math.deg(cconf[newValue][i])))
                 editjp(ui,1999+i,tostring(math.deg(cconf[newValue][i])))
             else
@@ -461,14 +472,20 @@ Input:
 --]]
 function radiobuttonClick(ui,id)
     if (id==2007) then
-        for i=1,6 do
-            local value = simUI.getEditValue(ui,i+1999)
-            simUI.setEditValue(ui,i+1999,tostring(math.deg(value)))
+        if not degree then
+            for i=1,6 do
+                local value = simUI.getEditValue(ui,i+1999)
+                simUI.setEditValue(ui,i+1999,tostring(math.deg(value)))
+            end
+            degree = true
         end
     else
-        for i=1,6 do
-            local value = simUI.getEditValue(ui,i+1999)
-            simUI.setEditValue(ui,i+1999,tostring(math.rad(value)))
+        if degree then
+            for i=1,6 do
+                local value = simUI.getEditValue(ui,i+1999)
+                simUI.setEditValue(ui,i+1999,tostring(math.rad(value)))
+            end
+            degree = false
         end
     end
 end
@@ -775,6 +792,37 @@ function math.round(number, decimals, method)
     else return tonumber(("%."..decimals.."f"):format(number)) end
 end
 
+--[[
+This function calculates the euler angles according to our convention (Roll, Pitch, Yaw)
+Input:
+    handle      = handle of the object
+    id          = objective to calculate orientation relative to, or -1 for absolut
+--]]
+function get_orientation(handle, relative)
+    mat = sim.getObjectMatrix(handle, relative)
+    local epsilon = 0.00174532925            -- 0.1 degrees
+    local phi, theta, psi
+    if (math.abs(mat[1]) < epsilon and math.abs(mat[5]) < epsilon) then
+        phi = math.asin(-mat[2])
+        theta = -mat[9] * math.pi * 0.5
+        psi = 0
+    else
+        phi = math.atan2(mat[5], mat[1]);
+        theta = math.atan2(-mat[9], math.sqrt(math.pow(mat[10], 2) + math.pow(mat[11], 2)));
+        psi = math.atan2(mat[10], mat[11]);
+    end
+    return {phi, theta, psi}
+end
+
+function set_orientation(handle, relative, angles)
+    mat = sim.buildIdentityMatrix()
+    mat = sim.rotateAroundAxis(mat, {1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, angles[3]) -- um x mit psi
+    mat = sim.rotateAroundAxis(mat, {0, 1, 0}, {0, 0, 0}, angles[2])-- um y mit theta
+    mat = sim.rotateAroundAxis(mat, {0, 0, 1}, {0, 0, 0}, angles[1])-- um z mit phi
+    new_angles = sim.getEulerAnglesFromMatrix(mat)
+    sim.setObjectOrientation(handle, relative, new_angles)
+end
+
 --Initialize the UI
 if (sim_call_type==sim.syscb_init) then
 
@@ -918,7 +966,7 @@ for the lin and spline movement:"></label>
                 <button text="Insert" id="3007" onclick="splineInsert"></button>
             </group>
             <group>
-                <button text="CSV functionality" id="3008" onclick="splineIO"></button>
+                <button text="Advanced" id="3008" onclick="splineIO"></button>
             </group>
 
         </group>
@@ -946,7 +994,11 @@ or export the current points to a file."></label>
             <button text="Export" onclick="splineIO" id="5003"></button>
         </group>
     </group>
-    <button text="Cancel" onclick="splineIO" id="5004"></button>
+    <label text="You can select a spline type."></label>
+    <group layout="hbox">
+        <combobox id="5005" on-change="splineIO"></combobox>
+    </group>
+    <button text="OK" onclick="splineIO" id="5004"></button>
 </ui>]]
 
     movement_allowed = false    -- Whether apply has been pressed once
@@ -961,6 +1013,7 @@ or export the current points to a file."></label>
     jpeditvalues = {}
     c = {}
     cconf={}
+    degree = false
 
     json=require("dkjson")
 
@@ -975,12 +1028,14 @@ or export the current points to a file."></label>
     pathIntParams = { 7, 0, 0 }                                         -- First one is the size of the path
     pathColor = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }                  -- Color of the path
     pathHandle = sim.createPath(-1, pathIntParams, nullptr, pathColor)
-    simUI.setEditValue(ui_1, 3020, tostring(1.0))
-    simUI.setEditValue(ui_1, 3021, tostring(5.0))
+    simUI.setEditValue(ui_1, 3020, tostring(1.0))                   -- Default velocity
+    simUI.setEditValue(ui_1, 3021, tostring(5.0))                   -- Default acceleration
+    simUI.insertComboboxItem(ui_3, 5005, 0, "Cubic")                    -- Movement types for the spline functionality
+    simUI.insertComboboxItem(ui_3, 5005, 1, "Quintic")                  -- The indices here correspond to the sent ones
 
     ik_dummy = sim.getObjectHandle('ik_target')
     ik_target = sim.getObjectHandle('testTarget1')
-    ik_test = sim.getObjectHandle('testTarget2')
+    --ik_test = sim.getObjectHandle('testTarget2')
     tip = sim.getObjectHandle('KR120_2700_2_tip')
     robot = sim.getObjectHandle('Graph')
     joints = {  'KR120_2700_2_joint1','KR120_2700_2_joint2',
@@ -1023,5 +1078,5 @@ if (sim_call_type==sim.syscb_cleanup) then
     simUI.destroy(ui_1)
     simUI.destroy(ui_2)
     simUI.destroy(ui_3)
-    sim.removeObjectFromSelection(sim.handle_single, ik_test)
+    --sim.removeObjectFromSelection(sim.handle_single, ik_test)
 end
