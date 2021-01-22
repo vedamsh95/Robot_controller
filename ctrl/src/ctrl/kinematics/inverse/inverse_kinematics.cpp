@@ -55,8 +55,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
    angles_phi3();
    R36Matrix();
 
-
-
     vector<Configuration*>* solutions = new vector<Configuration*>();
     solutions->push_back(new Configuration({0,0,1,0,0,0}));
     solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
@@ -138,18 +136,49 @@ TMatrix InvKinematics::R36Matrix() {
     cout<< "Transpose of R03" << endl;
     R03_T->print();
     double bb = R03_T->get(3,3);
-  cout << " value " << bb << endl;
+
 
     TMatrix R06(x,y,z,r_a,r_b,r_c);
+    cout<< "matrix of R06 " << endl;
+    R06.print();
 
+    TMatrix* R36 = R03_T->multiply(&R06);
+    cout<<"R36 matrix "<<endl;
+    R36->print();
 
+    //set-1
+    double phi4_1 = atan2((-1)*R36->get(1,2),(-1)*R36->get(0,2)) * 180 /M_PI;
 
+    double phi5_1 = atan2( sqrt(1-(R36->get(2,2)*R36->get(2,2))),(-1)*R36->get(2,2))* 180 /M_PI;
 
+    double phi6_1 = atan2(R36->get(2,1),R36->get(2,0)) * 180 /M_PI;
 
+    //set -2
+    double phi4_2 = atan2(R36->get(1,2),R36->get(0,2)) * 180 /M_PI;
 
+    //double phi5_2 = atan2( (-1)*sqrt(1-(R36->get(3,3)*R36->get(3,3))),(-1)*R36->get(3,3))* 180 /M_PI;
+    double phi5_2 = atan2( (-1)*sqrt(1-pow(R36->get(2,2),2)),(-1)*R36->get(2,2))* 180 /M_PI;
 
+    double phi6_2 = atan2((-1)*R36->get(2,1),(-1)*R36->get(2,0)) * 180 /M_PI;
 
+    if(-125<=phi5_1< 0) {
+        if (-350 <= phi4_1 && phi4_1 < 350) {
+            if (-350 <= phi6_1 && phi6_1 < 350) {
 
+                cout << "phi4_1 " << phi4_1 << endl;
+                cout << "phi5_1 " << phi5_1 << endl;
+                cout << "phi6_1 " << phi6_1 << endl;
+            }
+        }
+    }
+    if(0<phi5_2< 125){
+        if (-350 <= phi4_2 && phi4_2 < 350) {
+            if (-350 <= phi6_2 && phi6_2 < 350) {
+        cout<< "phi4_2 " << phi4_2<< endl;
+        cout<< "phi5_2 " << phi5_2<< endl;
+        cout<< "phi6_2 " << phi6_2 << endl;
 
-
+            }
+        }
+    }
 }
