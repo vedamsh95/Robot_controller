@@ -22,8 +22,7 @@ std::array<double,10> theta4_5_6;
 
 std::vector<std::vector<double>> sol_specialcase1_1;
 std::vector<std::vector<double>> sol_specialcase1_2;
-std::vector<std::vector<double>> sol_specialcase2_1;
-std::vector<std::vector<double>> sol_specialcase2_2;
+
 std::vector<Configuration*>* sol_specialcase1_1_vec = new vector<Configuration*>();
 std::vector<Configuration*>* sol_specialcase1_2_vec = new vector<Configuration*>();
 std::vector<Configuration*>* sol_specialcase1_3_vec = new vector<Configuration*>();
@@ -1488,8 +1487,8 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
     }
 
-        //Special cases
-        //Special case 1:
+    //Special cases
+    //Special case 1:
     else if((wcp[0] <= 0.001 && wcp[0] >= -0.001) && wcp[1] > 0){
         std::cout << "Special Case 1: " << std::endl;
         if(wcp[1] > m){
@@ -1774,8 +1773,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     else{
         Configuration *no_config;
         std::cout << "There are no possible configurations for this position." << std::endl;
-//        no_config = new Configuration({8,0,0,8,5,0});
-//        solution_vec->push_back(no_config);
         return nullptr;
     }
 }
