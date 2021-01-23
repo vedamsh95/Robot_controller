@@ -620,7 +620,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
 
 
             double theta1_2 = theta1 - 180;
-            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
             if(id == 2 || id == 3){
@@ -649,7 +649,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
 
             double theta1_3 = theta1 + 180;
             dpx = d1 + m;
-            theta2_theta3 = inv_backwardcase(dpx, dpy);
+            theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
             if(id == 2 || id == 3){
@@ -707,7 +707,8 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             }
 
             double theta1_2 = theta1 - 180;
-            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            dpx = d1 + m;
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
             if(id == 2 || id == 3){
@@ -736,8 +737,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
 
 
             double theta1_3 = theta1 + 180;
-            dpx = d1 + m;
-            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
             id = sol_theta1_special1_3.at(0).at(0);
             //Checking how many configurations there are for Theta 1, Theta 2 and Theta 3
