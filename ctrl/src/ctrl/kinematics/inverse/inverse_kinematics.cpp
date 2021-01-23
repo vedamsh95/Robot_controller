@@ -135,8 +135,6 @@ std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
         az = -1;
     }
 
-    std::cout << "R36" << std::endl;
-    R36.output();
     //Calculations for the varieties of thetas
     array<double, 4> theta4{};
     array<double, 2> theta5{};
@@ -1056,8 +1054,6 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
         TMatrix T03;
         TMatrix T03_invert;
         T03 = mat1*mat2*mat3*mat4;
-        std::cout << "T03: " << std::endl;
-        T03.output();
         std::cout << "T03_invert: " << std::endl;
         T03_invert = invertmatrix(T03);
         T03_invert.output();
@@ -1092,8 +1088,6 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
 std::vector<std::vector<double>> InvKinematics::inv_vec_sol_theta4_5_6(TMatrix T03_invert, SixDPos* _pos){
 
     TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
-    std::cout << "R06: " << std::endl;
-    R06.output();
 
     TMatrix R36 = T03_invert*R06;
     std::array<double, 10> solution_standard_4_5_6;
@@ -1316,7 +1310,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     TMatrix TCP(_pos->get_A(),_pos->get_B(),_pos->get_C(),_pos->get_X()*1000,_pos->get_Y()*1000,_pos->get_Z()*1000);                                                            //Transformation Matrix for the TCP inside of the global coordinate system
                                                                                                                                                     //Calculation of wrist center point
       std::array<double, 3> wcp;
-      TCP.output();
 
       //if(_pos->get_X() >= 0) {
           wcp[0] = _pos->get_X() * 1000 - (215 * TCP.get_element(0, 2));
