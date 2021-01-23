@@ -14,8 +14,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     SixDPos* start_pos = fwKinematics.get_fw_kinematics(_start_cfg);
     SixDPos* end_pos = fwKinematics.get_fw_kinematics(_end_cfg);
 
-   // double timesteps = ConfigProvider::getsteps_per_second();
-    double timesteps = 15;
+    double timesteps = ConfigProvider::getInstance().getsteps_per_second();
 
     //write X,Y,Z into Vector
     Vector<double, 3> start_pos_vec, start_ori_vec;

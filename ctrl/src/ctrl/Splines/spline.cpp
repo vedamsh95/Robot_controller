@@ -129,7 +129,7 @@ Trajectory* Spline::calculateSpline() {
             Vector<double ,3> p_first_direction_temp = p_first_direction_vec * -1.0;
             angles.push_back( M_PII * 0.5 - 0.5 * acos( inner_waypoint_dir_vec.at(i).dot_product(p_first_direction_temp )
                                             / (p_first_direction_vec.length() * inner_waypoint_dir_vec.at(i).length()) ) );
-            std::cout << "First angle: " << angles.at(0) << ". ";
+            std::cout << "First angle: " << angles.at(0) << ". " << std::endl;
         }else{
             Vector<double, 3> inner_waypoint_dir_temp = inner_waypoint_dir_vec.at(i-1) * -1.0;
             double dot = inner_waypoint_dir_vec.at(i).dot_product(inner_waypoint_dir_temp);
@@ -143,11 +143,13 @@ Trajectory* Spline::calculateSpline() {
             }
             angles.push_back(M_PII*0.5 - (acos(dot_len) * 0.5));
 
-            std::cout << "Next angle: " << angles.at(i) << ". ";
+            std::cout << "Next angle: " << angles.at(i) << ". " << std::endl;
         }
     }
     //with the angle we get calculate the tangent vectors at the inner_waypoints----------------------------------------
     std::vector<Vector<double, 3>> tangents;
+    //add tangent of start point
+    tangents.push_back(p_first_direction_vec);
     Vector<double, 3> tangent_temp;
     tangents.reserve(inner_waypoint_dir_vec.size());
     for (int i = 0; i < inner_waypoint_dir_vec.size(); ++i) {
@@ -159,6 +161,8 @@ Trajectory* Spline::calculateSpline() {
         //push final tangent with adjusted length to the vector
         tangents.push_back(tangent_temp * adjust_length);
     }
+    //add tangent of endpoint
+    tangents.push_back(p_last_direction_vec);
 
     // calculate inner waypoints of each segment-------------------------------------------------------------------------
 
@@ -170,34 +174,102 @@ Trajectory* Spline::calculateSpline() {
 
     //add start point
     total_point_vec.push_back(this->start_position);
-
+    std::vector<Vector<double, 3>> a_vec;
     for (int i = 0; i < num_points; ++i) {
         //determine second derivatives (weight)
-        double alpha_s = distance_i.at(i+1)/(distance_i.at(i)+distance_i.at(i+1));
-        double alpha_e = distance_i.at(i)/(distance_i.at(i) + distance_i.at(i+1));
 
         if(i == 0){
+            double alpha = distance_i.at(i+1)/(distance_i.at(i)+distance_i.at(i+1));
+            double beta = distance_i.at(i)/(distance_i.at(i) + distance_i.at(i+1));
+
+            Vector<double, 3> alpha_s = (6.0 * start_position);
+            alpha_s = (2.0 * tangents.at(i)) + alpha_s;
+            alpha_s = (4.0 * tangents.at(i+1)) + alpha_s;
+            alpha_s = - 6.0 * points->at(i) + alpha_s;
+            alpha_s = alpha_s * alpha;
+            Vector<double, 3> alpha_e = -6.0 * points->at(i);
+            alpha_e = -4.0 * tangents.at(i+1) + alpha_e;
+            alpha_e = -2.0 * tangents.at(i+2) + alpha_e;
+            alpha_e = 6.0 * points->at(i+1) + alpha_e;
+            alpha_e = alpha_e * beta;
+            Vector<double, 3> a_m = alpha_s + alpha_e;
+            // determine second derivative for the first point (first segment)
+            Vector<double, 3> a_s = 6.0 * start_position;
+            a_s = 2.0 * tangents.at(i) + a_s;
+            a_s = 4.0 * tangents.at(i+1) + a_s;
+            a_s = -6.0 * points->at(i) + a_s;
+            // determine second derivative for the last point (last segment)
+            Vector<double, 3> a_e = -6.0 * points->at(num_points-2);
+            a_e = -4.0 * tangents.at(num_points-1) + a_e;
+            a_e = -2.0 * tangents.at(num_points) + a_e;
+            a_e = 6.0 * points->at(num_points-1) + a_e;
+
+            //push second derivatives into a vector
+            a_vec.push_back(a_s);
+            a_vec.push_back(a_e);
+            a_vec.push_back(a_m);
+
             point1_temp = 0.2 * tangents.at(i) + start_position;
-           // point2_temp = 0.05 * as + 2 * point1_temp - start_position;
-           point4_temp =  (- 0.2 * tangents.at(1)) + points->at(i);
-            // point3_temp = 0.05 * ae + 2 * point4_temp - points->at(i);
+            point2_temp = 0.05 * a_s;
+            point2_temp = 2.0 * point1_temp + point2_temp;
+            point2_temp = -start_position + point2_temp;
+            point4_temp =  (- 0.2 * tangents.at(1)) + points->at(i);
+            point3_temp = (0.05 * a_m);
+            point3_temp = (2.0 * point4_temp) + point3_temp;
+            point3_temp = -points->at(i) + point3_temp;
 
             total_point_vec.push_back(point1_temp);
-           // total_point_vec.push_back(point2_temp);
-           // total_point_vec.push_back(point3_temp);
+            total_point_vec.push_back(point2_temp);
+            total_point_vec.push_back(point3_temp);
             total_point_vec.push_back(point4_temp);
-            total_point_vec.push_back(points->at(num_points-1));
-        }else{
+            total_point_vec.push_back(points->at(i));
+        }else if(i == num_points-1){                            //Last segment
             point1_temp = 0.2 * tangents.at(i) + points->at(i - 1);
-            // point2_temp = 0.05 * as + 2 * point1_temp - points->at(i - 1);
+            point2_temp = 0.05 * a_vec.at(i+1);
+            point2_temp = 2.0 * point1_temp + point2_temp;
+            point2_temp = - points->at(i - 1) + point2_temp;
             point4_temp =  (- 0.2 * tangents.at(i + 1)) + points->at(i);
-            // point3_temp = 0.05 * ae + 2 * point4_temp - points->at(i);
+            point3_temp = 0.05 * a_vec.at(1);
+            point3_temp = 2.0 * point4_temp + point3_temp;
+            point3_temp = - points->at(i) + point3_temp;
 
             total_point_vec.push_back(point1_temp);
-            // total_point_vec.push_back(point2_temp);
-            // total_point_vec.push_back(point3_temp);
+            total_point_vec.push_back(point2_temp);
+            total_point_vec.push_back(point3_temp);
             total_point_vec.push_back(point4_temp);
             total_point_vec.push_back(points->at(num_points-1));
+        }else{                  //all the middle segments
+            //need to add a_e of this segment to a_vec
+            double alpha = distance_i.at(i+1)/(distance_i.at(i)+distance_i.at(i+1));
+            double beta = distance_i.at(i)/(distance_i.at(i) + distance_i.at(i+1));
+
+            Vector<double, 3> alpha_s = (6.0 * start_position);
+            alpha_s = (2.0 * tangents.at(i)) + alpha_s;
+            alpha_s = (4.0 * tangents.at(i+1)) + alpha_s;
+            alpha_s = - 6.0 * points->at(i) + alpha_s;
+            alpha_s = alpha_s * alpha;
+            Vector<double, 3> alpha_e = -6.0 * points->at(i+1);
+            alpha_e = -4.0 * tangents.at(i+1) + alpha_e;
+            alpha_e = -2.0 * tangents.at(i+2) + alpha_e;
+            alpha_e = 6.0 * points->at(i+1) + alpha_e;
+            alpha_e = alpha_e * beta;
+            Vector<double, 3> a_m = alpha_s + alpha_e;
+            a_vec.push_back(a_m);
+
+            point1_temp = 0.2 * tangents.at(i) + points->at(i - 1);
+            point2_temp = 0.05 * a_vec.at(i+1);
+            point2_temp = 2.0 * point1_temp + point2_temp;
+            point2_temp = -points->at(i - 1) + point2_temp;
+            point4_temp =  (- 0.2 * tangents.at(i + 1)) + points->at(i);
+            point3_temp = 0.05 * a_vec.at(i+2);
+            point3_temp = 2.0 * point4_temp + point3_temp;
+            point3_temp = -points->at(i) + point3_temp;
+
+            total_point_vec.push_back(point1_temp);
+            total_point_vec.push_back(point2_temp);
+            total_point_vec.push_back(point3_temp);
+            total_point_vec.push_back(point4_temp);
+            total_point_vec.push_back(points->at(i));
         }
 
     }
