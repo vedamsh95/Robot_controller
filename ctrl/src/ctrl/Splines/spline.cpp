@@ -44,14 +44,14 @@ void Spline::out() {
 }
 
 
-/*
+
 Trajectory* Spline::calculateSpline() {
     Trajectory* trajectory = new Trajectory();
     std::vector<double> distance_i;
     std::vector<double> boundary_i;
     double di =0, tmp=0;                                                                                                                             // contains distances between point n and n-1
     double time_for_accel = this->acceleration/this->speed;
-    double d_for_accel = 0.5*this->acceleration*(time_for_accel*time_for_accel);
+    double d_for_accel = 0.5 * this->acceleration*(time_for_accel*time_for_accel);
     double M_PII = 3.141592654;
 
 
@@ -160,9 +160,47 @@ Trajectory* Spline::calculateSpline() {
         tangents.push_back(tangent_temp * adjust_length);
     }
 
+    // calculate inner waypoints of each segment-------------------------------------------------------------------------
 
+    std::vector<Vector<double, 3>> total_point_vec;
+    Vector<double, 3> point1_temp;
+    Vector<double, 3> point2_temp;
+    Vector<double, 3> point3_temp;
+    Vector<double, 3> point4_temp;
 
+    //add start point
+    total_point_vec.push_back(this->start_position);
 
+    for (int i = 0; i < num_points; ++i) {
+        //determine second derivatives (weight)
+        double alpha_s = distance_i.at(i+1)/(distance_i.at(i)+distance_i.at(i+1));
+        double alpha_e = distance_i.at(i)/(distance_i.at(i) + distance_i.at(i+1));
+
+        if(i == 0){
+            point1_temp = 0.2 * tangents.at(i) + start_position;
+           // point2_temp = 0.05 * as + 2 * point1_temp - start_position;
+           point4_temp =  (- 0.2 * tangents.at(1)) + points->at(i);
+            // point3_temp = 0.05 * ae + 2 * point4_temp - points->at(i);
+
+            total_point_vec.push_back(point1_temp);
+           // total_point_vec.push_back(point2_temp);
+           // total_point_vec.push_back(point3_temp);
+            total_point_vec.push_back(point4_temp);
+            total_point_vec.push_back(points->at(num_points-1));
+        }else{
+            point1_temp = 0.2 * tangents.at(i) + points->at(i - 1);
+            // point2_temp = 0.05 * as + 2 * point1_temp - points->at(i - 1);
+            point4_temp =  (- 0.2 * tangents.at(i + 1)) + points->at(i);
+            // point3_temp = 0.05 * ae + 2 * point4_temp - points->at(i);
+
+            total_point_vec.push_back(point1_temp);
+            // total_point_vec.push_back(point2_temp);
+            // total_point_vec.push_back(point3_temp);
+            total_point_vec.push_back(point4_temp);
+            total_point_vec.push_back(points->at(num_points-1));
+        }
+
+    }
 
 
 
@@ -174,11 +212,6 @@ Trajectory* Spline::calculateSpline() {
 
     return nullptr;
 }
-
-
-
-
-
 
 
 
