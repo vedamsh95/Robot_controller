@@ -11,7 +11,7 @@ private:
     int paramA = 100; // examples
     int paramB = 200; // example
     int paramC = 300; // example
-
+    double steps_per_second = 15;
     //ToDo: Insert paramters for boundaries, etc.
 
 public:
@@ -26,6 +26,7 @@ public:
     int getParamA() const{return this->paramA; }
     int getParamB() const{return this->paramB; }
     int getParamC() const{return this->paramC; }
+    double getsteps_per_second() const{return this->steps_per_second; }
 
 };
 

@@ -20,8 +20,19 @@ vector<Configuration*>* SdirCtrl::get_config_from_pos(SixDPos* pos)
 {
     //ToDo: IMPLEMENT!
     InvKinematics invKinematics;
-    vector<Configuration*>* new_cfg = invKinematics.get_inv_kinematics(pos);
-    std::cout << new_cfg->at(0)->get_configuration().at(1) << std::endl;
+    vector<Configuration*>* new_cfg = new vector<Configuration*>();
+    bool config_status = false;
+    new_cfg = invKinematics.get_inv_kinematics(pos);
+    if(new_cfg->size() != 0){
+        config_status = true;
+    }else{
+        config_status = false;
+        std::cout << "ERROR: for the given Point is no possible configuration reachable!!" << std::endl;
+    }
+
+    if(config_status){
+        std::cout << new_cfg->at(0)->get_configuration().at(1) << std::endl;
+    }
     return new_cfg;
 }
 
