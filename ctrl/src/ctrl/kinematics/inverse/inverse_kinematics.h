@@ -6,6 +6,10 @@
 #include <TMatrix.h>
 #include <Configuration.h>
 #include "IVKinPos.h"
+#include <Robot.h>
+#include <math.h>
+#include <iostream>
+#include <vector>
 #include "../direct/fw_kinematics.h"
 
 /** \brief computes the inverse kinematics
@@ -14,7 +18,13 @@
  *
  */
 class InvKinematics {
+private:
+    Robot *robot;
 public:
+    /**
+     * Default constructor
+     */
+    InvKinematics();
     /**
      * This method computes all available configurations for a given position and returns them as a vector. It is the
      * main API function for the inverse kinematics computation. It should coordinate the handling between computing the
