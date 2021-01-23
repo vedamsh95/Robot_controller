@@ -14,7 +14,6 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     // Step1: Calculate start position and end position from the configs with direct kinematics
     FwKinematics fwKinematics;
     SdirCtrl ctrl;
-
     SixDPos* start_pos = fwKinematics.get_fw_kinematics(_start_cfg);
     SixDPos* end_pos = fwKinematics.get_fw_kinematics(_end_cfg);
 
@@ -143,7 +142,6 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     //------------------------------------------------------------------------------------------------------------------
 
 
-
     std::vector<SixDPos*> positions;
     double a = 0;
     double b = 0;
@@ -152,6 +150,9 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     double x = 0;
     double y = 0;
     double z = 0;
+
+    InvKinematics invKin;
+    std::vector<vector<Configuration*>*> nconf;
 
     for (int i = 0; i < t_f*timesteps; ++i) {
         t = double(i)/timesteps;
@@ -179,29 +180,29 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         std::cout << "Orientations at time: " << t << std::endl;
         std::cout << "a:  " << a << " b:  " << b << " c:  " << c << std::endl;
 
-        positions.push_back(new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], a , b, c));
-        //positions.push_back(new SixDPos(x, y,z, a , b, c));
+        positions.push_back(new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], end_ori_vec[0] , end_ori_vec[1], end_ori_vec[2]));
+//        nconf.push_back(invKin.get_inv_kinematics(new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2],
+//                                                              end_ori_vec[0] , end_ori_vec[1], end_ori_vec[2])));
+        std::vector<Configuration*>* temp_configs = invKin.get_inv_kinematics(new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2],
+                                                                                    end_ori_vec[0] , end_ori_vec[1], end_ori_vec[2]));
+
+        // Selecting the right configurations:
+        // StartPoint is a special case
+        if(i == 0 && temp_configs != nullptr){
+            std::vector<double> distances;
+            double distance = 10000;
+            int best_config;
+            for (int j = 0; j < temp_configs->size(); ++j) {
+                if(calc_config_difference(_start_cfg, temp_configs->at(j)) < distance){
+                    distance = calc_config_difference(_start_cfg, temp_configs->at(j));
+                    best_config = j;
+                    std::cout << "distance of config " << j+1 << " is smaller than previous one" << std::endl;
+                }
+            }
+            std::cout << "The best configuration at t: " << t << " is: " << best_config << std::endl;
+        }
+
     }
-
-
-    //double s = positions.size();
-    InvKinematics invKin;
-    std::vector<vector<Configuration*>*> nconf;
-    vector<Configuration*>* test;
-
-
-    nconf.reserve(positions.size());
-    for(int i =0; i < positions.size(); i++)
-    {
-        nconf.push_back(invKin.get_inv_kinematics(positions.at(i)));
-    }
-
-   // double s = nconf.size();
-   // vector<Configuration*>* new_cfg = invKin.get_inv_kinematics(new SixDPos(t_pos_vec[0], t_pos_vec[1], t_pos_vec[2], a , b, c));
-
-
-
-
 
 
     //Dummy trajectory
@@ -269,4 +270,16 @@ std::array<double,3> Lin::trapezoidal_prof(Vector<double, 3> start_pos, Vector<d
      //   t_pos = end_pos - 0.5 * a_max * pow(t_f - t, 2);
     }
     return t_pos;
+}
+
+double Lin::calc_config_difference(Configuration* config1, Configuration* config2){
+
+    double distance_joint1 = config1->get_configuration().operator[](0) - config2->get_configuration().operator[](0);
+    double distance_joint2 = config1->get_configuration().operator[](1) - config2->get_configuration().operator[](1);
+    double distance_joint3 = config1->get_configuration().operator[](2) - config2->get_configuration().operator[](2);
+    double distance_joint4 = config1->get_configuration().operator[](3) - config2->get_configuration().operator[](3);
+    double distance_joint5 = config1->get_configuration().operator[](4) - config2->get_configuration().operator[](4);
+    double distance_joint6 = config1->get_configuration().operator[](5) - config2->get_configuration().operator[](5);
+
+    return abs(distance_joint1) + abs(distance_joint2) + abs(distance_joint3) + abs(distance_joint4) + abs(distance_joint5) + abs(distance_joint6);
 }
