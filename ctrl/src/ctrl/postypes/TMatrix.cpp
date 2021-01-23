@@ -319,13 +319,14 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
         }
         else{
             theta = atan2((-1)*trans_2_0, sqrt( trans_2_1*trans_2_1 + trans_2_2*trans_2_2 ));
+            theta = theta * (-1);
         }
         //theta = atan2((-1)* trans_2_0, sqrt( trans_2_1*trans_2_1 + trans_2_2*trans_2_2 ));
         psi = atan2(trans_2_1, trans_2_2);
     }
     // add values to array
     a[0] = phi;
-    a[1] = theta*(-1);
+    a[1] = theta;
     a[2] = psi;
     for (int i = 0; i < 3; ++i) {
         if(a[i] < 0.000000001 && a[i] > -0.000000001){
