@@ -6,7 +6,7 @@ Input:
     id = as Number of the Editfield
     newValue = Content of the Editfield
 --]]
-function editcart(ui, id, newValue)
+function editcart(_, id, newValue)
     edit_ids[id-999] = id
     editvalues[id] = newValue
 end
@@ -18,7 +18,7 @@ Input:
     id = as Number of the Editfield
     newValue = Content of the Editfield
 --]]
-function editjp(ui, id, newValue)
+function editjp(_, id, newValue)
     jpedit_ids[id-1999] = id
     jpeditvalues[id] = newValue
 end
@@ -31,9 +31,9 @@ Input:
     ui = UI Handler Value
     id = as Number of the Button
 --]]
-function applyDummy(ui,id)
+function applyDummy(ui,_)
     local comcnt = simUI.getComboboxItemCount(ui, 1013)
-    for i=1,comcnt do
+    for _=1,comcnt do
         simUI.removeComboboxItem(ui,1013,1)
     end
     tip_pos = sim.getObjectPosition(tip,robot)
@@ -41,7 +41,7 @@ function applyDummy(ui,id)
     local js
     local str
     if (simUI.getRadiobuttonValue(ui,1015)==1) then
-        for key, value in pairs(editvalues) do
+        for key, _ in pairs(editvalues) do
             editvalues[key] = simUI.getEditValue(ui, key)
         end
         local new_pos = {}
@@ -76,7 +76,7 @@ function applyDummy(ui,id)
         str = json.encode (js, { indent = true })
         sim.setStringSignal("callsignal",str)
     elseif (simUI.getRadiobuttonValue(ui,1016)==1) then
-        for key, value in pairs(jpeditvalues) do
+        for key, _ in pairs(jpeditvalues) do
             jpeditvalues[key] = simUI.getEditValue(ui, key)
         end
         local new_jp = {}
@@ -119,7 +119,7 @@ function returnSignal()
     local ret = sim.getStringSignal("returnsignal")
     local ui = ui_1
     if ret then
-        local obj, pos, err = json.decode (ret, 1, nil)
+        local obj, _, err = json.decode (ret, 1, nil)
         --print(#obj.data)
         if err then
             sim.addStatusbarMessage("Error:", err)
@@ -201,7 +201,7 @@ function setConfigEndPoint(ui,c)
     sim.setObjectPosition(ik_target,-1,tip_pos)
     sim.setObjectOrientation(ik_target,-1,tip_ori)
     local new_pos = sim.getObjectPosition(tip,robot)
-    local new_ori = sim.getObjectOrientation(tip,robot)
+    --local new_ori = sim.getObjectOrientation(tip,robot)
     local our_ori = get_orientation(tip, robot)
     for i=1,6 do
         if i <=3 then
@@ -223,7 +223,7 @@ Input:
     ui = UI Handler Value
     id = as Number of the Button
 --]]
-function CalculateIK(ui,id)
+function CalculateIK(ui,_)
 
     if (simUI.getRadiobuttonValue(ui,1022)==1) then
         sendSplineData()
@@ -406,14 +406,14 @@ function switchMVMode(ui,id)
 end
 
 --[[
-Use that function to switch between the different Configurations that where calcutated for
+Use that function to switch between the different Configurations that where calculated for
 a target point in the C++-Environment.
 Input:
     ui = UI Handler Value
     id = as Number of the Combobox
     newValue = Content of the Combobox
 --]]
-function switchConfig(ui,id,newValue)
+function switchConfig(ui,_,newValue)
     if (newValue ~= 0) then
         for i=1,6 do
             if (simUI.getRadiobuttonValue(ui,2007)==1) then
@@ -505,6 +505,10 @@ Input:
     id      = as Number of the combobox
 --]]
 function ui_spline_combobox(ui, id)
+    if id ~= UI_IDs.SPLINE.COMBOBOX then
+        return
+    end
+
     ui_spline_cancel(ui,UI_IDs.SPLINE.CANCEL)
 end
 
@@ -515,6 +519,10 @@ Input:
     id      = as Number of the combobox
 --]]
 function ui_spline_cancel(ui, id)
+    if id ~= UI_IDs.SPLINE.CANCEL then
+        return
+    end
+
     local index = simUI.getComboboxSelectedIndex(ui,UI_IDs.SPLINE.COMBOBOX) + 1
     local coords = spline_points_raw[index]
     if (#spline_points_raw == 0) then
@@ -534,6 +542,10 @@ Input:
     id      = as Number of the Button
 --]]
 function ui_spline_delete(ui, id)
+    if id ~= UI_IDs.SPLINE.DELETE then
+        return
+    end
+
     local size = #spline_points_raw
     local index = simUI.getComboboxSelectedIndex(ui,UI_IDs.SPLINE.COMBOBOX) + 1
     local selected = index
@@ -558,6 +570,10 @@ Input:
     id      = as Number of the combobox
 --]]
 function ui_spline_apply(ui, id)
+    if id ~= UI_IDs.SPLINE.APPLY then
+        return
+    end
+
     local index = simUI.getComboboxSelectedIndex(ui,UI_IDs.SPLINE.COMBOBOX) + 1    -- Start index conversion!
     if (index == 0) then
         -- In case there is no entry yet, the apply button acts as the insert button
@@ -580,6 +596,10 @@ Input:
     id      = as Number of the combobox
 --]]
 function ui_spline_insert(ui, id)
+    if id ~= UI_IDs.SPLINE.INSERT then
+        return
+    end
+
     local size = #spline_points_raw
     local index = simUI.getComboboxSelectedIndex(ui,UI_IDs.SPLINE.COMBOBOX) + 1
     local coords = {}
@@ -605,7 +625,11 @@ Input:
     ui      = UI Handler value
     id      = as Number of the Button
 --]]
-function ui_spline_advanced(ui, id)
+function ui_spline_advanced(_, id)
+    if id ~= UI_IDs.SPLINE.ADVANCED then
+        return
+    end
+
     local directory = sim.getStringParameter(sim.stringparam_scene_path) .."/"
     local i, names, popen = 0, {}, io.popen
     command = ""
@@ -638,6 +662,10 @@ Input:
     id      = as Number of the Button
 --]]
 function ui_advanced_import(ui, id)
+    if id ~= UI_IDs.ADVANCED.IMPORT_BT then
+        return
+    end
+
     local selected = simUI.getComboboxSelectedIndex(ui,UI_IDs.ADVANCED.IMPORT_CB)
     if (selected >= 0) then -- ui indices start at 0, -1 means none is selected
         local name = simUI.getComboboxItemText(ui,UI_IDs.ADVANCED.IMPORT_CB,selected)
@@ -668,16 +696,20 @@ Input:
     id      = as Number of the Button
 --]]
 function ui_advanced_export(ui, id)
+    if id ~= UI_IDs.ADVANCED.EXPORT_BT then
+        return
+    end
+
     local filename = simUI.getEditValue(ui, UI_IDs.ADVANCED.EXPORT_ED)
     filename = filename:match'^%s*(.*%S)' or '' -- trim
     if (#filename > 0) then
-        filename = splitString(filename, ".")[1]
-        export_spline_CSV(filename, spline_points_raw)
-        -- Close the ui so that one does not have to press the ok button
-        simUI.hide(ui)
+    filename = splitString(filename, ".")[1]
+    export_spline_CSV(filename, spline_points_raw)
+    -- Close the ui so that one does not have to press the ok button
+    simUI.hide(ui)
     end
     return
-end
+    end
 
 --[[
 This functions hides the advanced spline settings ui. It gets called by
@@ -687,7 +719,9 @@ Input:
     id      = as Number of the Button
 --]]
 function ui_advanced_ok(ui, id)
-    simUI.hide(ui)
+    if id == UI_IDs.ADVANCED.OK then
+        simUI.hide(ui)
+    end
 end
 
 ----- Helper functions
@@ -797,7 +831,7 @@ function update_spline_path(handle, values)
     table.insert(data, tip_pos[1])
     table.insert(data, tip_pos[2])
     table.insert(data, tip_pos[3])
-    for j=1,8 do
+    for _=1,8 do
         table.insert(data, 0)
     end
 
@@ -806,7 +840,7 @@ function update_spline_path(handle, values)
         table.insert(data, values[i][1])
         table.insert(data, values[i][2])
         table.insert(data, values[i][3])
-        for j=1,8 do
+        for _=1,8 do
             table.insert(data, 0)
         end
     end
@@ -829,6 +863,34 @@ function hidePath(should_hide)
     end
 end
 
+--[[
+This function gets called by the controller when the correct spline has been calculated. It
+will show this new spline and destroy the previous temporary spline.
+--]]
+function show_calculated_spline()
+    local ret = sim.getStringSignal("splineSignal")
+    if ret then
+        local obj, _, err = json.decode (ret, 1, nil)
+        if err then
+            sim.addStatusbarMessage("Error:", err)
+        else
+            local tmp = {}
+            local count = #obj.data
+            for i=1,count do
+                table.insert(tmp, obj.data[i].m_x)
+                table.insert(tmp, obj.data[i].m_y)
+                table.insert(tmp, obj.data[i].m_z)
+                for _=1,8 do
+                    table.insert(tmp, 0)
+                end
+            end
+            sim.cutPathCtrlPoints(spline_path_handle, -1, 0)
+            sim.insertPathCtrlPoints(spline_path_handle, 0, 0, count, tmp)
+        end
+    end
+    return {},{},{},''
+end
+
 ---------------------------------------------------------------
 
 --Close the UI
@@ -837,7 +899,7 @@ function closeEventHandler(h)
 end
 
 --Close the second UI by hitting the Button
-function buttonok(ui,id)
+function buttonok(_,_)
     simUI.hide(ui_2)
     simUI.show(ui_1)
 end
@@ -909,7 +971,8 @@ if (sim_call_type==sim.syscb_init) then
             CANCEL = 3004,
             DELETE = 3005,
             APPLY = 3006,
-            INSERT = 3007
+            INSERT = 3007,
+            ADVANCED = 3008
         },
         -- The IDs for the Spline.Advanced window
         ADVANCED = {

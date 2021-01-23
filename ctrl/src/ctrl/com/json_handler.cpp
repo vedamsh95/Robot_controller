@@ -38,6 +38,22 @@ string JsonHandler::get_json_string(SixDPos* _pos)
     return value.toStyledString();
 }
 
+string JsonHandler::get_json_string(vector<SixDPos*>* _pos)
+{
+    Json::Value value;
+    Json::Value op(10);
+    Json::Value data;
+    for(SixDPos* tmp_pos : *_pos)
+    {
+        data.append(*(tmp_pos->serialize_to_json()));
+    }
+
+    value["op"] = op;
+    value["data"] = data;
+
+    return value.toStyledString();
+}
+
 
 string JsonHandler::get_json_string(Configuration* _cfg)
 {

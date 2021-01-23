@@ -75,6 +75,14 @@ public:
     string get_json_string(SixDPos* _pos);
 
     /**
+     * Returns the json string representation of the passed {@ref SixDPos} vector
+     *
+     * @param _pos vector containing a set of references of {@ref SixDPos}
+     * @return json string representation of the passed configurations
+     */
+    string get_json_string(vector<SixDPos*>* _pos);
+
+    /**
      * Returns the json string representation of the passed {@ref Configuration}
      *
      * @param _cfg {@ref Configuration} to be serialized
