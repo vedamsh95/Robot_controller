@@ -250,7 +250,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             }
 
             //step2
-            double theta1_2 = theta1 - 180;
+            double theta1_2 = theta1 + 180;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -339,7 +339,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1 << ")" << std:: endl;
             }
 
-            double theta1_2 = theta1 - 180;
+            double theta1_2 = theta1 + 180;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -433,7 +433,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             }
 
 
-            double theta1_2 = theta1 + 180;
+            double theta1_2 = theta1 - 180;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -523,7 +523,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1 << ")" << std:: endl;
             }
 
-            double theta1_2 = theta1 + 180;
+            double theta1_2 = theta1 - 180;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
