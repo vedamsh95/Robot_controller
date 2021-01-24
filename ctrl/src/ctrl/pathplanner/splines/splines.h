@@ -19,7 +19,6 @@ class Splines
 {
 public:
 
-	//              Trajectory* trajectory = ctrl.move_robot_spline(points, vel, acc);
 	Splines();
 	~Splines();
 	Trajectory *getSpline(vector<SixDPos*> &_points, Configuration * start, double _velocity, double _acceleration, int _spline_type = 0);
@@ -69,8 +68,6 @@ private:
 	void sampleDistancesCubic(std::vector<Position> _points, std::vector<Position> _firstControlPoints, std::vector<Position> _secondControlPoints, vector<double>* _sampleDist);
 	void sampleDistancesQuintic(std::vector<Position> _points, std::vector<Position> _tangents, std::vector<Position> _accelerations, vector<double>* _sampleDist);
 	
-	//double getQuniticSplineLength(std::vector<Position> _points, std::vector<Position> _tangents, std::vector<Position> _accelerations);
-	//double getSplineLengthCubic(std::vector<Position> _points, std::vector<Position> _firstControlPoints, std::vector<Position> _secondControlPoints);
 	
 	vector<double> getTValues(double _distance, double _velocity, double _acceleration);
 	Trajectory *trajectory;
