@@ -2,14 +2,14 @@
 
 Lin::Lin() :plot(false){
     robot = &Robot::getInstance();
-    //trajectory = new Trajectory();
+    trajectory = new Trajectory();
 }
 
 Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration)
 {
+    //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
     bool AdjustOrientation = false;
     
-    //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
     // Perform the feasibility checks for the two configurations,
     // i.e. that all joint angles are within the possible range.
     // If they are not, change the end configuration to the limits
@@ -60,7 +60,6 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
         value = StepTrajectory->eval(t);
         factor = value/distance;
         point = NextPos(start_pos, end_pos, factor);
-        cout  <<  point->get_X() << " " << point->get_Y() << " " << point->get_Z() << ";";
         points.push_back(point);
         t += Robot::getInstance().time_interval;
     }
@@ -70,6 +69,7 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
     Trajectory* trajectory = new Trajectory();
     trajectory = ivm.getMovement(&points, _start_cfg);
     
+    //appends movement to achive the given orientation.
     if(AdjustOrientation == true)
     {
         Configuration * lastConfig;
@@ -82,6 +82,17 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
         //append ptp movement to adjust the orientation
         Ptp ptp;
         trajectory->append(ptp.get_ptp_trajectory(lastConfig, TargetOrientationConfig, false));
+    }
+    
+
+    //ivm.CheckVelocities(trajectory, &points);
+    
+    if(plot){
+        Ptp Plotptp;
+        vector<Configuration*>* vecTraj = new vector<Configuration*>;
+        vecTraj = trajectory->get_all_configuration();
+        //PlotVelocity(points);
+        Plotptp.plot_movement(*vecTraj);
     }
 
     
@@ -111,11 +122,9 @@ SixDPos* Lin::NextPos(SixDPos *PosA, SixDPos *PosB, double factor){
                                PosA->get_B(),
                                PosA->get_C());
     return Sum;
-    
 }
 
-Configuration* Lin::GetConfigurations(SixDPos *SixDPos, Configuration *StartConfig)
-{
+Configuration* Lin::GetConfigurations(SixDPos *SixDPos, Configuration *StartConfig){
     vector<Configuration*>* ActConfigurations;
     InvKinematics Inv;
     ActConfigurations = Inv.get_inv_kinematics(SixDPos);
@@ -146,4 +155,30 @@ Configuration* Lin::GetClosestConfiguration(vector<Configuration*>* Configs, Con
     }
     return Configs->at(minConfig);
 
+}
+
+void Lin::PlotVelocity(vector<SixDPos *> SixDPoses){
+#ifdef PLOT
+    vector<double> velocities;
+    for(int i = 1; i < SixDPoses.size(); i++)
+    {
+        SixDPos *end_pos = SixDPoses.at(i);
+        SixDPos *start_pos=SixDPoses.at(i-1);
+        double distance = sqrt(pow(end_pos->get_X()-  start_pos->get_X(), 2)
+                               +pow(end_pos->get_Y()-  start_pos->get_Y(), 2)
+                               +pow(end_pos->get_Z()-  start_pos->get_Z(), 2));
+        velocities.push_back(distance/Robot::getInstance().time_interval);
+        
+    }
+    
+    std::vector<double> x(SixDPoses.size()-1);
+    for (int i = 0; i < x.size(); i++) {
+        x.at(i) = i * Robot::getInstance().time_interval;
+    }
+    
+    matplotlibcpp::plot(x, velocities);
+    matplotlibcpp::show();
+
+    
+#endif
 }

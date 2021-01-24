@@ -27,6 +27,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
                            _pos->get_Y(),
                            _pos->get_Z());
 
+
     for (int i = 0; i < IVpos->size(); i++)
     {
 
@@ -99,25 +100,42 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             {theta4[3], theta5[2], theta6[3]},
         };
         
-        
         for (int j = 0; j < 8;j++)
         {
-            if (((j<4 && Configs[j][1] > 0 && Configs[j][1] < (49.0/72.0)*M_PI) ||
-                 (j>4 && Configs[j][1] < 0 && Configs[j][1] > (-49.0/72.0)*M_PI))
-                && std::abs(Configs[j][0]) < robot->limits[3].max
-                && std::abs(Configs[j][2]) < robot->limits[5].max){
-                solutions->push_back(new Configuration({
-                    actPos->at(0),
-                    actPos->at(1),
-                    actPos->at(2),
-                    Configs[j][0],
-                    Configs[j][1],
-                    Configs[j][2]}));
+            if ((j<4 && Configs[j][1] > singularityMargin && Configs[j][1] < (49.0/72.0)*M_PI) ||
+                (j>4 && Configs[j][1] < -singularityMargin && Configs[j][1] > (-49.0/72.0)*M_PI)){
+                if(std::abs(Configs[j][0]) < robot->limits[3].max
+                   && std::abs(Configs[j][2]) < robot->limits[5].max){
+                    solutions->push_back(new Configuration({
+                        actPos->at(0),
+                        actPos->at(1),
+                        actPos->at(2),
+                        Configs[j][0],
+                        Configs[j][1],
+                        Configs[j][2]}));
+                }
+            }
+            else if((j<4 && Configs[j][1] < singularityMargin && Configs[j][1] > 0) ||
+                    (j>4 && Configs[j][1] > -singularityMargin && Configs[j][1] < 0))
+            {
+                //cout << "Wrist Singularity Detected!" << endl;
                 
+                array<double, 3>* wristRotation = new array<double, 3>;
+                wristRotation = CalculateSingularity(R_36);
+                
+                if(wristRotation->at(0) < robot->limits[3].max
+                   && wristRotation->at(2) < robot->limits[5].max){
+                    solutions->push_back(new Configuration({
+                        actPos->at(0),
+                        actPos->at(1),
+                        actPos->at(2),
+                        Configs[j][0],
+                        wristRotation->at(1),
+                        Configs[j][2]}));
+                }
             }
         }
     }
-    
     
     //prepare the result vector for the configurations
     // you should call your inverse kinematics functions here!
@@ -134,5 +152,14 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     return solutions;
 }
 
+array<double, 3>* InvKinematics::CalculateSingularity(TMatrix R36)
+{
+    array<double, 3>* wristRotation = new array<double, 3>;
+    wristRotation->at(0)= 0.5*acos(R36.get(1, 1));
+    wristRotation->at(1)= 0;
+    wristRotation->at(2)= 0.5*acos(R36.get(1, 1));
+    
+    return wristRotation;
+}
 
 

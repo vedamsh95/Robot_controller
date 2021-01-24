@@ -16,6 +16,7 @@
 #include "../../kinematics/direct/fw_kinematics.h"
 #include "../../kinematics/inverse/inverse_kinematics.h"
 #include "../../kinematics/inverse/IVMovement.h"
+#include "../../../matplotlib-cpp-master/matplotlibcpp.h"
 
 
 /**
@@ -30,7 +31,7 @@ class Lin {
 private:
     Robot* robot;
     bool plot; 
-    //Trajectory* trajectory;
+    Trajectory* trajectory;
     
 public:
     /**
@@ -85,6 +86,8 @@ public:
      *
      */
     Configuration* GetClosestConfiguration(vector<Configuration*>* Configurations, Configuration* PrevConfig);
+    
+    static void PlotVelocity(vector<SixDPos*> SixDPoses);
     
 };
 

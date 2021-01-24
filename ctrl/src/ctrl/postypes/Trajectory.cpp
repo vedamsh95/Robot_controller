@@ -44,11 +44,21 @@ int Trajectory::get_length()
     return this->m_configs.size();
 }
 
-void Trajectory::append(Trajectory *endTrajectory)
+void Trajectory::append(Trajectory* endTrajectory)
 {
     for(int i= 0; i< endTrajectory->get_length(); i++)
     {
         this->m_configs.push_back(endTrajectory->get_configuration(i));
     }
+}
+
+void Trajectory::insert(Configuration* config, int index)
+{
+    this->m_configs.insert(m_configs.begin()+ index, config);
+}
+
+void Trajectory::clear()
+{
+    this->m_configs.clear();
 }
 

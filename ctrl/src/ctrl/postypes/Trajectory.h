@@ -29,6 +29,10 @@ public:
     int get_length();
     
     void append(Trajectory* endTrajectory);
+    
+    void insert(Configuration* config, int index);
+    
+    void clear();
 
 };
 
