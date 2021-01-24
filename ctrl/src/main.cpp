@@ -214,6 +214,7 @@ int main() {
               double acc = jsonHandler.get_acceleration();
               Configuration start_cfg(jsonHandler.get_start_configuration());
               int spline_type = jsonHandler.get_spline_type();
+              double elong = jsonHandler.get_elongation();
               vector<SixDPos*> points;
               size_t count = jsonHandler.get_data().size();
               for(size_t i = 0; i < count; i++) {
@@ -221,6 +222,15 @@ int main() {
                 points.push_back(pos);
               }
               Trajectory* trajectory = ctrl.move_robot_spline(points, &start_cfg, vel, acc,spline_type);
+
+              /*
+              std::vector<SixDPos*> spline_points; // <--- Den hier mit den SixDPos* deines Splines befüllen, danach den rest unten an dieser Stelle ausführen
+              string json_string = jsonHandler.get_json_string(&spline_points);
+              simxSetStringSignal(ID, "splineSignal",
+                                    reinterpret_cast<const simxUChar *>(json_string.c_str()), json_string.length(), simx_opmode_oneshot);
+              simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "show_calculated_spline", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
+               */
+
               for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
                 c[0] = (*cur_cfg)[0];
                 c[1] = (*cur_cfg)[1];

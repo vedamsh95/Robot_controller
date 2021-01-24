@@ -75,6 +75,14 @@ public:
     string get_json_string(SixDPos* _pos);
 
     /**
+     * Returns the json string representation of the passed {@ref SixDPos} vector
+     *
+     * @param _pos vector containing a set of references of {@ref SixDPos}
+     * @return json string representation of the passed configurations
+     */
+    string get_json_string(vector<SixDPos*>* _pos);
+
+    /**
      * Returns the json string representation of the passed {@ref Configuration}
      *
      * @param _cfg {@ref Configuration} to be serialized
@@ -120,6 +128,14 @@ public:
      *          1: Quintic
      */
      int get_spline_type();
+
+    /**
+     * Returns the scalar elongation factor for the spline movement
+     *
+     * @return Double denoting the scalar elongation factor
+     *         -1 in the error case
+     */
+     double get_elongation();
 private:
     /** json value parsed from the json string */
     Json::Value m_json_value;

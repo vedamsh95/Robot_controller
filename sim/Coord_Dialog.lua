@@ -6,7 +6,7 @@ Input:
     id = as Number of the Editfield
     newValue = Content of the Editfield
 --]]
-function editcart(ui, id, newValue)
+function editcart(_, id, newValue)
     edit_ids[id-999] = id
     editvalues[id] = newValue
 end
@@ -18,7 +18,7 @@ Input:
     id = as Number of the Editfield
     newValue = Content of the Editfield
 --]]
-function editjp(ui, id, newValue)
+function editjp(_, id, newValue)
     jpedit_ids[id-1999] = id
     jpeditvalues[id] = newValue
 end
@@ -31,9 +31,9 @@ Input:
     ui = UI Handler Value
     id = as Number of the Button
 --]]
-function applyDummy(ui,id)
+function applyDummy(ui,_)
     local comcnt = simUI.getComboboxItemCount(ui, 1013)
-    for i=1,comcnt do
+    for _=1,comcnt do
         simUI.removeComboboxItem(ui,1013,1)
     end
     tip_pos = sim.getObjectPosition(tip,robot)
@@ -41,7 +41,7 @@ function applyDummy(ui,id)
     local js
     local str
     if (simUI.getRadiobuttonValue(ui,1015)==1) then
-        for key, value in pairs(editvalues) do
+        for key, _ in pairs(editvalues) do
             editvalues[key] = simUI.getEditValue(ui, key)
         end
         local new_pos = {}
@@ -76,7 +76,7 @@ function applyDummy(ui,id)
         str = json.encode (js, { indent = true })
         sim.setStringSignal("callsignal",str)
     elseif (simUI.getRadiobuttonValue(ui,1016)==1) then
-        for key, value in pairs(jpeditvalues) do
+        for key, _ in pairs(jpeditvalues) do
             jpeditvalues[key] = simUI.getEditValue(ui, key)
         end
         local new_jp = {}
@@ -119,7 +119,7 @@ function returnSignal()
     local ret = sim.getStringSignal("returnsignal")
     local ui = ui_1
     if ret then
-        local obj, pos, err = json.decode (ret, 1, nil)
+        local obj, _, err = json.decode (ret, 1, nil)
         --print(#obj.data)
         if err then
             sim.addStatusbarMessage("Error:", err)
@@ -201,7 +201,7 @@ function setConfigEndPoint(ui,c)
     sim.setObjectPosition(ik_target,-1,tip_pos)
     sim.setObjectOrientation(ik_target,-1,tip_ori)
     local new_pos = sim.getObjectPosition(tip,robot)
-    local new_ori = sim.getObjectOrientation(tip,robot)
+    --local new_ori = sim.getObjectOrientation(tip,robot)
     local our_ori = get_orientation(tip, robot)
     for i=1,6 do
         if i <=3 then
@@ -223,7 +223,7 @@ Input:
     ui = UI Handler Value
     id = as Number of the Button
 --]]
-function CalculateIK(ui,id)
+function CalculateIK(ui,_)
 
     if (simUI.getRadiobuttonValue(ui,1022)==1) then
         sendSplineData()
@@ -379,6 +379,7 @@ function sendSplineData()
         vel = tonumber(simUI.getEditValue(ui_1, 3020)),   -- The velocity for the spline movement
         acc = tonumber(simUI.getEditValue(ui_1, 3021)),   -- The acceleration for the spline movement
         type = simUI.getComboboxSelectedIndex(ui_3, 5005),
+        elong = tonumber(simUI.getEditValue(ui_3, 5006)),
         start_config = start_config
     }
 
@@ -405,14 +406,14 @@ function switchMVMode(ui,id)
 end
 
 --[[
-Use that function to switch between the different Configurations that where calcutated for
+Use that function to switch between the different Configurations that where calculated for
 a target point in the C++-Environment.
 Input:
     ui = UI Handler Value
     id = as Number of the Combobox
     newValue = Content of the Combobox
 --]]
-function switchConfig(ui,id,newValue)
+function switchConfig(ui,_,newValue)
     if (newValue ~= 0) then
         for i=1,6 do
             if (simUI.getRadiobuttonValue(ui,2007)==1) then
@@ -457,10 +458,12 @@ function switchSplineMode(ui,id)
             simUI.setEnabled(ui,1011,false)
         end
         simUI.setEnabled(ui,1020,false)
+        hidePath(true)
     else
         simUI.setEnabled(ui,1019,false)
         simUI.setEnabled(ui,1020,true)
         simUI.setEnabled(ui,1011,true)
+        hidePath(false)
     end
 end
 
@@ -490,70 +493,99 @@ function radiobuttonClick(ui,id)
     end
 end
 
+--------------------Spline UI functionality--------------------
+
+----- IO Handler
+
 --[[
-Handle the combobox for the spline functionality
+If the user switches to another point in the spline combobox, the values in
+the edit fields should be changed accordingly
 Input:
     ui      = UI Handler value
     id      = as Number of the combobox
-    value   = the index of the selected value starting at 0!
 --]]
-function splineSwitchPoint(ui,id,value)
-    splineCancel(ui,3004)
-end
-
---[[
-Converts the stored points to texts and shows them in the combobox
-Input:
-    ui      = UI Handler value
-    id      = as Number of the combobox
-    selected_index = The index that should be selected afterwards in range [1..N]
---]]
-function createSplinePointsText(ui,id,selected_index)
-    local size = #spline_points_raw
-    local texts = {}
-
-    for i=1,size do
-        local coords = spline_points_raw[i]
-        local text = string.format("%s: %f, %f, %f", string.char(64+i), coords[1], coords[2], coords[3])
-        texts[i] = text
+function ui_spline_combobox(ui, id)
+    if id ~= UI_IDs.SPLINE.COMBOBOX then
+        return
     end
 
-    simUI.setComboboxItems(ui,id,texts,selected_index-1)
-    splineCancel(ui,3004)
-    updatePath(pathHandle, spline_points_raw)
+    ui_spline_cancel(ui,UI_IDs.SPLINE.CANCEL)
 end
 
 --[[
-Shows the current spline point in the edit fields
+Resets the edit field to the currently selected point.
 Input:
     ui      = UI Handler value
     id      = as Number of the combobox
 --]]
-function splineCancel(ui,id)
-    local index = simUI.getComboboxSelectedIndex(ui,3000) + 1
+function ui_spline_cancel(ui, id)
+    if id ~= UI_IDs.SPLINE.CANCEL then
+        return
+    end
+
+    local index = simUI.getComboboxSelectedIndex(ui,UI_IDs.SPLINE.COMBOBOX) + 1
     local coords = spline_points_raw[index]
     if (#spline_points_raw == 0) then
         coords = {0, 0, 0}
     end
-    for i=1,3 do
-        simUI.setEditValue(ui,3000+i, tostring(coords[i]))
+    for i=0,2 do
+        simUI.setEditValue(ui,UI_IDs.SPLINE.X+i, tostring(coords[i+1]))
     end
 end
 
 --[[
-Changes the currently selected spline point to the values in the edit fields
+Deletes the currently selected spline point. The next point in the list will be
+active. If the last point got deleted, the previous point gets selected. The edit
+fields will also bet set to the corresponding values.
+Input:
+    ui      = UI Handler value
+    id      = as Number of the Button
+--]]
+function ui_spline_delete(ui, id)
+    if id ~= UI_IDs.SPLINE.DELETE then
+        return
+    end
+
+    local size = #spline_points_raw
+    local index = simUI.getComboboxSelectedIndex(ui,UI_IDs.SPLINE.COMBOBOX) + 1
+    local selected = index
+    if (index==size) then
+        -- The last point got deleted
+        selected = index-1
+    else
+        -- Move the following points
+        for i=index,size-1 do
+            spline_points_raw[i] = spline_points_raw[i+1]
+        end
+    end
+    spline_points_raw[size] = nil
+    show_spline_points(ui,UI_IDs.SPLINE.COMBOBOX,selected)
+end
+
+--[[
+Changes the currently selected spline point to the values in the edit fields.
+If there is no point yet, the button will call the insert button.
 Input:
     ui      = UI Handler value
     id      = as Number of the combobox
 --]]
-function splineApply(ui,id)
-    local index = simUI.getComboboxSelectedIndex(ui,3000) + 1
-    local coords = {}
-    for i=1,3 do
-       coords[i] = math.round(simUI.getEditValue(ui,3000+i), 3)
+function ui_spline_apply(ui, id)
+    if id ~= UI_IDs.SPLINE.APPLY then
+        return
     end
-    spline_points_raw[index] = coords
-    createSplinePointsText(ui,3000,index)
+
+    local index = simUI.getComboboxSelectedIndex(ui,UI_IDs.SPLINE.COMBOBOX) + 1    -- Start index conversion!
+    if (index == 0) then
+        -- In case there is no entry yet, the apply button acts as the insert button
+        splineInsert(ui, UI_IDs.SPLINE.INSERT)
+    else
+        local coords = {}
+        for i=0,2 do
+            coords[i+1] = math.round(simUI.getEditValue(ui,UI_IDs.SPLINE.X+i), 3)
+        end
+        spline_points_raw[index] = coords
+        show_spline_points(ui,UI_IDs.SPLINE.COMBOBOX,index)
+    end
 end
 
 --[[
@@ -563,12 +595,16 @@ Input:
     ui      = UI Handler value
     id      = as Number of the combobox
 --]]
-function splineInsert(ui,id)
+function ui_spline_insert(ui, id)
+    if id ~= UI_IDs.SPLINE.INSERT then
+        return
+    end
+
     local size = #spline_points_raw
-    local index = simUI.getComboboxSelectedIndex(ui,3000) + 1
+    local index = simUI.getComboboxSelectedIndex(ui,UI_IDs.SPLINE.COMBOBOX) + 1
     local coords = {}
-    for i=1,3 do
-        coords[i] = math.round(simUI.getEditValue(ui,3000+i), 3)
+    for i=0,2 do
+        coords[i+1] = math.round(simUI.getEditValue(ui,UI_IDs.SPLINE.X+i), 3)
     end
     -- Move all further entries by one and insert the new point
     if (index<size) then
@@ -579,44 +615,151 @@ function splineInsert(ui,id)
     else
         spline_points_raw[size+1] = coords
     end
-    createSplinePointsText(ui,3000,index+1)
+    show_spline_points(ui,UI_IDs.SPLINE.COMBOBOX,index+1)
 end
 
 --[[
-Deletes the currently selected spline point
+This functions opens the advanced settings for the spline movement and
+fills the import file selection combobox.
 Input:
     ui      = UI Handler value
     id      = as Number of the Button
 --]]
-function splineDelete(ui,id)
-    local size = #spline_points_raw
-    local index = simUI.getComboboxSelectedIndex(ui,3000) + 1
-    local selected = index
-    if (index==size) then
-        selected = index-1
+function ui_spline_advanced(_, id)
+    if id ~= UI_IDs.SPLINE.ADVANCED then
+        return
+    end
+
+    local directory = sim.getStringParameter(sim.stringparam_scene_path) .."/"
+    local i, names, popen = 0, {}, io.popen
+    command = ""
+    if (package.config:sub(1,1) == '/') then
+        command = 'ls -a "'..directory..'"'
     else
-        for i=index,size-1 do
-            spline_points_raw[i] = spline_points_raw[i+1]
+        command = 'dir "'..directory..'" /b'
+    end
+    local pfile = popen(command)
+    for filename in pfile:lines() do
+        local parts = splitString(filename, ".")
+        if (parts[2] == "csv") then
+            i = i + 1
+            names[i] = parts[1]
         end
     end
-    spline_points_raw[size] = nil
-    createSplinePointsText(ui,3000,selected)
+    if (#names > 0) then
+        simUI.setComboboxItems(ui_3,UI_IDs.ADVANCED.IMPORT_CB,names,0)
+    end
+    pfile:close()
+    simUI.show(ui_3)
+    return
 end
 
 --[[
-Exorts the current spline points to a csv file with the given name. If the file
-already exists, it will be overriden.
+This function imports the currently selected csv file and hides the
+advanced spline settings ui afterwards.
+Input:
+    ui      = UI Handler value
+    id      = as Number of the Button
+--]]
+function ui_advanced_import(ui, id)
+    if id ~= UI_IDs.ADVANCED.IMPORT_BT then
+        return
+    end
+
+    local selected = simUI.getComboboxSelectedIndex(ui,UI_IDs.ADVANCED.IMPORT_CB)
+    if (selected >= 0) then -- ui indices start at 0, -1 means none is selected
+        local name = simUI.getComboboxItemText(ui,UI_IDs.ADVANCED.IMPORT_CB,selected)
+        raw_points = import_spline_CSV(name)
+        -- Delete the current table and insert the new values
+        for k in pairs(spline_points_raw) do
+            spline_points_raw[k] = nil
+        end
+        for i=2,#raw_points do
+            table.insert(spline_points_raw, {
+                tonumber(raw_points[i][1]),
+                tonumber(raw_points[i][2]),
+                tonumber(raw_points[i][3])
+            })
+        end
+        show_spline_points(ui_1, UI_IDs.SPLINE.COMBOBOX, #spline_points_raw)
+        -- Close the ui so that one does not have to press the ok button
+        simUI.hide(ui)
+    end
+    return
+end
+
+--[[
+This function exports the current spline points to a csv file with the
+given name and hides the advanced spline settings ui afterwards.
+Input:
+    ui      = UI Handler value
+    id      = as Number of the Button
+--]]
+function ui_advanced_export(ui, id)
+    if id ~= UI_IDs.ADVANCED.EXPORT_BT then
+        return
+    end
+
+    local filename = simUI.getEditValue(ui, UI_IDs.ADVANCED.EXPORT_ED)
+    filename = filename:match'^%s*(.*%S)' or '' -- trim
+    if (#filename > 0) then
+    filename = splitString(filename, ".")[1]
+    export_spline_CSV(filename, spline_points_raw)
+    -- Close the ui so that one does not have to press the ok button
+    simUI.hide(ui)
+    end
+    return
+    end
+
+--[[
+This functions hides the advanced spline settings ui. It gets called by
+the custom ui plugin when the corresponding button is pressed.
+Input:
+    ui      = UI Handler value
+    id      = as Number of the Button
+--]]
+function ui_advanced_ok(ui, id)
+    if id == UI_IDs.ADVANCED.OK then
+        simUI.hide(ui)
+    end
+end
+
+----- Helper functions
+
+--[[
+Imports a csv file that got exported using the function exportSplineCSV.
+It will return the table with the read in points.
+Input:
+    filename    = The name of the file to import (Without ending or path!)
+Output:
+    table       = A table containing table3 objects denoting the points
+--]]
+function import_spline_CSV(filename)
+    local scenePath = sim.getStringParameter(sim.stringparam_scene_path)
+    local file = io.open(scenePath .. "/" .. filename .. ".csv", "r")
+    local raw_points = {}
+    for line in file:lines() do
+        local slices = splitString(line, ";")
+        table.insert(raw_points, slices)
+    end
+    file:close()
+    return raw_points
+end
+
+--[[
+Exports the given points to a csv file with the given name. If the file
+already exists, it will be overridden.
 Input:
     filename    = Name of the file without the ending!
+    points      = A table containing of table3 with numbers
 --]]
-function exportSplineCSV(filename)
+function export_spline_CSV(filename, points)
     local text = "x,y,z\n"
     local rows = {}
-    for i=1,#spline_points_raw do
-        rows[i] = string.format("%f,%f,%f", spline_points_raw[i][1], spline_points_raw[i][2], spline_points_raw[i][3])
+    for i=1,#points do
+        rows[i] = string.format("%f;%f;%f", points[i][1], points[i][2], points[i][3])
     end
     text = text .. table.concat(rows, "\n")
-
     local scenePath = sim.getStringParameter(sim.stringparam_scene_path)
     local file = io.open(scenePath .. "/" .. filename .. ".csv", "w")
     file:write(text)
@@ -624,123 +767,58 @@ function exportSplineCSV(filename)
 end
 
 --[[
-Splits the given string at the given seperator and returns the substring
-as a table.
+Converts the stored points to texts and shows them in the specified combobox.
 Input:
-    inputStr    = The string to split
-    sep         = The separator string
+    ui      = The ui handle the combobox is in
+    id      = the id of the combobox
+    selected_index = The index that should be selected afterwards in range [1..N]
 --]]
-function splitString(inputstr, sep)
-    local parts = {}
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        table.insert(parts, str)
+function show_spline_points(ui, id, selected_index)
+    local size = #spline_points_raw
+    local texts = {}
+    for i=1,size do
+        local coords = spline_points_raw[i]
+        local text = string.format("%s: %f, %f, %f", string.char(64+i), coords[1], coords[2], coords[3])
+        texts[i] = text
     end
-    return parts
+    simUI.setComboboxItems(ui,id,texts,selected_index-1)
+    ui_spline_cancel(ui,UI_IDs.SPLINE.CANCEL)
+    update_spline_path(spline_path_handle, spline_points_raw)
+end
+
+function spline_init()
+
+    -- Default values
+    local path_size = 5                 -- The line thickness of the path
+    local path_color_r = 0              -- The red   component of the paths color
+    local path_color_g = 1              -- The green component of the paths color
+    local path_color_b = 0              -- The blue  component of the paths color
+    local spline_elongation = 0.5       -- The default scalar elongation factor for the spline calculation
+    local spline_types = {              -- The possible spline types. The default is the first the index
+        "Cubic",     -- type:0          -- to the value that will be sent to the controller, starting at 0
+        "Quintic"    -- type:1
+    }
+
+    local pathIntParams = { path_size, 0, 0 }
+    local pathColor = { path_color_r, path_color_g, path_color_b, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+
+    simUI.setEditValue(ui_3, UI_IDs.ADVANCED.ELONGATION, tostring(spline_elongation))
+
+    for i=0,#spline_types-1 do
+        simUI.insertComboboxItem(ui_3, UI_IDs.ADVANCED.TYPE, i, spline_types[i+1])
+    end
+
+    return sim.createPath(-1, pathIntParams, nullptr, pathColor)
 end
 
 --[[
-Imports a csv file and stores the result in the spline_points_raw table.
-Input:
-    filename    = The name of the file to import (Without ending!)
---]]
-function importSplineCSV(filename)
-    local scenePath = sim.getStringParameter(sim.stringparam_scene_path)
-    local file = io.open(scenePath .. "/" .. filename .. ".csv", "r")
-    local raw_points = {}
-    for line in file:lines() do
-        local slices = splitString(line, ",")
-        table.insert(raw_points, slices)
-    end
-
-    for k in pairs(spline_points_raw) do
-        spline_points_raw[k] = nil
-    end
-
-    for i=2,#raw_points do
-        table.insert(spline_points_raw, {
-            tonumber(raw_points[i][1]),
-            tonumber(raw_points[i][2]),
-            tonumber(raw_points[i][3])
-        })
-    end
-
-    file:close()
-
-    createSplinePointsText(ui_1, 3000, #spline_points_raw)
-end
-
---[[
-This functions handles the ui events of the csv functionality window.
-Input:
-    ui      = UI Handler value
-    id      = as Number of the Button
---]]
-function splineIO(ui, id)
-
-    -- CSV functionality button
-    if (id == 3008) then
-        local directory = sim.getStringParameter(sim.stringparam_scene_path) .."/"
-        local i, names, popen = 0, {}, io.popen
-        command = ""
-        if (package.config:sub(1,1) == '/') then
-            command = 'ls -a "'..directory..'"'
-        else
-            command = 'dir "'..directory..'" /b'
-        end
-        local pfile = popen(command)
-        for filename in pfile:lines() do
-            local parts = splitString(filename, ".")
-            if (parts[2] == "csv") then
-                i = i + 1
-                names[i] = parts[1]
-            end
-        end
-        if (#names > 0) then
-            simUI.setComboboxItems(ui_3,5000,names,0)
-        end
-        pfile:close()
-        simUI.show(ui_3)
-        return
-    end
-
-    -- Import button
-    if (id == 5001) then
-        local selected = simUI.getComboboxSelectedIndex(ui,5000)
-        if (selected >= 0) then -- ui indices start at 0
-           local name = simUI.getComboboxItemText(ui,5000,selected)
-            importSplineCSV(name)
-        end
-        --local name = simUI.get
-        simUI.hide(ui_3)
-        return
-    end
-
-    -- Export button
-    if (id == 5003) then
-        local filename = simUI.getEditValue(ui, 5002)
-        filename = filename:match'^%s*(.*%S)' or '' -- trim
-        if (#filename > 0) then
-            filename = splitString(filename, ".")[1]
-            exportSplineCSV(filename)
-            simUI.hide(ui_3)
-        end
-        return
-    end
-
-    -- Cancel button
-    if (id == 5004) then
-        simUI.hide(ui_3)
-    end
-end
-
---[[
-This functions updates the path for the spline functionality.
+This functions updates the path for the spline functionality. It will start at the
+current position and connects the entered points.
 Input:
     handle      = Handle of the path that should be updated
-    id          = Points for the path, the first point however will be the current position
+    values      = Points for the path, the first point however will be the current position
 --]]
-function updatePath(handle, values)
-
+function update_spline_path(handle, values)
     if (#values == 0) then
         sim.cutPathCtrlPoints(handle, -1, 0)
         return
@@ -753,7 +831,7 @@ function updatePath(handle, values)
     table.insert(data, tip_pos[1])
     table.insert(data, tip_pos[2])
     table.insert(data, tip_pos[3])
-    for j=1,8 do
+    for _=1,8 do
         table.insert(data, 0)
     end
 
@@ -762,7 +840,7 @@ function updatePath(handle, values)
         table.insert(data, values[i][1])
         table.insert(data, values[i][2])
         table.insert(data, values[i][3])
-        for j=1,8 do
+        for _=1,8 do
             table.insert(data, 0)
         end
     end
@@ -771,7 +849,49 @@ function updatePath(handle, values)
     sim.insertPathCtrlPoints(handle, 0, 0, #values+1, data)
 end
 
----------------------------------------------
+--[[
+This function can show or hide the spline path.
+Input:
+    should_hide = true:  The path is invisible
+                  false: The path is visible
+--]]
+function hidePath(should_hide)
+    if (should_hide) then
+        sim.cutPathCtrlPoints(spline_path_handle, -1, 0)
+    else
+        update_spline_path(spline_path_handle, spline_points_raw)
+    end
+end
+
+--[[
+This function gets called by the controller when the correct spline has been calculated. It
+will show this new spline and destroy the previous temporary spline.
+--]]
+function show_calculated_spline()
+    local ret = sim.getStringSignal("splineSignal")
+    if ret then
+        local obj, _, err = json.decode (ret, 1, nil)
+        if err then
+            sim.addStatusbarMessage("Error:", err)
+        else
+            local tmp = {}
+            local count = #obj.data
+            for i=1,count do
+                table.insert(tmp, obj.data[i].m_x)
+                table.insert(tmp, obj.data[i].m_y)
+                table.insert(tmp, obj.data[i].m_z)
+                for _=1,8 do
+                    table.insert(tmp, 0)
+                end
+            end
+            sim.cutPathCtrlPoints(spline_path_handle, -1, 0)
+            sim.insertPathCtrlPoints(spline_path_handle, 0, 0, count, tmp)
+        end
+    end
+    return {},{},{},''
+end
+
+---------------------------------------------------------------
 
 --Close the UI
 function closeEventHandler(h)
@@ -779,7 +899,7 @@ function closeEventHandler(h)
 end
 
 --Close the second UI by hitting the Button
-function buttonok(ui,id)
+function buttonok(_,_)
     simUI.hide(ui_2)
     simUI.show(ui_1)
 end
@@ -790,6 +910,20 @@ function math.round(number, decimals, method)
     local factor = 10 ^ decimals
     if (method == "ceil" or method == "floor") then return math[method](number * factor) / factor
     else return tonumber(("%."..decimals.."f"):format(number)) end
+end
+
+--[[
+Splits the given string at the given separator and returns the substrings as a table.
+Input:
+    inputStr    = The string to split
+    sep         = The separator string
+--]]
+function splitString(inputstr, sep)
+    local parts = {}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        table.insert(parts, str)
+    end
+    return parts
 end
 
 --[[
@@ -825,6 +959,32 @@ end
 
 --Initialize the UI
 if (sim_call_type==sim.syscb_init) then
+
+    UI_IDs = {
+        -- The IDs for the spline portion of the general UI
+        SPLINE = {
+            GROUP = 1020,
+            COMBOBOX = 3000,
+            X = 3001,
+            Y = 3002,
+            Z = 3003,
+            CANCEL = 3004,
+            DELETE = 3005,
+            APPLY = 3006,
+            INSERT = 3007,
+            ADVANCED = 3008
+        },
+        -- The IDs for the Spline.Advanced window
+        ADVANCED = {
+            IMPORT_CB = 5000,
+            IMPORT_BT = 5001,
+            EXPORT_ED = 5002,
+            EXPORT_BT = 5003,
+            TYPE = 5005,
+            ELONGATION = 5006,
+            OK = 5004
+        }
+    }
 
     coord_dialog = [[<ui closeable="true" on-close="closeEventHandler" layout="hbox" title="Coordinates" resizable="true">
     <group layout="vbox">
@@ -943,7 +1103,7 @@ for the lin and spline movement:"></label>
         </group>
         <group layout="vbox" id="1020" enabled="false">
             <label text="Spline functionality:"></label>
-            <combobox id="3000" on-change="splineSwitchPoint"></combobox>
+            <combobox id="3000" on-change="ui_spline_cancel"></combobox>
             <group layout="hbox">
                 <group>
                     <label text="X:"></label>
@@ -959,15 +1119,14 @@ for the lin and spline movement:"></label>
                 </group>
             </group>
             <group layout="grid">
-                <button text="Cancel" id="3004" onclick="splineCancel"></button>
-                <button text="Delete" id="3005" onclick="splineDelete"></button>
+                <button text="Cancel" id="3004" onclick="ui_spline_cancel"></button>
+                <button text="Delete" id="3005" onclick="ui_spline_delete"></button>
                 <br />
-                <button text="Apply" id="3006" onclick="splineApply"></button>
-                <button text="Insert" id="3007" onclick="splineInsert"></button>
+                <button text="Apply" id="3006" onclick="ui_spline_apply"></button>
+                <button text="Insert" id="3007" onclick="ui_spline_insert"></button>
             </group>
-            <group>
-                <button text="Advanced" id="3008" onclick="splineIO"></button>
-            </group>
+            <button text="Advanced" id="3008" onclick="ui_spline_advanced"></button>
+
 
         </group>
         <button text="Calculate and Move" id="1011" enabled="false" onclick="CalculateIK"></button>
@@ -979,33 +1138,33 @@ for the lin and spline movement:"></label>
 	<button text="OK" onclick="buttonok"></button>
 </ui>]]
 
-    splineIO = [[<ui closeable="false" on-close="splineIO" layout="vbox" title="CSV functionality">
-     <label text="You can either import spline points from a vsc file
+    splineIO = [[<ui closeable="false" on-close="ui_advanced_ok" layout="vbox" title="CSV functionality">
+    <group layout="vbox">
+        <label text="You can either import spline points from a vsc file
 or export the current points to a file."></label>
-    <group layout="hbox">
-        <group layout="vbox">
-            <label text="Import"></label>
-            <combobox id="5000" on-change="splineIO"></combobox>
-            <button text="Import" onclick="splineIO" id="5001"></button>
-        </group>
-        <group layout="vbox">
-            <label text="Export"></label>
-            <edit id="5002" value=""></edit>
-            <button text="Export" onclick="splineIO" id="5003"></button>
+        <group layout="hbox">
+            <group layout="vbox">
+                <label text="Import"></label>
+                <combobox id="5000"></combobox>
+                <button text="Import" onclick="ui_advanced_import" id="5001"></button>
+            </group>
+            <group layout="vbox">
+                <label text="Export"></label>
+                <edit id="5002" value=""></edit>
+                <button text="Export" onclick="ui_advanced_export" id="5003"></button>
+            </group>
         </group>
     </group>
-    <label text="You can select a spline type."></label>
-    <group layout="hbox">
-        <combobox id="5005" on-change="splineIO"></combobox>
+    <group layout="vbox">
+        <label text="You can select a spline type."></label>
+        <combobox id="5005"></combobox>
     </group>
-    <button text="OK" onclick="splineIO" id="5004"></button>
+    <group layout="vbox">
+        <label text="Choose the scalar elongation factor for the spline movement."></label>
+        <edit id="5006" value=""></edit>
+    </group>
+    <button text="OK" onclick="ui_advanced_ok" id="5004"></button>
 </ui>]]
-
-    movement_allowed = false    -- Whether apply has been pressed once
-                                -- and the normal movement is allowed
-
-    --spline_points_raw = {{0.1, 0.3, 0.4}, {0.5,0.6,0.0}, {0.6, 0.9, 1.0}, {0.33, 0.33, 0.33}}
-    spline_points_raw = {}
 
     edit_ids = {}
     editvalues = {}
@@ -1024,14 +1183,18 @@ or export the current points to a file."></label>
     local myuis = {ui_1,ui_2,ui_3}
     sim.setStringSignal("uisignal",sim.packTable(myuis))
 
-   -- Spline
-    pathIntParams = { 7, 0, 0 }                                         -- First one is the size of the path
-    pathColor = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }                  -- Color of the path
-    pathHandle = sim.createPath(-1, pathIntParams, nullptr, pathColor)
+    ----------Added variables---------
+    movement_allowed = false    -- Whether apply has been pressed once
+    -- and the normal movement is allowed
+
+    spline_points_raw = {}
+    spline_path_handle = spline_init()
+    ----------------------------------
+
+    ----------Added initialization---------
     simUI.setEditValue(ui_1, 3020, tostring(1.0))                   -- Default velocity
-    simUI.setEditValue(ui_1, 3021, tostring(5.0))                   -- Default acceleration
-    simUI.insertComboboxItem(ui_3, 5005, 0, "Cubic")                    -- Movement types for the spline functionality
-    simUI.insertComboboxItem(ui_3, 5005, 1, "Quintic")                  -- The indices here correspond to the sent ones
+    simUI.setEditValue(ui_1, 3021, tostring(1.0))                   -- Default acceleration
+    ---------------------------------------
 
     ik_dummy = sim.getObjectHandle('ik_target')
     ik_target = sim.getObjectHandle('testTarget1')

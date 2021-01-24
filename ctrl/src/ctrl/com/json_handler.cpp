@@ -38,6 +38,22 @@ string JsonHandler::get_json_string(SixDPos* _pos)
     return value.toStyledString();
 }
 
+string JsonHandler::get_json_string(vector<SixDPos*>* _pos)
+{
+    Json::Value value;
+    Json::Value op(10);
+    Json::Value data;
+    for(SixDPos* tmp_pos : *_pos)
+    {
+        data.append(*(tmp_pos->serialize_to_json()));
+    }
+
+    value["op"] = op;
+    value["data"] = data;
+
+    return value.toStyledString();
+}
+
 
 string JsonHandler::get_json_string(Configuration* _cfg)
 {
@@ -97,4 +113,12 @@ int JsonHandler::get_spline_type() {
         return -1;
     }
     return m_json_value["type"].asInt();
+}
+
+double JsonHandler::get_elongation()
+{
+  if (m_json_value["elong"].isNull()) {
+    return -1.0;
+  }
+  return m_json_value["elong"].asDouble();
 }
