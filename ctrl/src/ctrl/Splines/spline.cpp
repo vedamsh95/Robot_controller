@@ -172,8 +172,6 @@ Trajectory* Spline::calculateSpline() {
     Vector<double, 3> point3_temp;
     Vector<double, 3> point4_temp;
 
-    //add start point
-    total_point_vec.push_back(this->start_position);
     std::vector<Vector<double, 3>> a_vec;
     for (int i = 0; i < num_points; ++i) {
         //determine second derivatives (weight)
@@ -193,24 +191,26 @@ Trajectory* Spline::calculateSpline() {
             alpha_e = 6.0 * points->at(i+1) + alpha_e;
             alpha_e = alpha_e * beta;
             Vector<double, 3> a_m = alpha_s + alpha_e;
+
             // determine second derivative for the first point (first segment)
-            Vector<double, 3> a_s = 6.0 * start_position;
-            a_s = 2.0 * tangents.at(i) + a_s;
-            a_s = 4.0 * tangents.at(i+1) + a_s;
-            a_s = -6.0 * points->at(i) + a_s;
+            Vector<double, 3> a_first_segment = 6.0 * start_position;
+            a_first_segment = 2.0 * tangents.at(i) + a_first_segment;
+            a_first_segment = 4.0 * tangents.at(i + 1) + a_first_segment;
+            a_first_segment = -6.0 * points->at(i) + a_first_segment;
+
             // determine second derivative for the last point (last segment)
-            Vector<double, 3> a_e = -6.0 * points->at(num_points-2);
-            a_e = -4.0 * tangents.at(num_points-1) + a_e;
-            a_e = -2.0 * tangents.at(num_points) + a_e;
-            a_e = 6.0 * points->at(num_points-1) + a_e;
+            Vector<double, 3> a_last_segment = -6.0 * points->at(num_points - 2);
+            a_last_segment = -4.0 * tangents.at(num_points - 1) + a_last_segment;
+            a_last_segment = -2.0 * tangents.at(num_points) + a_last_segment;
+            a_last_segment = 6.0 * points->at(num_points - 1) + a_last_segment;
 
             //push second derivatives into a vector
-            a_vec.push_back(a_s);
-            a_vec.push_back(a_e);
+            a_vec.push_back(a_first_segment);
+            a_vec.push_back(a_last_segment);
             a_vec.push_back(a_m);
 
             point1_temp = 0.2 * tangents.at(i) + start_position;
-            point2_temp = 0.05 * a_s;
+            point2_temp = 0.05 * a_first_segment;
             point2_temp = 2.0 * point1_temp + point2_temp;
             point2_temp = -start_position + point2_temp;
             point4_temp =  (- 0.2 * tangents.at(1)) + points->at(i);
@@ -218,6 +218,7 @@ Trajectory* Spline::calculateSpline() {
             point3_temp = (2.0 * point4_temp) + point3_temp;
             point3_temp = -points->at(i) + point3_temp;
 
+            total_point_vec.push_back(start_position);
             total_point_vec.push_back(point1_temp);
             total_point_vec.push_back(point2_temp);
             total_point_vec.push_back(point3_temp);
@@ -237,31 +238,31 @@ Trajectory* Spline::calculateSpline() {
             total_point_vec.push_back(point2_temp);
             total_point_vec.push_back(point3_temp);
             total_point_vec.push_back(point4_temp);
-            total_point_vec.push_back(points->at(num_points-1));
+            total_point_vec.push_back(points->at(i));
         }else{                  //all the middle segments
             //need to add a_e of this segment to a_vec
             double alpha = distance_i.at(i+1)/(distance_i.at(i)+distance_i.at(i+1));
             double beta = distance_i.at(i)/(distance_i.at(i) + distance_i.at(i+1));
 
-            Vector<double, 3> alpha_s = (6.0 * start_position);
+            Vector<double, 3> alpha_s = (6.0 * points->at(i-1));
             alpha_s = (2.0 * tangents.at(i)) + alpha_s;
             alpha_s = (4.0 * tangents.at(i+1)) + alpha_s;
             alpha_s = - 6.0 * points->at(i) + alpha_s;
             alpha_s = alpha_s * alpha;
-            Vector<double, 3> alpha_e = -6.0 * points->at(i+1);
+            Vector<double, 3> alpha_e = -6.0 * points->at(i);
             alpha_e = -4.0 * tangents.at(i+1) + alpha_e;
             alpha_e = -2.0 * tangents.at(i+2) + alpha_e;
             alpha_e = 6.0 * points->at(i+1) + alpha_e;
             alpha_e = alpha_e * beta;
-            Vector<double, 3> a_m = alpha_s + alpha_e;
-            a_vec.push_back(a_m);
+            Vector<double, 3> a_endpoint_middle_segment = alpha_s + alpha_e;
+            a_vec.push_back(a_endpoint_middle_segment);
 
-            point1_temp = 0.2 * tangents.at(i) + points->at(i - 1);
+            point1_temp = 0.2 * tangents.at(i) + points->at(i-1);
             point2_temp = 0.05 * a_vec.at(i+1);
             point2_temp = 2.0 * point1_temp + point2_temp;
             point2_temp = -points->at(i - 1) + point2_temp;
             point4_temp =  (- 0.2 * tangents.at(i + 1)) + points->at(i);
-            point3_temp = 0.05 * a_vec.at(i+2);
+            point3_temp = 0.05 * a_endpoint_middle_segment;
             point3_temp = 2.0 * point4_temp + point3_temp;
             point3_temp = -points->at(i) + point3_temp;
 
