@@ -40,7 +40,12 @@ vector<Configuration *> *sol_othercase_2_vec_config = new vector<Configuration*>
 vector<Configuration*>* solution_othercase_1_vec = new vector<Configuration*>();
 vector<Configuration*>* solution_othercase_2_vec = new vector<Configuration*>();
 
-TMatrix InvKinematics::invertmatrix(TMatrix T03){
+
+/* Calculating the transposed Matrix for R03
+ * @requires: this TMatrix RotationMatrix 4x4 of R03
+ * @ensures:  transposed TMatrix 4x4 R03
+ * */
+TMatrix InvKinematics::transposematrix(TMatrix T03){
     TMatrix T03_inv;
     std::array<double, 16> T03_arr;
 
@@ -85,7 +90,11 @@ TMatrix InvKinematics::invertmatrix(TMatrix T03){
     return T03_inv;
 }
 
-std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
+/* Calculating Theta 4, 5 and 6
+ * @requires: this TMatrix RotationMatrix 4x4 of R36
+ * @ensures:  double array[10] with different values for theta 4, theta 5, and theta 6 in degree
+ * */
+ std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
 
     //components of R36 needed for the calculations of Theta 4, 5, 6:
     double ax = R36.get_element(0,2);
@@ -210,6 +219,13 @@ std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
     return theta4_5_6;
 }
 
+/* Calculating the special cases for Theta 1
+ * @requires:   Theta1  :   Rotation of the first joint in degree
+ *              d1      :   distnance between the rootjoint and the wcp in mm
+ *              wcp     :   Position of the robots wrist center point (x,y,z)
+ *              _pos    :   Inputvalues of the user containing position and orientation of the end position
+ * @ensures:    sol_theta1_specialcases_vec :   a configuration vector with all possible configurations of the joints
+ * */
 std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos) {
     std::vector<Configuration*>* sol_theta1_specialcases_vec = new vector<Configuration*>();
     double id = 0;
@@ -769,6 +785,12 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
     return sol_theta1_specialcases_vec;
 }
 
+/* Calculating for the standardcases
+ * @requires:   Theta1  :   Rotation of the first joint in degree
+ *              d1      :   distnance between the rootjoint and the wcp in mm
+ *              wcp     :   Position of the robots wrist center point (x,y,z)
+ * @ensures:    sol_standard :   a vector inside a vector that contains all possible solutions for the first three joints
+ * */
 std::vector<std::vector<double>> InvKinematics::inv_standardcase(double theta1, double d1, std::array<double, 3> wcp) {
     double id = 0;
    //standard cases
@@ -824,6 +846,11 @@ std::vector<std::vector<double>> InvKinematics::inv_standardcase(double theta1, 
     return sol_standard;
 }
 
+/* Calculate Theta 2 and 3 for the forward case
+ * @requires:   dpx  :   distance on the x-axis from the second joint to the wcp
+ *              dpy  :   distance on the y-axis from the second joint to the wcp
+ * @ensures:    theta2_theta3 :   double array[4] that contains all solutions for theta 2 and theta 3
+ * */
 std::array<double, 4> InvKinematics::inv_forwardcase(double dpx, double dpy){
 
     double d3 = sqrt(dpx * dpx + dpy * dpy);                                                                        //direct distance between joint and wcp
@@ -854,6 +881,11 @@ std::array<double, 4> InvKinematics::inv_forwardcase(double dpx, double dpy){
     return theta2_theta3;
 }
 
+/* Calculate Theta 2 and 3 for the backward case
+ * @requires:   dpx  :   distance on the x-axis from the second joint to the wcp
+ *              dpy  :   distance on the y-axis from the second joint to the wcp
+ * @ensures:    theta2_theta3 :   double array[4] that contains all solutions for theta 2 and theta 3
+ * */
 std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
     double d3 = sqrt(dpx * dpx + dpy * dpy);                   //direct distance between joint and wcp
     std::cout << "d3: " << d3 << std::endl;
@@ -881,6 +913,12 @@ std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
     return theta2_theta3;
 }
 
+/* Checking if Theta 1, 2 and 3 are in range of the boundaries
+ * @requires:   theta1  :           Rotation of the first joint in degree
+ *              theta2_theta3 :     double array[4] that contains all solutions for theta 2 and theta 3
+ * @ensures:    solution    :       Vector inside a vector that contains all solutions for theta 1, 2, 3 that are inside
+ *                                  the boundaries
+ * */
 std::vector<vector<double>> InvKinematics::inv_checklimits_theta1_2_3(double theta1, array<double, 4> theta2_theta3){
 bool elbowup = false;
 bool elbowdown = false;
@@ -958,6 +996,15 @@ solution.clear();
     return solution;
 }
 
+
+/* Adding all the possible solutions to a configuration vector
+ * @requires:   Theta1  :   Rotation of the first joint in degree
+ *              d1      :   distance between the rootjoint and the wcp in mm
+ *              wcp     :   double array[3] that contains position of the robots wrist center point (x,y,z)
+ *              _pos    :   Input values of the user containing position and orientation of the end position
+ *              solutions_vec:  Vector inside a vector that contains solutions for Theta 1, 2, 3
+ * @ensures:    config_vec :   a configuration vector with all possible configurations of the joints
+ * */
 std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos, vector<vector<double>> solutions_vec){
     double id = 0;
 
@@ -989,8 +1036,8 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
         T03_1 = mat1_1*mat2_1*mat3_1*mat4_1;
         T03_2 = mat1_2*mat2_2*mat3_2*mat4_2;
 
-       TMatrix T03_1_invert = invertmatrix(T03_1);
-       TMatrix T03_2_invert = invertmatrix(T03_2);
+       TMatrix T03_1_invert = transposematrix(T03_1);
+       TMatrix T03_2_invert = transposematrix(T03_2);
 
         std::vector<std::vector<double>> sol_theta_4_5_6_T03_1 = inv_vec_sol_theta4_5_6(T03_1_invert, _pos);
         std::vector<std::vector<double>> sol_theta_4_5_6_T03_2 = inv_vec_sol_theta4_5_6(T03_2_invert, _pos);
@@ -1055,7 +1102,7 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
         TMatrix T03_invert;
         T03 = mat1*mat2*mat3*mat4;
         std::cout << "T03_invert: " << std::endl;
-        T03_invert = invertmatrix(T03);
+        T03_invert = transposematrix(T03);
         T03_invert.output();
 
         std::vector<std::vector<double>> sol_theta_4_5_6_T03 = inv_vec_sol_theta4_5_6(T03_invert, _pos);
@@ -1085,11 +1132,17 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
     return config_vec;
 }
 
-std::vector<std::vector<double>> InvKinematics::inv_vec_sol_theta4_5_6(TMatrix T03_invert, SixDPos* _pos){
+/* Calculate R36 and return final solution for Theta 4, 5, 6
+ * @requires:   R03_invert  :           TMatrix 4x4 Rotationmatrix from joint 1 to 3
+ *              _pos    :               Input values of the user containing position and orientation of the end position
+ * @ensures:    solution_theta_4_5_6 :  Vector inside a vector that contains all solutions for theta 4,5,6 that are
+ *                                      inside the boundaries
+ * */
+std::vector<std::vector<double>> InvKinematics::inv_vec_sol_theta4_5_6(TMatrix R03_invert, SixDPos* _pos){
 
     TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
 
-    TMatrix R36 = T03_invert*R06;
+    TMatrix R36 = R03_invert * R06;
     std::array<double, 10> solution_standard_4_5_6;
     solution_standard_4_5_6 = inv_gettheta4_5_6(R36);
     std::vector<vector<double>> solution_theta_4_5_6 = inv_checklimits_theta4_5_6(solution_standard_4_5_6);
@@ -1097,6 +1150,11 @@ std::vector<std::vector<double>> InvKinematics::inv_vec_sol_theta4_5_6(TMatrix T
     return solution_theta_4_5_6;
 }
 
+/* Check if the Theta 4, 5 and 6 are inside the robots boundaries
+ * @requires:   solution_standard_4_5_6  :  double array[10] that contains all solutions of theta 4, 5,6
+ * @ensures:    solution_theta_4_5_6 :     Vector inside a vector that contains all solutions for theta 4,5,6 that are
+ *                                          inside the boundaries
+ * */
 std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::array<double, 10> solution_standard_4_5_6){
 
     double id = 0;
@@ -1205,6 +1263,14 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
     return sol_theta_4_5_6;
 }
 
+/* Calculate solutions for the first other case
+ * @requires:   Theta1  :   Rotation of the first joint in degree
+ *              d1      :   distance between the rootjoint and the wcp in mm
+ *              wcp     :   double array[3] that contains position of the robots wrist center point (x,y,z)
+ *              _pos    :   Input values of the user containing position and orientation of the end position
+ * @ensures:    sol_othercase_1_config_vec :    a configuration vector with all possible configurations of the joints for
+ *                                              the first othercase
+ * */
 std::vector<Configuration*>* InvKinematics::inv_othercase_1(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos){
     double id = 0;
     std::cout << "Other case 1: " << std::endl;
@@ -1246,6 +1312,14 @@ std::vector<Configuration*>* InvKinematics::inv_othercase_1(double theta1, doubl
     return sol_othercase_1_vec_config;
 }
 
+/* Calculate solutions for the second other case
+ * @requires:   Theta1  :   Rotation of the first joint in degree
+ *              d1      :   distance between the rootjoint and the wcp in mm
+ *              wcp     :   double array[3] that contains position of the robots wrist center point (x,y,z)
+ *              _pos    :   Input values of the user containing position and orientation of the end position
+ * @ensures:    sol_othercase_1_config_vec :    a configuration vector with all possible configurations of the joints for
+ *                                              the first othercase
+ * */
 std::vector<Configuration*>* InvKinematics::inv_othercase_2(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos){
     double id = 0;
     std::cout << "Other case 2: " << std::endl;
@@ -1307,25 +1381,22 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     std::cout << "B of sixDPos " <<_pos->get_B() << std::endl;
     std::cout << "C of sixDPos " <<_pos->get_C() << std::endl;
 
-    TMatrix TCP(_pos->get_A(),_pos->get_B(),_pos->get_C(),_pos->get_X()*1000,_pos->get_Y()*1000,_pos->get_Z()*1000);                                                            //Transformation Matrix for the TCP inside of the global coordinate system
+    //Position and Orientation ot the Tool Center Point (TCP)
+    TMatrix TCP(_pos->get_A(),_pos->get_B(),_pos->get_C(),
+                _pos->get_X()*1000,_pos->get_Y()*1000,_pos->get_Z()*1000);                                                            //Transformation Matrix for the TCP inside of the global coordinate system
                                                                                                                                                     //Calculation of wrist center point
-      std::array<double, 3> wcp;
+    std::array<double, 3> wcp;
 
-      //if(_pos->get_X() >= 0) {
-          wcp[0] = _pos->get_X() * 1000 - (215 * TCP.get_element(0, 2));
-          wcp[1] = _pos->get_Y() * 1000 - (215 * TCP.get_element(1, 2));
-          wcp[2] = _pos->get_Z() * 1000 - (215 * TCP.get_element(2, 2));
-       // }
-      //else{
-      //    wcp[0] = _pos->get_X() * 1000 + (215 * TCP.get_element(0, 2));
-      //    wcp[1] = _pos->get_Y() * 1000 - (215 * TCP.get_element(1, 2));
-      //    wcp[2] = _pos->get_Z() * 1000 - (215 * TCP.get_element(2, 2));
-      //}
+    //Calculation of the Wrist Center Point (WCP)
+    wcp[0] = _pos->get_X() * 1000 - (215 * TCP.get_element(0, 2));
+    wcp[1] = _pos->get_Y() * 1000 - (215 * TCP.get_element(1, 2));
+    wcp[2] = _pos->get_Z() * 1000 - (215 * TCP.get_element(2, 2));
 
     for (int i = 0; i < 3; ++i) {
         std::cout << "wcp :" << wcp[i] << std::endl;
     }
 
+    //Case 1
     if(wcp[0]>0 && wcp[1]>=0)
     {
         cout << "Fall 1" << endl;
@@ -1342,28 +1413,29 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             solution_standard = inv_standardcase(theta1, d1, wcp);
             solution_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, solution_standard);
 
-        //othercases
-        sol_othercase_1_vec_config = inv_othercase_1(theta1, d1, wcp, _pos);
-        sol_othercase_2_vec_config = inv_othercase_2(theta1, d1, wcp, _pos);
+            //othercases
+            sol_othercase_1_vec_config = inv_othercase_1(theta1, d1, wcp, _pos);
+            sol_othercase_2_vec_config = inv_othercase_2(theta1, d1, wcp, _pos);
 
-        // add configs from othercases to solution
-        if(sol_othercase_1_vec_config != NULL){
-            double size_othercase1 = sol_othercase_1_vec_config->size();
-            for(int i = 0; i < size_othercase1; i++){
-                //add configurations to solution vector
-                solution_vec ->push_back(sol_othercase_1_vec_config->at(i));
+            // add configs from othercases to solution
+            if(sol_othercase_1_vec_config != NULL){
+                double size_othercase1 = sol_othercase_1_vec_config->size();
+                for(int i = 0; i < size_othercase1; i++){
+                    //add configurations to solution vector
+                    solution_vec ->push_back(sol_othercase_1_vec_config->at(i));
+                }
             }
-        }
-        if(sol_othercase_2_vec_config != NULL){
-            double size_othercase2 = sol_othercase_2_vec_config->size();
-            for(int i = 0; i < size_othercase2; i++){
-                //add configurations to solution vector
-                solution_vec ->push_back(sol_othercase_2_vec_config->at(i));
+            if(sol_othercase_2_vec_config != NULL){
+                double size_othercase2 = sol_othercase_2_vec_config->size();
+                for(int i = 0; i < size_othercase2; i++){
+                    //add configurations to solution vector
+                    solution_vec ->push_back(sol_othercase_2_vec_config->at(i));
+                }
             }
         }
     }
-    }
 
+    //Case 2
     else if(wcp[0]<0 && wcp[1]<=0)
     {
         cout << "Fall 2" << endl;
@@ -1402,6 +1474,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
     }
 
+    //Case 3
     else if(wcp[0]>0 && wcp[1]<=0)
     {
         cout << "Fall 3" << endl;
@@ -1441,6 +1514,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
     }
 
+    //Case 4
     else if(wcp[0]<0 && wcp[1]>=0)
     {
         cout << "Fall 4" << endl;
@@ -1758,11 +1832,13 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));*/
 
+    //returning solution_vec
     if(solution_vec != nullptr ) {//return solutions;
         std::cout << "There are " << solution_vec->size() << " possible configurations." << std::endl;
         return solution_vec;
     }
 
+    //returning null pointer
     else{
         Configuration *no_config;
         std::cout << "There are no possible configurations for this position." << std::endl;
