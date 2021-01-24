@@ -1,11 +1,12 @@
 #include "splines.h""
 
-Splines::Splines() :plot(false)
+Splines::Splines() :plot(true)
 {
 	trajectory = new Trajectory();
 	robot = &Robot::getInstance();
 	ivMovement = new IVMovement();
 	fwK = new FwKinematics();
+	sample = 1000;
 }
 Splines::~Splines()
 {
@@ -13,26 +14,24 @@ Splines::~Splines()
 ;
 Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start_cfg,double _velocity, double _acceleration, int _spline_type)
 {
-	std::cout << "getSpline" << endl;
-	double d;
-	Position P_i, P_i1;
-	vector<double>* b;
-	vector<Position> points;
-
 	
-	for (int i = 0; i < _points.size(); i++)
+	size_t n = _points.size();
+	size_t numberOfSplines = n - 1;
+	if (numberOfSplines == 0) 
+	{
+		trajectory->add_configuration(start_cfg);
+		return trajectory;
+	}
+	vector<Position> points;
+	for (int i = 0; i < n; i++)
 	{
 		points.push_back(Position(_points.at(i)->get_X(), _points.at(i)->get_Y(), _points.at(i)->get_Z()));
 	}
 
-	int n = points.size();
-	int numberOfSplines = n - 1;
-
-
 	vector<Splines::Position>* secondControlPoints = new vector<Splines::Position>(n-1);
 	vector<Splines::Position>* firstControlPoints = new vector<Splines::Position>(n-1);;
 	getCubicBezierControlPoints(points, firstControlPoints,secondControlPoints );
-	Position p = getCubicBezier(0.5, 0, points, firstControlPoints, secondControlPoints);
+
 	vector<Splines::Position> cubicTagents(n);
 	for(int i = 0; i< n-1; i++)
 	{ 
@@ -41,39 +40,52 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 	cubicTagents[n - 1] = points[n - 1] - secondControlPoints->at(n - 2);
 
 	std::vector<Splines::Position> tangents;
-	std::vector<Splines::Position> accelerations = getAccelerations(points,cubicTagents);
+	std::vector<Splines::Position> accelerations = getAccelerationsQuintic(points,cubicTagents);
 	double distance;
+	vector<double> sampleDist;
 	if (_spline_type == 0)
 	{
 		
-		distance = getSplineLengthCubic(points, *firstControlPoints, *secondControlPoints);
+		sampleDistancesCubic(points, *firstControlPoints, *secondControlPoints, &sampleDist);
+		distance = sampleDist.back();
 	}
 	else if(_spline_type == 1)
 	{
-		tangents = getTagents(points);
-		distance = getQuniticSplineLength(points, tangents, accelerations);
-
+		tangents = getTangentsQuintic(points);
+		sampleDistancesQuintic(points, tangents, accelerations,&sampleDist);
+		distance = sampleDist.back();
 	}
 	 
-	//
 	std::vector<double> tValues = getTValues(distance, _velocity, _acceleration);
 
-	int nr;
-	double t,v;
+	int nr =0;
+	double t;
 	vector<Position> trajectPoints;
 	vector<SixDPos*>* trajectSixDPos = new vector<SixDPos*>();
-	vector<double >x;
-	vector<double >y;
-	vector<double >z;
-	SixDPos* pos;
-	vector<Configuration *> configs;
+
 	Position tP;
+	int index = 0;
+	double actDistance;
+	vector<double> t_vec;
 	for (int i = 0; i < tValues.size(); i++)
 	{
-		v = tValues[i] * numberOfSplines;
-		nr = (int) v;
-		t = v - nr;
-		if (nr < numberOfSplines)
+		actDistance = tValues[i] * distance;
+		while (actDistance > sampleDist.at(index))
+		{
+			index++;
+		}
+			
+		if (index % sample == 0)
+			t = 0;
+		else 
+			t = (double)(index % sample)/sample;
+		t_vec.push_back(t);
+		nr = (int)index / sample;
+		if (nr == numberOfSplines)
+		{
+			tP = points.back();
+		}
+		else
 		{
 			if (_spline_type == 0)
 			{
@@ -83,20 +95,12 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 			{
 				tP = getQuinticBezier(t, nr, points, tangents, accelerations);
 			}
-			//trajectPoints.push_back(getCubicBezier(t, nr, points, firstControlPoints, secondControlPoints));
-			//x.push_back(getCubicBezier(t, nr, points, firstControlPoints, secondControlPoints).x);
-			//y.push_back(getCubicBezier(t, nr, points, firstControlPoints, secondControlPoints).y);
-			//z.push_back( getCubicBezier(t, nr, points, firstControlPoints, secondControlPoints).z);
-			
-			trajectPoints.push_back(tP);
-			//configs.push_back(invK->get_inv_kinematics(new SixDPos(tP.x, tP.y, tP.z, _points.at(0)->get_A(), _points.at(0)->get_B(), _points.at(0)->get_C())));
-			trajectSixDPos->push_back(new SixDPos(tP.x, tP.y, tP.z, _points.at(0)->get_A(), _points.at(0)->get_B(), _points.at(0)->get_C()));
-			//x.push_back(getQuinticBezier(t, nr, points, tangents, accelerations).x);
-			//y.push_back(getQuinticBezier(t, nr, points, tangents, accelerations).y);
-			//z.push_back(getQuinticBezier(t, nr, points, tangents, accelerations).z);
 		}
-			
 
+			
+		trajectPoints.push_back(tP);
+		
+		trajectSixDPos->push_back(new SixDPos(tP.x, tP.y, tP.z, _points.at(0)->get_A(), _points.at(0)->get_B(), _points.at(0)->get_C()));
 	}
 	
 	trajectPoints.push_back(points[n - 1]);
@@ -104,118 +108,138 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 
 
 	if (plot)
-		plotSpline(trajectPoints);
+		plotSpline(trajectPoints, t_vec);
 	
-	 
-	double dt = robot->time_interval;
-	trajectPoints.clear();
-	Configuration * cfg;
 	trajectory = ivMovement->getMovement(trajectSixDPos, start_cfg);
-	for (int i = 0; i < trajectory->get_all_configuration()->size(); i++)
-	{
-		cfg = trajectory->get_all_configuration()->at(i);
-		pos = fwK->get_fw_kinematics(cfg);
-		trajectPoints.push_back(Position(pos->get_X(), pos->get_Y(), pos->get_Z()));
-	}
 
-
-	if (plot)
-		plotSpline(trajectPoints);
 
 	return 	trajectory;
 }
 
 
 
-void Splines::plotSpline(vector<Splines::Position>& _points)
+void Splines::plotSpline(vector<Splines::Position>& _points, vector<double> _tValues)
 {
 #ifdef PLOT
 	std::cout << "plotSpline" << endl;
 
 	std::vector<double> x, y, z;
 
-	for (double i = 0; i < _points.size(); i++) {
+	for (int i = 0; i < _points.size(); i++) {
 		x.push_back(_points[i].x);
 		y.push_back(_points[i].y);
 		z.push_back(_points[i].z);
 	}
 
 	std::map<std::string, std::string> keywords;
-	keywords.insert(std::pair<std::string, std::string>("label", "parametric curve"));
+	keywords.insert(std::pair<std::string, std::string>("label", "spline curve"));
 	plt::plot3(x, y, z, keywords);
 
 
 	plt::xlabel("x label");
 	plt::ylabel("y label");
-	plt::set_zlabel("z label"); // set_zlabel rather than just zlabel, in accordance with the Axes3D method
+	plt::set_zlabel("z label");
 	plt::legend();
 	plt::show();
+
+	std::vector<double> t(_points.size());
+	for (int i = 0; i < t.size(); i++) {
+		t.at(i) = i * Robot::getInstance().time_interval;
+	}
+
+	std::vector<double> velocities(_points.size());
+	for (int i = 0; i < velocities.size(); i++)
+	{
+		if (i == 0) {
+			velocities.at(i) =0 ;
+		}
+		else {
+			velocities.at(i) = L2Norm(_points.at(i) - _points.at(i-1)) / Robot::getInstance().time_interval;
+		}
+	}
+	keywords.clear();
+	keywords.insert(std::pair<std::string, std::string>("label", "velocities"));
+	plt::plot(t,velocities, keywords);
+
+
+	plt::xlabel("Time");
+	plt::ylabel("velocity");
+	plt::legend();
+	plt::show();
+
+	std::vector<double> index(_tValues.size());
+	for (int i = 0; i < _tValues.size(); i++)
+	{
+		index.at(i) = i;
+	}
+	keywords.clear();
+	keywords.insert(std::pair<std::string, std::string>("label", "tValues"));
+	plt::plot(index, _tValues, keywords);
+
+
+	plt::xlabel("index");
+	plt::ylabel("tValues");
+	plt::legend();
+	plt::show();
+
 	std::cout << "plotSpline - Done" << endl;
 #else
 	std::cout << "The plotting functionality of configurations is disabled in the cmake script!" << std::endl;
 #endif
 }
 
-std::vector<Splines::Position> Splines::getTagents(vector<Splines::Position>& _points)
+std::vector<Splines::Position> Splines::getTangentsQuintic(vector<Splines::Position>& _points)
 {
 	std::cout << "getTagents" << endl;
-	std::vector<Splines::Position> tagents;
+	std::vector<Splines::Position> tangents;
 
-	//TODO jetztige Konfig von Roboter
-	
 	double e = 0.5;
 	double length;
 	Position direction0, direction1, tangent;
-	int n = _points.size();
-	//tagents.push_back(_startTagent);
-	if (n > 2)
+	size_t n = _points.size();
+	if(n == 2)
 	{
-		for (int i = 1; i < n - 1; i++)
-		{
-			direction0 = (_points.at(i) - _points.at(i - 1));
-			direction1 = (_points.at(i + 1) - _points.at(i));
-			length = min(L2Norm(direction0), L2Norm(direction1)) * e;
-
-
-			direction0 = direction0 / L2Norm(direction0);
-			direction1 = direction1 / L2Norm(direction1);
-
-			//double a = L2Norm(direction0);
-			//double b = L2Norm(direction1);
-
-
-			if (i == 1)
-			{
-				tangent = direction0 * (-1) + direction1;
-				tangent = (tangent *(-1)) / L2Norm(tangent);//*-1
-				tagents.push_back(tangent * length);
-			}
-			tangent = (direction0 + direction1);
-			tangent = tangent / L2Norm(tangent);
-			tagents.push_back(tangent * length);
-			//tagents.push_back((direction0 / L2Norm(direction0) + direction1 / L2Norm(direction1))/pNorm * e * min(L2Norm(direction0), L2Norm(direction1)));//*0.5*0.5
-		}
-		tangent = direction0 * (-1) + direction1;
-		tangent = (tangent) / L2Norm(tangent);
-		tagents.push_back(tangent * length);
+		direction0 = _points.at(1) - _points.at(0);
+		length = L2Norm(direction0) * e;
+		direction0 = direction0 / L2Norm(direction0);
+		tangents.push_back(direction0 * length);
+		tangents.push_back(direction0 * -length);
+		return tangents;
+		
 	}
 
-	//Position p_1 = _points.at(n - 1);
-	//Position p_2 = _points.at(n - 2);
-	//Position test = p_1 - p_2;
-	//
-	//Position endTagent = (_points.at(n - 1) - _points.at(n - 2)) * 0.5;
-	//tagents.push_back(endTagent);
-	if (tagents.size() != _points.size())//?
-		std::cout << "falsch";
-	return tagents;
+	for (int i = 1; i < n - 1; i++)
+	{
+		direction0 = (_points.at(i) - _points.at(i - 1));
+		direction1 = (_points.at(i + 1) - _points.at(i));
+		length = min(L2Norm(direction0), L2Norm(direction1)) * e;
+
+
+		direction0 = direction0 / L2Norm(direction0);
+		direction1 = direction1 / L2Norm(direction1);
+
+		if (i == 1)
+		{
+			tangent = direction0 * (-1) + direction1;
+			tangent = (tangent *(-1)) / L2Norm(tangent);//*-1
+			tangents.push_back(tangent * length);
+		}
+		tangent = (direction0 + direction1);
+		tangent = tangent / L2Norm(tangent);
+		tangents.push_back(tangent * length);
+	}
+	tangent = direction0 * (-1) + direction1;
+	tangent = (tangent) / L2Norm(tangent);
+	tangents.push_back(tangent * length);
+	
+	return tangents;
 
 }
 
 void Splines::getCubicBezierControlPoints(vector<Splines::Position>& _points, vector<Splines::Position>* _firstControlPoints, vector<Splines::Position>* _secondControlPoints)
 {
 	//std::cout << "getCubicBezierControlPoints" << endl;
-	int n = _points.size()-1;
+	size_t n = _points.size()-1;
 	if (n < 1)
 		return;
 	if (n == 1)
@@ -259,17 +283,21 @@ void Splines::getCubicBezierControlPoints(vector<Splines::Position>& _points, ve
 
 }
 
-std::vector<Splines::Position> Splines::getAccelerations(vector<Splines::Position>& _points, std::vector<Splines::Position> _tangents)
+std::vector<Splines::Position> Splines::getAccelerationsQuintic(vector<Splines::Position>& _points, std::vector<Splines::Position> _tangents)
 {
 	//std::cout << "getAccelerations" << endl;
 
 	std::vector<Splines::Position> accelerations;
 
-	int n = _points.size();
+	size_t n = _points.size();
 	double alpha, beta;
 	Position A, B, C;
 	Position Ta, Tb, Tc;
-
+	if (n == 2)
+	{
+		accelerations.push_back(_tangents.at(0) / 3);
+		accelerations.push_back(_tangents.at(1) / 3);
+	}
 	for (int i = 1; i < n - 1; i++)
 	{
 		A = _points.at(i - 1);
@@ -329,47 +357,46 @@ Splines::Position Splines::getCubicBezier(double _t, int _i, std::vector<Positio
 		_points.at(_i +1) * pow(_t, 3);
 }
 
-double Splines::getQuniticSplineLength(std::vector<Position> _points, std::vector<Position> _tangents, std::vector<Position> _accelerations)
+void Splines::sampleDistancesCubic(std::vector<Position> _points, std::vector<Position> _firstControlPoints, std::vector<Position> _secondControlPoints, vector<double>* _sampleDist)
 {
-	//std::cout << "getSplineLength" << endl;
-	int sample = 100;
-	double distance = 0;
-	int numberOfSplines = _points.size() - 1;
-	Position P_0 = _points.at(0);
-	for (int i = 0; i < numberOfSplines; i++)
-	{
-		for (int j = 0; j < sample; j++)
-		{
-			double t = (double)j / sample;
-			Position P_1= getQuinticBezier(t, i, _points, _tangents, _accelerations);
-
-			distance += L2Norm(P_1 - P_0);
-			P_0 = P_1;
-		}
-	}
-	return distance;
-}
-
-double Splines::getSplineLengthCubic(std::vector<Position> _points, std::vector<Position> _firstControlPoints, std::vector<Position> _secondControlPoints)
-{
-	//std::cout << "getSplineLengthCubic" << endl;
-	double sample = 100;
-	double distance = 0;
-	int numberOfSplines = _points.size() - 1;
+	size_t numberOfSplines = _points.size() - 1;
 	Position P_0, P_1;
+
+	_sampleDist->push_back(0);
 	P_0 = _points.at(0);
 	for (int i = 0; i < numberOfSplines; i++)
 	{
 		for (int j = 0; j < sample; j++)
 		{
-			double t = (double) j / sample;
-			 P_1= getCubicBezier(t, i, _points, &_firstControlPoints, &_secondControlPoints);
+			double t = (double)j / sample;
+			P_1 = getCubicBezier(t, i, _points, &_firstControlPoints, &_secondControlPoints);
 
-			distance += L2Norm(P_1 - P_0);
+			_sampleDist->push_back(_sampleDist->back() + L2Norm(P_1 - P_0));
 			P_0 = P_1;
 		}
 	}
-	return distance;
+	
+	
+}
+
+void Splines::sampleDistancesQuintic(std::vector<Position> _points, std::vector<Position> _tangents, std::vector<Position> _accelerations, vector<double>* _sampleDist)
+{
+	size_t numberOfSplines = _points.size() - 1;
+	Position P_0, P_1;
+
+	_sampleDist->push_back(0);
+	P_0 = _points.at(0);
+	for (int i = 0; i < numberOfSplines; i++)
+	{
+		for (int j = 0; j < sample; j++)
+		{
+			double t = (double)j / sample;
+			P_1 = getQuinticBezier(t, i, _points, _tangents, _accelerations);
+
+			_sampleDist->push_back(_sampleDist->back() + L2Norm(P_1 - P_0));
+			P_0 = P_1;
+		}
+	}
 }
 
 vector<double> Splines::getTValues(double _distance, double _velocity, double _acceleration)
@@ -398,7 +425,7 @@ vector<double> Splines::getTValues(double _distance, double _velocity, double _a
 
 
 	auto tmp = static_cast<float> (StepTrajectory->get_duration() / Robot::getInstance().time_interval);
-	size_t cycles = roundf(tmp) + 3;
+	size_t cycles = (size_t)roundf(tmp)+3;
 
 
 	//calculate SixDPoses for the Trajectory
@@ -406,7 +433,6 @@ vector<double> Splines::getTValues(double _distance, double _velocity, double _a
 	double value, factor;
 	double t = 0;
 	vector<SixDPos*> points;
-	SixDPos* point;
 	for (size_t c = 0; c < cycles; c++) {
 		value = StepTrajectory->eval(t);
 		factor = value / _distance;

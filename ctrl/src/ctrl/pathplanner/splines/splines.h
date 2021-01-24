@@ -54,23 +54,24 @@ public:
 
 	};
 private:
-	void plotSpline(vector<Splines::Position> &_points);
-	std::vector<Position> getTagents(vector<Splines::Position> &_points);
+	void plotSpline(vector<Splines::Position> &_points, vector<double> _tValues);
+	std::vector<Position> getTangentsQuintic(vector<Splines::Position> &_points);
 	void getCubicBezierControlPoints(vector<Splines::Position> &_points, vector<Splines::Position>* _firstControlPoints, vector<Splines::Position>* _secondControlPoints);
 	
-	std::vector<Position> getAccelerations(vector<Splines::Position> &_points, std::vector<Splines::Position> _tangents);
+	std::vector<Position> getAccelerationsQuintic(vector<Splines::Position> &_points, std::vector<Splines::Position> _tangents);
 	
 
 	double L2Norm(Position _p1);
 	Position getQuinticBezier(double _t, int _i, std::vector<Position> _points, std::vector<Position> _tangents, std::vector<Position> _accelerations);
 	Position getCubicBezier(double _t, int _i, std::vector<Position> _points, vector<Splines::Position>* _firstControlPoints, vector<Splines::Position>* _secondControlPoints);
 	
-	//int operation2(int x, int y, std::function<int(int, int)> function) { return function(x, y); }
-	//int operation(int x, int y, int(*function)(int, int)) { return function(x, y); }
-	//int sub(int x, int y) { return x - y; }
-	double getQuniticSplineLength(std::vector<Position> _points, std::vector<Position> _tangents, std::vector<Position> _accelerations);
-	//double getSplineLength(std::vector<Position> _points, std::vector<Position> _parameter1, std::vector<Position> _parameter2, std::function<Position(double _t, int _i,std::vector<Position>, std::vector<Position>, std::vector<Position>)> function);
-	double getSplineLengthCubic(std::vector<Position> _points, std::vector<Position> _firstControlPoints, std::vector<Position> _secondControlPoints);
+
+	void sampleDistancesCubic(std::vector<Position> _points, std::vector<Position> _firstControlPoints, std::vector<Position> _secondControlPoints, vector<double>* _sampleDist);
+	void sampleDistancesQuintic(std::vector<Position> _points, std::vector<Position> _tangents, std::vector<Position> _accelerations, vector<double>* _sampleDist);
+	
+	//double getQuniticSplineLength(std::vector<Position> _points, std::vector<Position> _tangents, std::vector<Position> _accelerations);
+	//double getSplineLengthCubic(std::vector<Position> _points, std::vector<Position> _firstControlPoints, std::vector<Position> _secondControlPoints);
+	
 	vector<double> getTValues(double _distance, double _velocity, double _acceleration);
 	Trajectory *trajectory;
 	Robot *robot;
@@ -78,8 +79,6 @@ private:
 	IVMovement* ivMovement;
 	FwKinematics* fwK;
 	bool plot;
+	int sample;
 
-
-
-	
 };
