@@ -1417,18 +1417,15 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 
     //Checking for elbow singularity
     double X = sqrt(pow(wcp[0],2) + pow(wcp[1],2)) - m;
-    double Y = wcp[2] - m;
+    double Y = wcp[2] - n;
 
     double X_square_Y_square = pow(X,2) + pow(Y,2);
     double d2 = sqrt(o * o + b * b);
 
-    if(X_square_Y_square >= (a - d2)-margin_point){
-        std::cout << "There is an elbow singularity." << std::endl;
-        wcp[1] = sqrt(pow(X+m, 2) - pow(wcp[2],2));
+    if(X_square_Y_square >= (pow((a + d2), 2)-margin_point)){
+        wcp[0] = sqrt(pow(X+m, 2) - pow(wcp[1],2));
         wcp[2] = Y + n;
-    }
-    else{
-        ;
+        std::cout << "There is an elbow singularity. wcp[0] " << wcp[0] << " ; wcp[2] " << wcp[2]  << std::endl;
     }
 
     //Case 1

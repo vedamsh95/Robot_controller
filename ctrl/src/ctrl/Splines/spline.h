@@ -10,29 +10,29 @@
 #include <vector>
 #include <json.h>
 #include "Trajectory.h"
-
+#include <inverse_kinematics.h>
 
 class Spline {
 
 private:
     Vector<double,3> start_position, start_orientation;
+    Vector<double, 6> start_config;
     double speed, acceleration;
     int num_points;
     std::vector<Vector<double, 3>> *points;
 
-    double current_timestamp, a_s, t_s, t_e,t;
 
 public:
-    Spline(Vector<double,3> start_point, Vector<double,3> start_orientation,std::vector<Vector<double, 3>> *points, double speed, double acceleration);
+    Spline(Vector<double,3> start_point, Vector<double,3> start_orientation,std::vector<Vector<double, 3>> *points, double speed, double acceleration, Vector<double, 6> start_config_vec);
     void out();
     Trajectory* calculateSpline();
 
-
-    Spline(double _t, double _ts, double _te, double _as, double _ae, Vector<double,3> start, Vector<double,3> end);
-    double get_current_timestamp() const;
     void recalc_timestamp();
     double  calc_num(double num, int n);
+    double calc_config_difference(Configuration* config1, Configuration* config2);
     std::vector<Vector<double,3>> calc_spline();
+    Vector<double, 3> quintic_bezier_function(Vector<double, 3> point0, Vector<double, 3> point1, Vector<double, 3> point2, Vector<double, 3> point3,
+                                              Vector<double, 3> point4, Vector<double, 3> point5, double t);
 
 };
 

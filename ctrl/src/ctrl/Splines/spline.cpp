@@ -11,7 +11,7 @@
 
 
 Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientation,
-               std::vector<Vector<double, 3>> *points, double speed, double acceleration) {
+               std::vector<Vector<double, 3>> *points, double speed, double acceleration, Vector<double, 6> start_config_vec) {
 
     this->start_position[0] = start_point[0];
     this->start_position[1] = start_point[1];
@@ -20,6 +20,13 @@ Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientatio
     this->start_orientation[0] = start_orientation[0];
     this->start_orientation[1] = start_orientation[1];
     this->start_orientation[2] = start_orientation[2];
+
+    this->start_config[0] = start_config_vec[0];
+    this->start_config[1] = start_config_vec[1];
+    this->start_config[2] = start_config_vec[2];
+    this->start_config[3] = start_config_vec[3];
+    this->start_config[4] = start_config_vec[4];
+    this->start_config[5] = start_config_vec[5];
 
     this->speed = speed;
     this->acceleration = acceleration;
@@ -46,6 +53,7 @@ void Spline::out() {
 
 
 Trajectory* Spline::calculateSpline() {
+    out();
     Trajectory* trajectory = new Trajectory();
     std::vector<double> distance_i;
     std::vector<double> boundary_i;
@@ -53,6 +61,14 @@ Trajectory* Spline::calculateSpline() {
     double time_for_accel = this->acceleration/this->speed;
     double d_for_accel = 0.5 * this->acceleration*(time_for_accel*time_for_accel);
     double M_PII = 3.141592654;
+    double timesteps = ConfigProvider::getInstance().getsteps_per_second();
+    // initialize vector to store the chosen configurations at every timepoint
+    std::vector<Configuration*> config_vec;
+    // write start configuration to a new configuration data type
+    Configuration* start_config = new Configuration({this->start_config[0], this->start_config[1], this->start_config[2],
+                                                     this->start_config[3], this->start_config[4], this->start_config[5]});
+    // add first config to config_Vec
+    config_vec.push_back(start_config);
 
 
     for(int i =0; i<3 ; i++){
@@ -148,8 +164,8 @@ Trajectory* Spline::calculateSpline() {
     }
     //with the angle we get calculate the tangent vectors at the inner_waypoints----------------------------------------
     std::vector<Vector<double, 3>> tangents;
-    //add tangent of start point
-    tangents.push_back(p_first_direction_vec);
+    //add tangent of start point (has to be 0 though, because there is no velocity at this point yet)
+    tangents.push_back(0.0 * p_first_direction_vec);
     Vector<double, 3> tangent_temp;
     tangents.reserve(inner_waypoint_dir_vec.size());
     for (int i = 0; i < inner_waypoint_dir_vec.size(); ++i) {
@@ -161,8 +177,8 @@ Trajectory* Spline::calculateSpline() {
         //push final tangent with adjusted length to the vector
         tangents.push_back(tangent_temp * adjust_length);
     }
-    //add tangent of endpoint
-    tangents.push_back(p_last_direction_vec);
+    //add tangent of endpoint (has to be 0 though, because there is no velocity anymore at this point)
+    tangents.push_back(0.0 * p_last_direction_vec);
 
     // calculate inner waypoints of each segment-------------------------------------------------------------------------
 
@@ -198,21 +214,25 @@ Trajectory* Spline::calculateSpline() {
             a_first_segment = 4.0 * tangents.at(i + 1) + a_first_segment;
             a_first_segment = -6.0 * points->at(i) + a_first_segment;
 
+            //set a of the first point to 0
+            a_first_segment = 0.0 * a_first_segment;
+
             // determine second derivative for the last point (last segment)
             Vector<double, 3> a_last_segment = -6.0 * points->at(num_points - 2);
             a_last_segment = -4.0 * tangents.at(num_points - 1) + a_last_segment;
             a_last_segment = -2.0 * tangents.at(num_points) + a_last_segment;
             a_last_segment = 6.0 * points->at(num_points - 1) + a_last_segment;
 
+            //set a of the last point to 0
+            a_last_segment = 0.0 * a_last_segment;
+
             //push second derivatives into a vector
             a_vec.push_back(a_first_segment);
             a_vec.push_back(a_last_segment);
             a_vec.push_back(a_m);
-
-            point1_temp = 0.2 * tangents.at(i) + start_position;
-            point2_temp = 0.05 * a_first_segment;
-            point2_temp = 2.0 * point1_temp + point2_temp;
-            point2_temp = -start_position + point2_temp;
+            // point1 and 2 are equal to the start position (a & v = 0)
+            point1_temp = start_position;
+            point2_temp = start_position;
             point4_temp =  (- 0.2 * tangents.at(1)) + points->at(i);
             point3_temp = (0.05 * a_m);
             point3_temp = (2.0 * point4_temp) + point3_temp;
@@ -229,10 +249,10 @@ Trajectory* Spline::calculateSpline() {
             point2_temp = 0.05 * a_vec.at(i+1);
             point2_temp = 2.0 * point1_temp + point2_temp;
             point2_temp = - points->at(i - 1) + point2_temp;
-            point4_temp =  (- 0.2 * tangents.at(i + 1)) + points->at(i);
-            point3_temp = 0.05 * a_vec.at(1);
-            point3_temp = 2.0 * point4_temp + point3_temp;
-            point3_temp = - points->at(i) + point3_temp;
+
+            //point 3 and 4 are equal to the final point (a and v are 0 here)
+            point3_temp = points->at(i);
+            point4_temp =  points->at(i);
 
             total_point_vec.push_back(point1_temp);
             total_point_vec.push_back(point2_temp);
@@ -274,17 +294,102 @@ Trajectory* Spline::calculateSpline() {
         }
 
     }
+    
+    // determine points along the splinepath (for each segment)
+    std::vector<Vector<double, 3>> spline_points;
+    for (int i = 0; i < num_points; ++i) {
+        int k = i * 5;
+        for (int j = 0; j < timesteps; ++j) {
+            double t = double(j)/timesteps;
+            spline_points.push_back(quintic_bezier_function(total_point_vec.at(k), total_point_vec.at(k+1), total_point_vec.at(k+2),
+                                                            total_point_vec.at(k+3),total_point_vec.at(k+4), total_point_vec.at(k+5), t)) ;
+        }
+    }
+
+    for(int i = 0; i < spline_points.size(); ++i) {
+        std::cout << "Spline Point " << i << ": ";
+        spline_points.at(i).output();
+    }
+
+    // get Configurations for every point in spline_points
+    InvKinematics invKin;
+    std::vector<Configuration*>* temp_configs = new vector<Configuration*>();
+    for (int i = 1; i < spline_points.size(); ++i) {        // do not need first point, because the config is the start config
+        temp_configs = invKin.get_inv_kinematics(new SixDPos(spline_points.at(i)[0], spline_points.at(i)[1], spline_points.at(i)[2],
+                                                             start_orientation[0] , start_orientation[1], start_orientation[2]));
+        if(temp_configs->size() != 0 ){
+            std::vector<double> distances;
+            double distance = 10000;
+            int best_config = 0;
+            for (int j = 0; j < temp_configs->size(); ++j) {
+                if(calc_config_difference(config_vec.at(config_vec.size()-1), temp_configs->at(j)) < distance){
+                    distance = calc_config_difference(config_vec.at(config_vec.size()-1), temp_configs->at(j));
+                    best_config = j;
+                    std::cout << "distance of config " << j+1 << " is smaller than previous one" << std::endl;
+                }
+            }
+            std::cout << "The best configuration at t: " << i/timesteps << " is: " << best_config << std::endl;
+            // add best config to configuration vector
+            config_vec.push_back(temp_configs->at(best_config));
 
 
+            std::cout << "For the given SixDPos at time t " << i/timesteps << " there are possible configurations" << std::endl;
+        }else{
+            std::cout << "ERROR: For the given SixDPos at time t " << i/timesteps << " are no possible configurations available!!!" << std::endl;
+        }
+    }
+
+    trajectory->set_trajectory(config_vec);
 
 
-
-
-
-
-
-    return nullptr;
+    return trajectory;
 }
+
+double Spline::calc_num(double stemp, int n) {
+    double result = (1-stemp);
+    if(n == 0)
+        return 1;
+    else
+        for(int i = 1; i<n; i++)
+        {
+            result *= (1-stemp);
+        }
+    return result;
+}
+
+Vector<double, 3> Spline::quintic_bezier_function(Vector<double, 3> point0, Vector<double, 3> point1, Vector<double, 3> point2, Vector<double, 3> point3,
+                                          Vector<double, 3> point4, Vector<double, 3> point5, double t){
+    Vector<double, 3> s_t, tmp0,tmp1,tmp2,tmp3,tmp4,tmp5;
+    double coeff0 = calc_num(t,5);
+    double coeff1 = 5*calc_num(t,4) * t;
+    double coeff2 = 10*calc_num(t,3) * (t) * (t);
+    double coeff3 = 10*calc_num(t,2) * t * t * t;
+    double coeff4 = 5*calc_num(t,1)*t * t * t * t;
+    double coeff5 = t * t * t * t * t;
+
+    tmp0 = coeff0*point0;
+    tmp1 = coeff1*point1;
+    tmp2 = coeff2*point2;
+    tmp3 = coeff3*point3;
+    tmp4 = coeff4*point4;
+    tmp5 = coeff5*point5;
+
+    s_t = tmp0 + tmp1 + tmp2 + tmp3 + tmp4 + tmp5;
+    return s_t;
+}
+
+double Spline::calc_config_difference(Configuration* config1, Configuration* config2){
+
+    double distance_joint1 = config1->get_configuration().operator[](0) - config2->get_configuration().operator[](0);
+    double distance_joint2 = config1->get_configuration().operator[](1) - config2->get_configuration().operator[](1);
+    double distance_joint3 = config1->get_configuration().operator[](2) - config2->get_configuration().operator[](2);
+    double distance_joint4 = config1->get_configuration().operator[](3) - config2->get_configuration().operator[](3);
+    double distance_joint5 = config1->get_configuration().operator[](4) - config2->get_configuration().operator[](4);
+    double distance_joint6 = config1->get_configuration().operator[](5) - config2->get_configuration().operator[](5);
+
+    return abs(distance_joint1) + abs(distance_joint2) + abs(distance_joint3) + abs(distance_joint4) + abs(distance_joint5) + abs(distance_joint6);
+}
+
 
 
 
