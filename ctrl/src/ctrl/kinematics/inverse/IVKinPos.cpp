@@ -12,6 +12,7 @@ IVKinPos::~IVKinPos()
 
 std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 {
+	std::cout << "get_IVKinPos" << endl;
 	double phi1;
 	//Wrist Point
 	//_pos = new SixDPos(0.0, 0.0, 1.5, 0.0, 1.0, 1.0);
@@ -32,7 +33,7 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 	}
 	else
 		phi1 = -rad2Deg(atan2(wristPoint.y, wristPoint.x));//vielleicht noch - zeichen, da clockwise vs counterclockwise
-	
+
 	std::cout << "phi1 " << phi1 << endl;
 	return calc_configurations(phi1, wristPoint);
 	////1 Quadrant
@@ -65,25 +66,14 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 	//	phi1 = rad2Deg(M_PI - atan(wristPoint.y / -wristPoint.x));
 	//	return standardCase_phi1(phi1, wristPoint);
 	//}
-	// Special Case 1
-	if (wristPoint.x == 0 && wristPoint.y > 0)
-	{
-		std::cout << "Special Case 1 " << std::endl;
-		
-	}
-	// Special Case 2
-	if (wristPoint.x == 0 && wristPoint.y < 0)
-	{
-		std::cout << "Special Case 2 " << std::endl;
 
-	}
 
 }
 
 
 double IVKinPos::deg2Rad(double _deg)
 {
-	return _deg/ (180.0 / M_PI);
+	return _deg / (180.0 / M_PI);
 }
 
 double IVKinPos::rad2Deg(double _rad)
@@ -93,11 +83,7 @@ double IVKinPos::rad2Deg(double _rad)
 
 void IVKinPos::checkLimits(double _phi1, std::array<double, 4>* _solution, std::vector<std::array<double, 3>*>* _ans)
 {
-	/*phi2_backward_upward,
-		phi2_backward_downward,
-		phi3_backward_upward,
-		phi3_backward_downward,
-		phi3_backward_downward_1*/
+
 	//TODO Werte in Roboter Klasse nehmen
 	std::cout << "checkLimits " << endl;
 	std::array<double, 3>* config = new std::array<double, 3>();
@@ -118,12 +104,13 @@ void IVKinPos::checkLimits(double _phi1, std::array<double, 4>* _solution, std::
 			if ((-120.0) < _solution->at(3) && _solution->at(3) < (168))
 			{
 				std::cout << "Upwards" << endl;
-				config = new std::array<double, 3>{ _phi1,_solution->at(1),_solution->at(3) };
+				config = new std::array<double, 3>{ _phi1, _solution->at(1), _solution->at(3) };
 				_ans->push_back(config);
 			}
 		}
 
 	}
+	//std::cout << "Check Limits - Done" << endl;
 }
 
 
@@ -141,28 +128,28 @@ std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1,
 
 
 	forwardSolutions = forward_calc(d1, _wristPoint);
-	
+
 
 	checkLimits(_phi1, &forwardSolutions, ans);
 
 	if ((-185.0) <= _phi1 && _phi1 <= (-175.0))
 	{
-		checkLimits(360.0 +_phi1, &forwardSolutions, ans);
+		checkLimits(360.0 + _phi1, &forwardSolutions, ans);
 	}
 	if ((185.0) >= _phi1 && _phi1 >= (175.0))
 	{
-		checkLimits(-(360.0- _phi1), &forwardSolutions, ans);
+		checkLimits(-(360.0 - _phi1), &forwardSolutions, ans);
 	}
 
 
 
 	backwardSolutions = backward_calc(d1, _wristPoint);
-	
+
 
 	if ((5) >= _phi1 && _phi1 >= (-5.0))
 	{
-		checkLimits(-(_phi1+180.0), &backwardSolutions, ans);
 		checkLimits(+(_phi1 + 180.0), &backwardSolutions, ans);
+		checkLimits(-(180.0 - _phi1), &backwardSolutions, ans);
 
 	}
 	else
@@ -170,8 +157,8 @@ std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1,
 		double phi1_backward = -rad2Deg(atan2(-_wristPoint.y, -_wristPoint.x));// oder if anweisungen welcher Quadrant
 		checkLimits(phi1_backward, &backwardSolutions, ans);
 	}
-	
 
+	//std::cout << "calc_configurations - done" << endl;
 	return ans;
 }
 
@@ -202,34 +189,36 @@ std::array<double, 4> IVKinPos::forward_calc(double _d1, Position _wristPoint)
 	double alpha2 = rad2Deg(asin(py_dash / d3));
 
 
-	
+
 
 	double phi2_forward_downward, phi2_forward_upward;
-	//if (d1Condition(_d1))
-	//{
+	if (d1Condition(_d1))
+	{
 		phi2_forward_upward = -1.0 * (alpha2 + alpha1);
 		phi2_forward_downward = -1.0 * (alpha2 - alpha1);
-	/*}
+	}
 	else
 	{
-		phi2_forward_upward = 180.0-1.0 * (alpha2 + alpha1);
-		phi2_forward_downward = 180.0-1.0 * (alpha2 - alpha1);
-	}*/
+		//phi2_forward_upward =  (alpha2 - alpha1) - 180.0;
+		//phi2_forward_downward = (alpha2 + alpha1) - 180.0;
+		phi2_forward_upward = -(180.0 - (alpha2 - alpha1));
+		phi2_forward_downward = -(180.0 - (alpha2 + alpha1));
+	}
 
-	double phi3_forward_upward = 360.0 - beta - rad2Deg(asin(b / d2)) - 90.0;
+	double phi3_forward_upward = 360 - beta - rad2Deg(asin(b / d2)) - 90.0;
 	double phi3_forward_downward = beta - rad2Deg(asin(b / d2)) - 90;
 
 	//static std::array<double, 4> ans = 
-	
-	std::cout << "phi2_forward_upward " << phi2_forward_upward << endl;
-	std::cout << "phi2_forward_downward " << phi2_forward_downward << endl;
-	std::cout << "phi3_forward_upward " << phi3_forward_upward << endl;
-	std::cout << "phi3_forward_downward " << phi3_forward_downward << endl;
+
+	//std::cout << "phi2_forward_upward " << phi2_forward_upward << endl;
+	//std::cout << "phi2_forward_downward " << phi2_forward_downward << endl;
+	//std::cout << "phi3_forward_upward " << phi3_forward_upward << endl;
+	//std::cout << "phi3_forward_downward " << phi3_forward_downward << endl;
 	return std::array<double, 4> {
 		phi2_forward_upward,
-		phi2_forward_downward,
-		phi3_forward_upward,
-		phi3_forward_downward
+			phi2_forward_downward,
+			phi3_forward_upward,
+			phi3_forward_downward
 	};
 }
 
@@ -245,32 +234,38 @@ std::array<double, 4> IVKinPos::backward_calc(double _d1, Position _wristPoint)
 	double beta = rad2Deg(acos(((d3*d3) - (a*a) - (d2*d2)) / (-2 * a*d2)));
 	double alpha1 = rad2Deg(asin(sin(deg2Rad(beta)) * (d2 / d3)));
 	double alpha2 = rad2Deg((asin(py_dash / d3)));
-	
+
 	double phi2_backward_upward, phi2_backward_downward;
-	//if (d1Condition(_d1))
-	//{
+	double phi3_backward_upward, phi3_backward_downward;
+	if (d1Condition(_d1))
+	{
+		//phi2_backward_upward = (alpha2 + alpha1) - 180.0;
 		phi2_backward_upward = (alpha2 + alpha1) - 180.0;
-		phi2_backward_downward = (alpha2 - alpha1) - 180.0;
-	//}
-	/*else
-	{
-		phi2_backward_upward = -(alpha2 - alpha1);
-		phi2_backward_downward = -(alpha2 - alpha1);
-	}*/
+		phi2_backward_downward = (alpha2 - alpha1) - 180.0;//meine Lösug
 
-	
-
-	double phi3_backward_upward = -1.0 * (90.0 - 1.0 * (beta - rad2Deg(asin(b / d2))));
-	double phi3_backward_downward = 360.0 - beta - rad2Deg(asin(b / d2)) - 90.0;
-	double phi3_backward_downward_1 = 270.0 - beta - rad2Deg(asin(b / d2));
-	
-	std::cout << "phi2_backward_upward " << phi2_backward_upward << endl;
-	std::cout << "phi2_backward_downward " << phi2_backward_downward << endl;
-	std::cout << "phi3_backward_upward " << phi3_backward_upward << endl;
-	std::cout << "phi3_backward_downward " << phi3_backward_downward << endl;
-	std::array<double, 4> ans = 
+		//phi2_backward_downward = -(180.0 - alpha2);
+	}
+	else
 	{
-		phi2_backward_upward,
+		phi2_backward_upward = -(180.0 - (alpha2 + alpha1));
+		//phi2_backward_downward = -(alpha2 - alpha1);//meineLösug
+		phi2_backward_downward = -(180 - (alpha2 - alpha1));
+
+	}
+	phi3_backward_upward = -(90.0 - (beta - rad2Deg(asin(b / d2))));
+	phi3_backward_downward = 270.0 - beta - rad2Deg(asin(b / d2));
+
+	//double phi3_backward_upward = -1.0 * (90.0 - 1.0 * (beta - rad2Deg(asin(b / d2))));
+	//double phi3_backward_downward = 360.0 - beta - rad2Deg(asin(b / d2)) - 90.0;
+	//double phi3_backward_downward_1 = 270.0 - beta - rad2Deg(asin(b / d2));
+
+	//std::cout << "phi2_backward_upward " << phi2_backward_upward << endl;
+	//std::cout << "phi2_backward_downward " << phi2_backward_downward << endl;
+	//std::cout << "phi3_backward_upward " << phi3_backward_upward << endl;
+	//std::cout << "phi3_backward_downward " << phi3_backward_downward << endl;
+	std::array<double, 4> ans =
+	{
+			phi2_backward_upward,
 			phi2_backward_downward,
 			phi3_backward_upward,
 			phi3_backward_downward,
