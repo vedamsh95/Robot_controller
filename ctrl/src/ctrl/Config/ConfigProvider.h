@@ -54,6 +54,11 @@ private:
     double z_axis_lower_border = (-1)*481;
     double z_axis_upper_border = 3020;
 
+//-----------------------------------------------Singularity------------------------------------------------------------
+
+    double margin_point = 0.001;
+
+
 public:
     static ConfigProvider& getInstance(){
         static ConfigProvider instance;
@@ -67,6 +72,7 @@ public:
     int getParamB() const{return this->paramB; }
     int getParamC() const{return this->paramC; }
     double getsteps_per_second() const{return this->steps_per_second; }
+    double getmargin_point() const{return this->margin_point; }
 
 };
 

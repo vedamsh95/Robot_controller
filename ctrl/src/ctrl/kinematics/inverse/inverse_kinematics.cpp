@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include "ConfigProvider.h"
+#include "Singularity.h"
 
 double o = 115;
 double m = 330;
@@ -39,6 +40,8 @@ vector<Configuration *> *sol_othercase_1_vec_config = new vector<Configuration*>
 vector<Configuration *> *sol_othercase_2_vec_config = new vector<Configuration*>();
 vector<Configuration*>* solution_othercase_1_vec = new vector<Configuration*>();
 vector<Configuration*>* solution_othercase_2_vec = new vector<Configuration*>();
+
+double margin_point = ConfigProvider::getInstance().getmargin_point();
 
 
 /* Calculating the transposed Matrix for R03
@@ -96,6 +99,8 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
  * */
  std::array<double, 10> InvKinematics::inv_gettheta4_5_6(TMatrix R36){
 
+    Singularity inv_singularity;
+
     //components of R36 needed for the calculations of Theta 4, 5, 6:
     double ax = R36.get_element(0,2);
     double ay = R36.get_element(1,2);
@@ -148,6 +153,7 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
     array<double, 4> theta4{};
     array<double, 2> theta5{};
     array<double, 4> theta6{};
+    array<double, 2> sing_theta4_6{};
 
     //For theta 5 > 0
     //handle error cases of atan2 for ay, ax
@@ -212,9 +218,20 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
         theta6[3] = theta6[2] + 360;
     }
 
-    theta4_5_6 = {theta4[0],theta4[1],theta4[2],theta4[3],
-                  theta5[0],theta5[1],
-                  theta6[0],theta6[1],theta6[2],theta6[3]};
+    //check for wrist singularity for theta 5
+    if((theta5[0] <= 0 + margin_point && theta5[0] >= 0 - margin_point) || (theta5[1] <= 0 + margin_point && theta5[1] >= 0 - margin_point)){
+        std::cout << "There is a Wrist Singularity." << std::endl;
+        sing_theta4_6 = inv_singularity.wrist_singularity(theta4[0], theta6[0]);
+
+        theta4_5_6 = {sing_theta4_6[0],sing_theta4_6[0],sing_theta4_6[0],sing_theta4_6[0],
+                      theta5[0],theta5[1],
+                      sing_theta4_6[1],sing_theta4_6[1],sing_theta4_6[1],sing_theta4_6[1]};
+
+    }else{
+        theta4_5_6 = {theta4[0],theta4[1],theta4[2],theta4[3],
+                      theta5[0],theta5[1],
+                      theta6[0],theta6[1],theta6[2],theta6[3]};
+    }
 
     return theta4_5_6;
 }
@@ -636,6 +653,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
 
 
             double theta1_2 = theta1 - 180;
+            dpx = d1 + m;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -664,7 +682,6 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
 
 
             double theta1_3 = theta1 + 180;
-            dpx = d1 + m;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -898,12 +915,12 @@ std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
     double alpha2 = (asin(dpy / d3))*180/M_PI;
     std::cout << "alpha2: " << alpha2 << std::endl;
 
-    double theta2_b_u = -1 * (180 - (alpha1 + alpha2));          //for backwards elbow up
+    double theta2_b_u = (-1) * (180 - (alpha1 + alpha2));          //for backwards elbow up
     std::cout << "theta2_b_u: " << theta2_b_u << std::endl;
-    double theta2_b_d = -1 * (180 - (alpha2 - alpha1));          //for backwards elbow down
+    double theta2_b_d = (-1) * (180 - (alpha2 - alpha1));          //for backwards elbow down
     std::cout << "theta2_b_d: " << theta2_b_d << std::endl;
 
-    double theta3_b_u = -1 * (90 - (beta * 180 / M_PI - asin(b / d2) * 180 / M_PI));              //for backwards elbow up
+    double theta3_b_u = (-1) * (90 - (beta * 180 / M_PI - asin(b / d2) * 180 / M_PI));              //for backwards elbow up
     std::cout << "theta3_b_u: " << theta3_b_u << std::endl;
     double theta3_b_d = 270 - beta * 180 / M_PI - (asin(b / d2) * 180 / M_PI);                                                             //double theta3_b_d = -1 * (90 - (beta - asin(b / d2)*180/M_PI));        //for backwards elbow down
     std::cout << "theta3_b_d: " << theta3_b_d << std::endl;
@@ -1392,8 +1409,26 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     wcp[1] = _pos->get_Y() * 1000 - (215 * TCP.get_element(1, 2));
     wcp[2] = _pos->get_Z() * 1000 - (215 * TCP.get_element(2, 2));
 
+
+
     for (int i = 0; i < 3; ++i) {
         std::cout << "wcp :" << wcp[i] << std::endl;
+    }
+
+    //Checking for elbow singularity
+    double X = sqrt(pow(wcp[0],2) + pow(wcp[1],2)) - m;
+    double Y = wcp[2] - m;
+
+    double X_square_Y_square = pow(X,2) + pow(Y,2);
+    double d2 = sqrt(o * o + b * b);
+
+    if(X_square_Y_square >= (a - d2)-margin_point){
+        std::cout << "There is an elbow singularity." << std::endl;
+        wcp[1] = sqrt(pow(X+m, 2) - pow(wcp[2],2));
+        wcp[2] = Y + n;
+    }
+    else{
+        ;
     }
 
     //Case 1
@@ -1820,6 +1855,12 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
                 std::cout << "All configurations added to solution_vec (" << solution_vec->size() << ") for y < m" << std:: endl;
             }
         }
+    }
+
+    // checking for shoulder singularity
+    if((wcp[0] + margin_point <= 0 && wcp[0] + margin_point >= 0) && (wcp[1] + margin_point <= 0 && wcp[1] + margin_point >= 0)){
+        std::cout << "There is a shoulder singularity." << std::endl;
+        std::cout << "Needs to be implemented." << std::endl;
     }
 
     //vector<Configuration*>* solutions = new vector<Configuration*>();
