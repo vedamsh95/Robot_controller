@@ -110,20 +110,20 @@ void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _pos
             }
         }
         if(exeption){
-            _trajectory->insert(Interpolate(_trajectory, _positions, i-NbExeptions), i-NbExeptions);
-            NbExeptions++;
+            if(Interpolate(_trajectory, _positions, i-NbExeptions)){
+                NbExeptions++;
+            }
         }
     }
 
     if(NbExeptions > 0){
         cout << "Too high velocities detected, corresponding points changed." << endl;
-        CheckVelocities(_trajectory, _positions);
     }
     else return;
     
 }
 
-Configuration* IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>* _positions, int index)
+bool IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>* _positions, int index)
 {
     SixDPos* PosA = _positions->at(index-1);
     SixDPos* PosB = _positions->at(index);
@@ -147,8 +147,14 @@ Configuration* IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>*
                               trajectory->get_configuration(index));
     }
     
-    _positions->insert(_positions->begin()+index, PosC);
-    return correctConfig;
+    if( distance(correctConfig, trajectory->get_configuration(index-1))
+       < distance(trajectory->get_configuration(index), trajectory->get_configuration(index-1))){
+        _positions->insert(_positions->begin()+index, PosC);
+        trajectory->insert(correctConfig, index);
+        return true;
+    }
+    else return false;
+    
 }
 
 Configuration* IVMovement::wsInterpolation(Configuration *startConfig, Configuration *curConfig, Configuration *endConfig)
@@ -183,6 +189,16 @@ Trajectory* IVMovement::wsInterpolation(Configuration* startConfig, Trajectory* 
     }
     cout << "Wrist configurations at singularities interpolated. " << endl;
     return configs;
+}
+
+double IVMovement::distance(Configuration* A, Configuration* B)
+{
+    double distance = 0;
+    for(int i=0; i < NUM_JOINTS; i++)
+    {
+        distance += pow(((*A)[i]-(*B)[i]), 2);
+    }
+    return sqrt(distance);
 }
 
 

@@ -39,9 +39,9 @@ private:
      * @param trajectory  trajectory to get previous configurations from.
      * @param _positions vector containing sixDposes to interpolate
      * @param index index of _positions that needs to be interpolated
-     * @return a reference containing the new configuration.
+     * @return true if values were interpolated and inserted
      */
-    Configuration * Interpolate(Trajectory* trajectory, vector<SixDPos*>* _positions, int index);
+     bool Interpolate(Trajectory* trajectory, vector<SixDPos*>* _positions, int index);
     
     /**
      * Computes configurations at wrist singularities (theta5  == 0) by interpolating theta4 and theta6 from values outside of singularity (startConfig and last configuration in trajectory).
@@ -62,6 +62,8 @@ private:
      * @return a reference containing the interpolated configuration.
      */
     Configuration* wsInterpolation(Configuration* startConfig, Configuration* curConfig, Configuration* endConfig);
+    
+    double distance(Configuration* A, Configuration* B);
 
 };
 
