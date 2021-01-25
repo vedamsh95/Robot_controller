@@ -17,12 +17,12 @@ class InvKinematics {
 private:
 
 //define the Robot constants
-    const double d = 215;
-    const double m = 330;
-    const double n = 645;
-    const double o = 115;
-    const double a = 1150;
-    const double b = 1220;
+    const double d = .215;
+    const double m = .330;
+    const double n = .645;
+    const double o = .115;
+    const double a = 1.150;
+    const double b = 1.220;
 
 
 public:
@@ -37,12 +37,16 @@ public:
 
     std::vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
     void findphi1(double Xc, double Yc, std::vector<double>& point);
-    void findphi2phi3(double Xc, double Yc, double Zc, double phi1, std::vector<double>& point2, std::vector<double>& point3);
-    void findphi3phi4phi5(double phi1, double phi2, double phi3, std::vector<double>& phi4, std::vector<double>& phi5, std::vector<double>& phi6, double* ptr2);
+    void findphi2phi3(double Xc, double Yc, double Zc, double phi1, std::vector<double> (&point1), std::vector<double> (&point2), std::vector<double> (&point3));
+    void findphi4phi5phi6(double phi1, double phi2, double phi3, std::vector<double> &phi4, std::vector<double> &phi5, std::vector<double> &phi6, double transformationmatrix[16]);
     std::tuple<double, double> ForwardsElbowdown(double d1, double Zc);
     std::tuple<double, double> ForwardsElbowup(double d1, double Zc);
     std::tuple<double, double> BackwardsElbowdown(double d1, double Zc);
     std::tuple<double, double> BackwardsElbowup(double d1, double Zc);
+    void multiplymatrix(double M1[4][4], double M2[4][4], double(&(Result)));
+    void multiplymatrix(double M1[3][3], double M2[3][3], double(&(Result)));
+    void printmatrix(double matrix[4][4]);
+    void printmatrix(double matrix[3][3]);
 
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
