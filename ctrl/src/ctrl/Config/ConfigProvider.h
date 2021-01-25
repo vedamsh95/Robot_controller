@@ -8,9 +8,7 @@
 class ConfigProvider{
 private:
     ConfigProvider(){}
-    int paramA = 100; // examples
-    int paramB = 200; // example
-    int paramC = 300; // example
+
     double steps_per_second = 15;
     //ToDo: Insert paramters for boundaries, etc.
 
@@ -68,11 +66,10 @@ public:
     void operator=(ConfigProvider const&) = delete;
 
     //ToDo: Insert Getter-Function for specific parameter --> Usage of ConfigProvider in specific class: ConfigProvider::getInstance().getParamA()
-    int getParamA() const{return this->paramA; }
-    int getParamB() const{return this->paramB; }
-    int getParamC() const{return this->paramC; }
+
     double getsteps_per_second() const{return this->steps_per_second; }
     double getmargin_point() const{return this->margin_point; }
+    double getTheta1_lower_border(){return this->theta1_lower_border;}
 
 };
 

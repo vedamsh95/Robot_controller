@@ -15,8 +15,29 @@ private:
 
 public:
 
+    /**
+    * Default constructor TMatrix
+    * @param -
+    * @return Object of TMatrix
+    */
     TMatrix();
+
+    /**
+    * TMatrix constructor
+    * @param std::array<double,16>
+    * @return Object of TMatrix
+    */
     TMatrix::TMatrix(std::array<double,16>);
+
+
+    /**
+    * TMatrix constructor
+    * @param double theta_n     rotation around the z-axis
+    * @param double alpha_n     rotation around the x-axis
+    * @param double r_n         Distance of the origin n-1 to origin n along the x-axis of CSn (CS1) in millimeters
+    * @param double d_n         Distance of the origins n-1 to origin n along the z-axis of CSn-1 in millimeters
+    * @return Object of TMatrix
+    */
     TMatrix(double theta_n, double alpha_n, double r_n, double d_n);
 	/**
 	 * Constructor for the the TMatrix set up with the passed array containing the rotation and translation of a position.
@@ -65,19 +86,40 @@ public:
     TMatrix(double _one, double _two, double _three, double _four, double _five, double _six, double _seven, double _eight, double _nine, double _ten, double _eleven, double _twelve, double _thirteen, double _fourteen, double _fifteen, double _sixteen);
 
 	/**
-	 * Getter for internal matrix representation
-	 * @return reference of the internal matrix representation
+	 * Getter for matrix element
+	 * @param unsigned int row
+	 * @param unsigned int column
+	 * @return double value at position[row][column]
 	 */
-	double* get_matrix() { return &m_transformation[0][0]; };
 
 	double get_element(unsigned int row, unsigned int column);
 
+
+    /**
+    * Outputfunction for matrix
+    * @return no return // voidfunction std::cout
+    */
 	void output();
 
+
+    /**
+    * Overloading operator for matrix 4x4  matrix 4x4 multiplication
+    * @param const TMatrix&
+    * @return TMatrix object
+    */
 	TMatrix operator*(const TMatrix& mat1);
 
+    /**
+    * Function to convert EulerAngles from Denavit Hartenberg Matrix
+    * @return Euler Angles phi, theta, psi in degree
+    */
 	std::array<double, 3> convertToEulerAngles();
 
+    /**
+   * Overloading operator for matrix 4x4  vector 4x1 multiplication with vector
+   * @param const std::array<double,4>&
+   * @return Vector 4x1
+   */
 	std::array<double,4> operator*(const std::array<double, 4>&vec);
 
 };

@@ -228,7 +228,6 @@ void TMatrix::output() {
 TMatrix TMatrix::operator*(const TMatrix &mat1) {
 
     TMatrix result;
-    int a = ConfigProvider::getInstance().getParamA();
     for(int j =0; j<4; j++){                        // j is height of matrix
         for(int i =0; i< 4; i++)                    //i is width of matrix
         {
