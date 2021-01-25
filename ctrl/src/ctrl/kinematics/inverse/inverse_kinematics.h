@@ -12,7 +12,7 @@
 #include <vector>
 #include "../direct/fw_kinematics.h"
 
-
+#define JOINT_5_MAX (49.0/72.0)*M_PI
 
 /** \brief computes the inverse kinematics
  * This class is intended to handle the computation of the inverse kinematics. This includes both the computation of the
@@ -23,6 +23,17 @@ class InvKinematics {
 private:
     Robot *robot;
     static constexpr double singularityMargin = 0.05;
+    
+    /**
+     * This method sets theta 5 to the boundaries (0 or JOINT_5_MAX) if the values are too high/low.
+     *
+     * @param theta5 {@ref double} configuration of theta 5
+     * @param j position in configuration matrix to decide weather theta 5 has to be > or < 0
+     */
+    void setToLimits(double* theta5, int j);
+    
+    double sign(double value);
+    
 public:
     /**
      * Default constructor
@@ -36,7 +47,7 @@ public:
      * @param _pos {@ref SixDPos} to compute the configuration for
      * @return  a reference to a <code>vector<code> containing all possible configurations for the passed position
      */
-    vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
+    vector<Configuration*>* get_inv_kinematics(SixDPos* _pos, bool setJointLimits = false);
     
     /**
      * Calculation of the configurations of wrist joints in case of wrist singularity (theta5 = 0).

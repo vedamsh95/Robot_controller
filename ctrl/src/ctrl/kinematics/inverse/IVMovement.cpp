@@ -28,31 +28,42 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
         //TODO: check for overhead and elbow singularity.
         //(before IVKinematics is calculated!)
         
-        configs = invK->get_inv_kinematics(t);
-        correctConfig =  GetClosestConfiguration(configs, prevConfig);
-    
-        //Wrist singularity.
-        if((*correctConfig)[4] == 0 && i != (_positions->size()-1)){
-            //cout << "Configuration " << i << " is wrist singularity!" << endl;
-            if(!singularity){
-                singularity = true;
-                singTrajectory->add_configuration(correctConfig);
-            }
-            else singTrajectory->add_configuration(correctConfig);
-        }
-        else{
-            if(singularity){
-                singTrajectory->add_configuration(correctConfig);
-                trajectory->append(wsInterpolation(prevConfig, singTrajectory));
-                singularity = false;
-                singTrajectory->clear();
-                prevConfig = correctConfig;
+        configs = invK->get_inv_kinematics(t, true);
+        
+        if (configs->size() > 0){
+            correctConfig =  GetClosestConfiguration(configs, prevConfig);
+        
+            //Wrist singularity.
+            if((*correctConfig)[4] == 0 && i != (_positions->size()-1)){
+                //cout << "Configuration " << i << " is wrist singularity!" << endl;
+                if(!singularity){
+                    singularity = true;
+                    singTrajectory->add_configuration(correctConfig);
+                }
+                else singTrajectory->add_configuration(correctConfig);
             }
             else{
-                prevConfig = correctConfig;
-                trajectory->add_configuration(correctConfig);
+                if(singularity){
+                    singTrajectory->add_configuration(correctConfig);
+                    trajectory->append(wsInterpolation(prevConfig, singTrajectory));
+                    singularity = false;
+                    singTrajectory->clear();
+                    prevConfig = correctConfig;
+                }
+                else{
+                    prevConfig = correctConfig;
+                    trajectory->add_configuration(correctConfig);
+                }
             }
         }
+        else{
+            cout << "Trajectory can not be calculated!" << endl; 
+            trajectory->clear();
+            trajectory->add_configuration(start_cfg);
+            break;
+        }
+            
+        
     }
     
     //Check if joint velocitys are in range and adjust them by adding points if necessary.
@@ -95,7 +106,7 @@ void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _pos
                (((*_trajectory->get_configuration(i-NbExeptions))[j] - ((*_trajectory->get_configuration(i-1-NbExeptions))[j]))
                          / robot->time_interval) > robot->velocities[j]){
                 exeption = true;
-                //cout << "Velocity too high at: " << (i-NbExeptions) << endl;
+                cout << "Velocity too high at: " << (i-NbExeptions) << endl;
             }
         }
         if(exeption){
