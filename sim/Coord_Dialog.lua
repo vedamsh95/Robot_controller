@@ -123,6 +123,8 @@ function returnSignal()
         --print(#obj.data)
         if err then
             sim.addStatusbarMessage("Error:", err)
+        elseif obj.data == nil then
+            simUI.show(ui_2)
         else
             if (obj.op==0) then
                 if (simUI.getRadiobuttonValue(ui,2007)==1) then
@@ -1134,7 +1136,7 @@ for the lin and spline movement:"></label>
 </ui>]]
 
     error = [[<ui closeable="false" on-close="buttonok" layout="vbox" title="Error">
-	<label text="For the Values entered, is no path available."></label>
+	<label text="For the Values entered, is no result possible."></label>
 	<button text="OK" onclick="buttonok"></button>
 </ui>]]
 
