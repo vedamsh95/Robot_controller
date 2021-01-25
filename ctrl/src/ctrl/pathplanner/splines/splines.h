@@ -12,7 +12,6 @@
 #include "../ptp/Single_trajectory.h"
 #include "../ptp/Max_vel_trajectory.h"
 #include "../ptp/Trapezoidal_trajectory.h"
-//#include <functional>
 #include "../../matplotlib-cpp-master/matplotlibcpp.h"
 namespace plt = matplotlibcpp;
 class Splines
@@ -21,7 +20,7 @@ public:
 
 	Splines();
 	~Splines();
-	Trajectory *getSpline(vector<SixDPos*> &_points, Configuration * start, double _velocity, double _acceleration, int _spline_type = 0);
+	Trajectory *getSpline(vector<SixDPos*> &_points, Configuration * start, double _velocity, double _acceleration, double _elong = 0.5, int spline_type = 0);
 	struct Position
 	{
 		double x, y, z;
@@ -54,7 +53,7 @@ public:
 	};
 private:
 	void plotSpline(vector<Splines::Position> &_points, vector<double> _tValues);
-	std::vector<Position> getTangentsQuintic(vector<Splines::Position> &_points);
+	std::vector<Position> getTangentsQuintic(vector<Splines::Position> &_points, double _elong);
 	void getCubicBezierControlPoints(vector<Splines::Position> &_points, vector<Splines::Position>* _firstControlPoints, vector<Splines::Position>* _secondControlPoints);
 	
 	std::vector<Position> getAccelerationsQuintic(vector<Splines::Position> &_points, std::vector<Splines::Position> _tangents);

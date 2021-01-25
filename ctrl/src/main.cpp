@@ -221,7 +221,7 @@ int main() {
                 auto *pos = new SixDPos( jsonHandler.get_data()[static_cast<int>(i)]);
                 points.push_back(pos);
               }
-              Trajectory* trajectory = ctrl.move_robot_spline(points, &start_cfg, vel, acc,spline_type);
+              Trajectory* trajectory = ctrl.move_robot_spline(points, &start_cfg, vel, acc, elong,spline_type);
 			  
 			  
 			  std::vector<SixDPos*> spline_points;

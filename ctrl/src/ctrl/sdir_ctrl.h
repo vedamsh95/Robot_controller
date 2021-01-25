@@ -74,7 +74,7 @@ public:
      * @param acceleration The acceleration at the start and at the end of the movement
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_spline(vector<SixDPos*> &points, Configuration * start, double velocity, double acceleration, int _spline_type = 0);
+    Trajectory* move_robot_spline(vector<SixDPos*> &points, Configuration * start, double velocity, double acceleration, double _elong = 0.5, int _spline_type = 0);
 };
 
 

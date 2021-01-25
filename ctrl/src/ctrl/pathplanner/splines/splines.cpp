@@ -12,7 +12,7 @@ Splines::~Splines()
 {
 }
 ;
-Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start_cfg,double _velocity, double _acceleration, int _spline_type)
+Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start_cfg,double _velocity, double _acceleration, double _elong, int _spline_type)
 {
 	
 	size_t n = _points.size();
@@ -35,9 +35,9 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 	vector<Splines::Position> cubicTagents(n);
 	for(int i = 0; i< n-1; i++)
 	{ 
-		cubicTagents[i] = firstControlPoints->at(i) - points[i];
+		cubicTagents[i] = firstControlPoints->at(i) - points[i] * _elong;
 	}
-	cubicTagents[n - 1] = points[n - 1] - secondControlPoints->at(n - 2);
+	cubicTagents[n - 1] = points[n - 1] - secondControlPoints->at(n - 2) * _elong;
 
 	std::vector<Splines::Position> tangents;
 	std::vector<Splines::Position> accelerations = getAccelerationsQuintic(points,cubicTagents);
@@ -51,7 +51,7 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 	}
 	else if(_spline_type == 1)
 	{
-		tangents = getTangentsQuintic(points);
+		tangents = getTangentsQuintic(points, _elong);
 		sampleDistancesQuintic(points, tangents, accelerations,&sampleDist);
 		distance = sampleDist.back();
 	}
@@ -188,19 +188,19 @@ void Splines::plotSpline(vector<Splines::Position>& _points, vector<double> _tVa
 #endif
 }
 
-std::vector<Splines::Position> Splines::getTangentsQuintic(vector<Splines::Position>& _points)
+std::vector<Splines::Position> Splines::getTangentsQuintic(vector<Splines::Position>& _points, double _elong)
 {
 	std::cout << "getTagents" << endl;
 	std::vector<Splines::Position> tangents;
 
-	double e = 0.5;
+
 	double length;
 	Position direction0, direction1, tangent;
 	size_t n = _points.size();
 	if(n == 2)
 	{
 		direction0 = _points.at(1) - _points.at(0);
-		length = L2Norm(direction0) * e;
+		length = L2Norm(direction0) * _elong;
 		direction0 = direction0 / L2Norm(direction0);
 		tangents.push_back(direction0 * length);
 		tangents.push_back(direction0 * -length);
@@ -212,7 +212,7 @@ std::vector<Splines::Position> Splines::getTangentsQuintic(vector<Splines::Posit
 	{
 		direction0 = (_points.at(i) - _points.at(i - 1));
 		direction1 = (_points.at(i + 1) - _points.at(i));
-		length = min(L2Norm(direction0), L2Norm(direction1)) * e;
+		length = min(L2Norm(direction0), L2Norm(direction1)) * _elong;
 
 
 		direction0 = direction0 / L2Norm(direction0);
