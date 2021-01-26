@@ -20,7 +20,7 @@ private:
     double speed, acceleration;
     int num_points;
     std::vector<Vector<double, 3>> *points;
-
+    double M_PII = 3.141592654;
 
 public:
     Spline(Vector<double,3> start_point, Vector<double,3> start_orientation,std::vector<Vector<double, 3>> *points, double speed, double acceleration, Vector<double, 6> start_config_vec);
@@ -33,6 +33,8 @@ public:
     std::vector<Vector<double,3>> calc_spline();
     Vector<double, 3> quintic_bezier_function(Vector<double, 3> point0, Vector<double, 3> point1, Vector<double, 3> point2, Vector<double, 3> point3,
                                               Vector<double, 3> point4, Vector<double, 3> point5, double t);
+    bool checkconfiglimits(Configuration* config1, Configuration* config2,
+                                   std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
 
 };
 

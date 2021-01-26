@@ -14,29 +14,38 @@ private:
 
     //----------------------------------Joint-Boundaries----------------------------------------------------------------
 
+    //Maximum Acceleration for all joints
+    double a_max = 250;     // max acceleration
+
     //Theta 1
     double theta1_lower_border = (-1)*185;
     double theta1_upper_border = 185;
+    double joint1_v_max = 120;     //max speed of joint 1 in °/s
 
     //Theta 2
     double theta2_lower_border = (-1)*120;
     double theta2_upper_border = (-1)*5;
+    double joint2_v_max = 115;     //max speed of joint 2 in °/s
 
     //Theta 3
     double theta3_lower_border = (-1)*120;
     double theta3_upper_border = 168;
+    double joint3_v_max = 120;     //max speed of joint 3 in °/s
 
     //Theta 4
     double theta4_lower_border = (-1)*350;
     double theta4_upper_border = 350;
+    double joint4_v_max = 190;     //max speed of joint 4 in °/s
 
     //Theta 5
     double theta5_lower_border = (-1)*125;
     double theta5_upper_border = 125;
+    double joint5_v_max = 180;     //max speed of joint 5 in °/s
 
     //Theta 6
     double theta6_lower_border = (-1)*350;
     double theta6_upper_border = 350;
+    double joint6_v_max = 260;     //max speed of joint 6 in °/s
 
     //----------------------------------------Axis-Boundaries------------------------------------------------------------
 
@@ -70,6 +79,13 @@ public:
     double getsteps_per_second() const{return this->steps_per_second; }
     double getmargin_point() const{return this->margin_point; }
     double getTheta1_lower_border(){return this->theta1_lower_border;}
+    double getJoint1_max_vel(){return this->joint1_v_max;}
+    double getJoint2_max_vel(){return this->joint2_v_max;}
+    double getJoint3_max_vel(){return this->joint3_v_max;}
+    double getJoint4_max_vel(){return this->joint4_v_max;}
+    double getJoint5_max_vel(){return this->joint5_v_max;}
+    double getJoint6_max_vel(){return this->joint6_v_max;}
+    double getMax_accel(){return this->a_max;}
 
 };
 

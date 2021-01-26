@@ -15,8 +15,8 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
     Trajectory res;
     vector<Configuration*> config_vec;
     double M_PII = 3.14159;
-    double a_max = 250;     // max acceleration
-    double timesteps = 15; // 0.001s; so r = 1000 = 1s
+    double a_max = ConfigProvider::getInstance().getMax_accel();     // max acceleration
+    double timesteps = ConfigProvider::getInstance().getsteps_per_second(); // 0.001s; so r = 1000 = 1s
 
     // initialize all the arrays
     array<double, 6> array_startpos{};
@@ -31,12 +31,12 @@ Trajectory* Ptp::get_ptp_trajectoy(Configuration* _start_cfg, Configuration* _en
     array<double, 6> array_v_adjust{};
     array<double, 6> array_a_adjust{};
 
-    double joint1_v_max = 120;     //max speed of joint 1 in °/s
-    double joint2_v_max = 115;     //max speed of joint 2 in °/s
-    double joint3_v_max = 120;     //max speed of joint 3 in °/s
-    double joint4_v_max = 190;     //max speed of joint 4 in °/s
-    double joint5_v_max = 180;     //max speed of joint 5 in °/s
-    double joint6_v_max = 260;     //max speed of joint 6 in °/s
+    double joint1_v_max = ConfigProvider::getInstance().getJoint1_max_vel();     //max speed of joint 1 in °/s
+    double joint2_v_max = ConfigProvider::getInstance().getJoint2_max_vel();     //max speed of joint 2 in °/s
+    double joint3_v_max = ConfigProvider::getInstance().getJoint3_max_vel();     //max speed of joint 3 in °/s
+    double joint4_v_max = ConfigProvider::getInstance().getJoint4_max_vel();     //max speed of joint 4 in °/s
+    double joint5_v_max = ConfigProvider::getInstance().getJoint5_max_vel();     //max speed of joint 5 in °/s
+    double joint6_v_max = ConfigProvider::getInstance().getJoint6_max_vel();     //max speed of joint 6 in °/s
 
     array_v_max[0] = joint1_v_max;
     array_v_max[1] = joint2_v_max;
