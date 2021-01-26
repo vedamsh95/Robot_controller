@@ -1205,16 +1205,7 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
     sol_theta_4_5_6.clear();
     vec_id.push_back(id);
     sol_theta_4_5_6.push_back(vec_id);
-    std::cout << "Theta 4: " << solution_standard_4_5_6[0] << std::endl;
-    std::cout << "Theta 4: " << solution_standard_4_5_6[1] << std::endl;
-    std::cout << "Theta 4: " << solution_standard_4_5_6[2] << std::endl;
-    std::cout << "Theta 4: " << solution_standard_4_5_6[3] << std::endl;
-    std::cout << "Theta 5: " << solution_standard_4_5_6[4] << std::endl;
-    std::cout << "Theta 5: " << solution_standard_4_5_6[5] << std::endl;
-    std::cout << "Theta 6: " << solution_standard_4_5_6[6] << std::endl;
-    std::cout << "Theta 6: " << solution_standard_4_5_6[7] << std::endl;
-    std::cout << "Theta 6: " << solution_standard_4_5_6[8] << std::endl;
-    std::cout << "Theta 6: " << solution_standard_4_5_6[9] << std::endl;
+
     //filtering case of equal configurations for theta 4, 5, 6, especially for 0, 0 ,0
     if((solution_standard_4_5_6[0] == solution_standard_4_5_6[2]) &&
     (solution_standard_4_5_6[4] == solution_standard_4_5_6[5]) &&
@@ -1885,7 +1876,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     if((wcp[0] + margin_point <= 0 && wcp[0] + margin_point >= 0) && (wcp[1] + margin_point <= 0 && wcp[1] + margin_point >= 0)){
         std::cout << "There is a shoulder singularity." << std::endl;
         //theta 1 is chosen as 0
-        theta1= 0;
+        theta1 = 0;
         std::cout << "theta1: " << theta1 << std::endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
         std::cout << "d1: " << d1 << std::endl;
