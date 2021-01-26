@@ -29,12 +29,12 @@ Trajectory* Ptp::get_ptp_trajectory(Configuration* _start_cfg, Configuration* _e
     }
 
     // Calculate time_final and distance for all joints
-    double time_final[6]; // tf, duration of the movements for each joint
-    double distance[6]; // D, distance of the joint to each other
+    double time_c[6]; // tc, ???
+    double time_final[6]; // tfinal, duration of the movements for each joint
     double full_duration = -DBL_MAX; // maximum of time_final -> duration of the full movement
     for (int i = 0; i < 6; i++) {
-        distance[i] = (end_cfg[i] - start_cfg[i]);
-        time_final[i] = sqrt(2.0 * abs(distance[i]) / (MAX_ACCELERATION[i] * TO_RAD));
+        time_c[i] = MAX_VELOCITY[i] / MAX_ACCELERATION[i];
+        time_final[i] = time_c[i] + ((end_cfg[i] - start_cfg[i]) / (MAX_VELOCITY[i] * TO_RAD));
         if (isinf(time_final[i])) time_final[i] = -1; // TODO: when does this happen?
         if (time_final[i] > full_duration) full_duration = time_final[i];
     }
@@ -47,10 +47,12 @@ Trajectory* Ptp::get_ptp_trajectory(Configuration* _start_cfg, Configuration* _e
         array<double, 6> new_cfg{};
         for (int i = 0; i < 6; i++) {
             // TODO: synchronous movements?
-            if (0 <= t && t < time_final[i] / 2.0) {
-                new_cfg[i] = start_cfg[i] + 2.0 * pow(t / time_final[i], 2.0) * distance[i];
+            if (0 <= t && t < time_c[i]) {
+                new_cfg[i] = start_cfg[i] + 0.5 * MAX_ACCELERATION[i] * TO_RAD * pow(t, 2);
+            } else if (t <= time_final[i] - time_c[i]) {
+                new_cfg[i] = start_cfg[i] + 0.5 * MAX_ACCELERATION[i] * TO_RAD * time_c[i] * (t - time_c[i] / 2);
             } else if (t <= time_final[i]) {
-                new_cfg[i] = start_cfg[i] + (-1.0 + 4.0 * (t / time_final[i]) - 2.0 * pow(t / time_final[i], 2.0)) * distance[i];
+                new_cfg[i] = end_cfg[i] - 0.5 * MAX_ACCELERATION[i] * pow(time_final[i] - t, 2);
             } else {
                 new_cfg[i] = end_cfg[i];
             }
