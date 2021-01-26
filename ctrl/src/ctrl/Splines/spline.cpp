@@ -69,6 +69,16 @@ Trajectory* Spline::calculateSpline() {
     // add first config to config_Vec
     config_vec.push_back(start_config);
 
+    //------------------add this from robot class ----------------------------------------------------------------------
+    double a_max = ConfigProvider::getInstance().getMax_accel();
+    //setting max_velocity values for robot joints in °/s
+    Vector<double, 6> joint_max_vel;
+    joint_max_vel[0] = ConfigProvider::getInstance().getJoint1_max_vel();
+    joint_max_vel[1] = ConfigProvider::getInstance().getJoint2_max_vel();
+    joint_max_vel[2] = ConfigProvider::getInstance().getJoint3_max_vel();
+    joint_max_vel[3] = ConfigProvider::getInstance().getJoint4_max_vel();
+    joint_max_vel[4] = ConfigProvider::getInstance().getJoint5_max_vel();
+    joint_max_vel[5] = ConfigProvider::getInstance().getJoint6_max_vel();
 
     for(int i =0; i<3 ; i++){
        // std::cout << "Start at i: "<< this->start_position[i] << std::endl;
@@ -296,10 +306,76 @@ Trajectory* Spline::calculateSpline() {
     
     // determine points along the splinepath (for each segment)
     std::vector<Vector<double, 3>> spline_points;
+    // vector to store time needed for every segment
+    std::vector<double> time_vec;
     for (int i = 0; i < num_points; ++i) {
         int k = i * 5;
         for (int j = 0; j < timesteps; ++j) {
-            double t = double(j)/timesteps;
+            // double t = double(j)/timesteps;
+            double t = 0;
+            double speed_temp;
+            // add distances of the segments together
+            double moved_distance = 0;
+            // add passed time of the segments together
+            double passed_t = 0;
+            // first segment
+            double t_temp = speed/acceleration;                                         // time when end effector reaches maximum velocity
+            if(i == 0){
+                // time needed for end effector to reach last point of first segment
+                t = sqrt(2 * (distance_i.at(i) / acceleration));
+                if (t > t_temp){                                                            // end effector reaches maximum velocity before reaching end point
+                    double distance_for_accel = 0.5 * acceleration * t_temp * t_temp;
+                    double time_with_constant_vel = (distance_i.at(i) - distance_for_accel) / speed;
+                    t = t_temp + time_with_constant_vel;
+                    speed_temp = speed;
+                }else{                                                                      // end effector does not reach max velocity
+                    // time needed for end effector to reach last point of first segment
+                    t = sqrt(2 * (distance_i.at(i) / acceleration));
+                    // calculate speed at the end point
+                    speed_temp = acceleration * t;
+                }
+                moved_distance = distance_i.at(i);
+                passed_t = t;
+                time_vec.push_back(t / timesteps);
+            }
+
+            // other segment
+            if( i > 0 && i < num_points-1){
+                if (speed_temp == speed){                                                   // we have maximum velocity already
+                    // time needed with constant velocity
+                    t = distance_i.at(i) / speed;
+                }else{                                                                      // we do not have maximum velocity yet
+                    // time left for getting to max velocity
+                    double t_left = t_temp - t;
+                    // distance that the end effector moves when reaching maximum velocity (already has start velocity)
+                    double distance_for_accel = 0.5 * acceleration * t_left * t_left + speed_temp * t_left;
+
+                    // check if the distance of the segment is smaller than the distance moved by the robot to reach maximum velocity
+                    if (distance_i.at(i) <= distance_for_accel){
+                        // still did not reach maximum velocity. so we calculate the time when we reach the endpoint
+                        // for this we calculate the time to reach the total distance traveled and subtract the already passed time
+                        t = sqrt(2 * ( moved_distance + distance_i.at(i)) / acceleration) - passed_t;
+                        // calculate speed that we have at the endpoint
+                        speed_temp = acceleration * sqrt(2 * ( moved_distance + distance_i.at(i)));
+
+                    }else{
+                        // calculate distance left after reaching max velocity
+                        double distance_for_const_vel = distance_i.at(i) - distance_for_accel;
+                        // time we travel with constant velocity to reach end point
+                        double time_with_constant_vel = distance_for_const_vel / speed;
+                        // add times together to get time we need to reach end point
+                        t = t_temp + time_with_constant_vel;
+                        // set speed at endpoint to max speed
+                        speed_temp = speed;
+                    }
+                }
+                passed_t = passed_t + t;
+                moved_distance = moved_distance + distance_i.at(i);
+                time_vec.push_back(t / timesteps);
+            }
+
+
+
             spline_points.push_back(quintic_bezier_function(total_point_vec.at(k), total_point_vec.at(k+1), total_point_vec.at(k+2),
                                                             total_point_vec.at(k+3),total_point_vec.at(k+4), total_point_vec.at(k+5), t)) ;
         }
@@ -313,26 +389,53 @@ Trajectory* Spline::calculateSpline() {
     // get Configurations for every point in spline_points
     InvKinematics invKin;
     std::vector<Configuration*>* temp_configs = new vector<Configuration*>();
-    for (unsigned int i = 1; i < spline_points.size(); ++i) {        // do not need first point, because the config is the start config
+
+    //write initial velocities and accelerations into vectors (all are 0)
+    vector<double> vel_accel_temp;
+    vel_accel_temp.reserve(6);
+    for (int j = 0; j < 6; ++j) {
+        vel_accel_temp.push_back(0);
+    }
+    joint_velocities_vec.push_back(vel_accel_temp);
+
+    for (int i = 0; i < spline_points.size(); ++i) {        // do not need first point, because the config is the start config
         temp_configs = invKin.get_inv_kinematics(new SixDPos(spline_points.at(i)[0], spline_points.at(i)[1], spline_points.at(i)[2],
                                                              start_orientation[0] , start_orientation[1], start_orientation[2]));
         if(temp_configs->size() != 0 ){
             std::vector<double> distances;
             double distance = 10000;
-            int best_config = 0;
-            for (unsigned int j = 0; j < temp_configs->size(); ++j) {
+            int best_config = -1;
+            for (int j = 0; j < temp_configs->size(); ++j) {
+
                 if(calc_config_difference(config_vec.at(config_vec.size()-1), temp_configs->at(j)) < distance){
-                    distance = calc_config_difference(config_vec.at(config_vec.size()-1), temp_configs->at(j));
-                    best_config = j;
-                    std::cout << "distance of config " << j+1 << " is smaller than previous one" << std::endl;
+                    // check if new config at new timepoint exceeds our limits of v & a
+                    if( checkconfiglimits(config_vec.at(config_vec.size()-1), temp_configs->at(j),
+                                          &joint_velocities_vec.at(i), a_max, joint_max_vel, timesteps) ){
+                        distance = calc_config_difference(config_vec.at(config_vec.size()-1), temp_configs->at(j));
+                        best_config = j;
+                        std::cout << "distance of config " << j+1 << " is smaller than previous one" << std::endl;
+                    }else{
+                        std::cout << "distance of config " << j+1 << " is smaller than previous one" << std::endl;
+                        std::cout << "However the new config exceeds robot limits" << std::endl;
+                    }
                 }
             }
-            std::cout << "The best configuration at t: " << i/timesteps << " is: " << best_config << std::endl;
-            // add best config to configuration vector
-            config_vec.push_back(temp_configs->at(best_config));
+            // check if there was a config that was not exceeding our robot limits
+            if(best_config != -1){
+                std::cout << "For the given SixDPos at time t " << i/timesteps << " there are possible configurations" << std::endl;
+                // add best config to configuration vector
+                std::cout << "The best configuration at t: " << i/timesteps << " is: " << best_config << std::endl;
+                config_vec.push_back(temp_configs->at(best_config));
+            }else{
+                std::cout << "WARNING. At t: " << i/timesteps << std::endl;
+                perror("There was no possible configuration in robot limits!!!! ");
+                Vector<double, 3> new_middle_point;
+                new_middle_point = spline_points.at(i) - spline_points.at(i-1);
+                new_middle_point = new_middle_point * 0.5;
+                new_middle_point = spline_points.at(i-1) + new_middle_point;
 
 
-            std::cout << "For the given SixDPos at time t " << i/timesteps << " there are possible configurations" << std::endl;
+            }
         }else{
             std::cout << "ERROR: For the given SixDPos at time t " << i/timesteps << " are no possible configurations available!!!" << std::endl;
         }
@@ -403,17 +506,20 @@ bool Spline::checkconfiglimits(Configuration* config1, Configuration* config2,
     double joint1_curr_a = 2 * (distance_joint1 - (velocities_vec->at(0) * t)) / (t * t);
     double joint2_curr_a = 2 * (distance_joint2 - (velocities_vec->at(1) * t)) / (t * t);
     double joint3_curr_a = 2 * (distance_joint3 - (velocities_vec->at(2) * t)) / (t * t);
+    double test = (distance_joint4 - (velocities_vec->at(3) * t));
+    double test2 = 2 * test;
+    double test3 = test2/(t * t);
     double joint4_curr_a = 2 * (distance_joint4 - (velocities_vec->at(3) * t)) / (t * t);
     double joint5_curr_a = 2 * (distance_joint5 - (velocities_vec->at(4) * t)) / (t * t);
     double joint6_curr_a = 2 * (distance_joint6 - (velocities_vec->at(5) * t)) / (t * t);
     //calculate velocity of each joint after the given time interval
     std::vector<double> velocity_curr_vec;
-    velocities_vec->push_back( velocities_vec->at(0) + joint1_curr_a * t );
-    velocities_vec->push_back( velocities_vec->at(1) + joint2_curr_a * t );
-    velocities_vec->push_back( velocities_vec->at(2) + joint3_curr_a * t );
-    velocities_vec->push_back( velocities_vec->at(3) + joint4_curr_a * t );
-    velocities_vec->push_back( velocities_vec->at(4) + joint5_curr_a * t );
-    velocities_vec->push_back( velocities_vec->at(5) + joint6_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(0) + joint1_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(1) + joint2_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(2) + joint3_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(3) + joint4_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(4) + joint5_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(5) + joint6_curr_a * t );
 
     // check if accelerations are over the limit
     if(abs(joint1_curr_a) > a_max || abs(joint2_curr_a) > a_max || abs(joint3_curr_a) > a_max || abs(joint4_curr_a) > a_max ||
@@ -426,6 +532,9 @@ bool Spline::checkconfiglimits(Configuration* config1, Configuration* config2,
             return false;
         }
     }
+    //push current velocity in global vector so we store all velocities at the points
+    joint_velocities_vec.push_back(velocity_curr_vec);
+
     return true;
 }
 

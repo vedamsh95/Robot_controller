@@ -22,7 +22,11 @@ private:
     std::vector<Vector<double, 3>> *points;
     double M_PII = 3.141592654;
 
+
+
 public:
+    //-------------------create vector to store acceleration and speed of every joint at every time point---------------
+    std::vector<vector<double>> joint_velocities_vec;
     Spline(Vector<double,3> start_point, Vector<double,3> start_orientation,std::vector<Vector<double, 3>> *points, double speed, double acceleration, Vector<double, 6> start_config_vec);
     void out();
     Trajectory* calculateSpline();
@@ -35,6 +39,7 @@ public:
                                               Vector<double, 3> point4, Vector<double, 3> point5, double t);
     bool checkconfiglimits(Configuration* config1, Configuration* config2,
                                    std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
+
 
 };
 

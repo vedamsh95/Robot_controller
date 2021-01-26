@@ -39,7 +39,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     end_ori_vec[1] = end_pos->get_B();
     end_ori_vec[2] = end_pos->get_C();
 
-    //------------------add this from robot class at later point--------------------------------------------------------
+    //------------------add this from robot class-----------------------------------------------------------------------
     //setting max_velocity values for robot joints in °/s
     Vector<double, 6> joint_max_vel;
     joint_max_vel[0] = ConfigProvider::getInstance().getJoint1_max_vel();
@@ -64,9 +64,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     }else{
         v_max = v_max_limit;
     }
-    //-------------------create vector to store acceleration and speed of every joint at every timepoint----------------
-    std::vector<vector<double>> joint_velocities_vec;
-    std::vector<Vector<double, 6>> joint_accel_vec;
+
 
     //------calculate time when we reach max velocity in s--------------------------------------------------------------
     double t_c = v_max/a_max;
@@ -248,11 +246,11 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             int best_config = -1;
             for (int j = 0; j < temp_configs->size(); ++j) {
                 if(calc_config_difference(configurations_vec.at(configurations_vec.size()-1), temp_configs->at(j)) < distance){
-                    distance = calc_config_difference(configurations_vec.at(configurations_vec.size()-1), temp_configs->at(j));
 
                     // check if new config at new timepoint exceeds our limits of v & a
                     if( checkconfiglimits(configurations_vec.at(configurations_vec.size()-1), temp_configs->at(j),
                                       &joint_velocities_vec.at(i), a_max, joint_max_vel, timesteps) ){
+                    distance = calc_config_difference(configurations_vec.at(configurations_vec.size()-1), temp_configs->at(j));
                     best_config = j;
                     std::cout << "distance of config " << j+1 << " is smaller than previous one" << std::endl;
                     }else{
@@ -377,12 +375,12 @@ bool Lin::checkconfiglimits(Configuration* config1, Configuration* config2,
     double joint6_curr_a = 2 * (distance_joint6 - (velocities_vec->at(5) * t)) / (t * t);
     //calculate velocity of each joint after the given time interval
     std::vector<double> velocity_curr_vec;
-    velocities_vec->push_back( velocities_vec->at(0) + joint1_curr_a * t );
-    velocities_vec->push_back( velocities_vec->at(1) + joint2_curr_a * t );
-    velocities_vec->push_back( velocities_vec->at(2) + joint3_curr_a * t );
-    velocities_vec->push_back( velocities_vec->at(3) + joint4_curr_a * t );
-    velocities_vec->push_back( velocities_vec->at(4) + joint5_curr_a * t );
-    velocities_vec->push_back( velocities_vec->at(5) + joint6_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(0) + joint1_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(1) + joint2_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(2) + joint3_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(3) + joint4_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(4) + joint5_curr_a * t );
+    velocity_curr_vec.push_back( velocities_vec->at(5) + joint6_curr_a * t );
 
     // check if accelerations are over the limit
     if(abs(joint1_curr_a) > a_max || abs(joint2_curr_a) > a_max || abs(joint3_curr_a) > a_max || abs(joint4_curr_a) > a_max ||
@@ -395,5 +393,8 @@ bool Lin::checkconfiglimits(Configuration* config1, Configuration* config2,
             return false;
         }
     }
+    //push current velocity in global vector so we store all velocities at the points
+    joint_velocities_vec.push_back(velocity_curr_vec);
+
     return true;
 }

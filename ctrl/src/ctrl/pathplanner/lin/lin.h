@@ -26,6 +26,8 @@ public:
      * @return {@ref Trajectoy} for the movement of the robot
      */
     double M_PII = 3.141592654;
+    //-------------------create vector to store acceleration and speed of every joint at every timepoint----------------
+    std::vector<vector<double>> joint_velocities_vec;
 
     Trajectory* get_lin_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg, double speed, double acceleration);
     std::array<double,3> trapezoidal_prof(Vector<double, 3> start_pos, Vector<double, 3> end_pos,
@@ -34,6 +36,7 @@ public:
     double calc_config_difference(Configuration* config1, Configuration* config2);
     bool checkconfiglimits(Configuration* config1, Configuration* config2,
                            std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
+
 
 };
 
