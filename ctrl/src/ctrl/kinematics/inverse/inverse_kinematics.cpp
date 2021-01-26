@@ -232,7 +232,16 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
                       theta5[0],theta5[1],
                       theta6[0],theta6[1],theta6[2],theta6[3]};
     }
-
+    std::cout << "Theta 4: " << theta4_5_6[0] << std::endl;
+    std::cout << "Theta 4: " << theta4_5_6[1] << std::endl;
+    std::cout << "Theta 4: " << theta4_5_6[2] << std::endl;
+    std::cout << "Theta 4: " << theta4_5_6[3] << std::endl;
+    std::cout << "Theta 5: " << theta4_5_6[4] << std::endl;
+    std::cout << "Theta 5: " << theta4_5_6[5] << std::endl;
+    std::cout << "Theta 6: " << theta4_5_6[6] << std::endl;
+    std::cout << "Theta 6: " << theta4_5_6[7] << std::endl;
+    std::cout << "Theta 6: " << theta4_5_6[8] << std::endl;
+    std::cout << "Theta 6: " << theta4_5_6[9] << std::endl;
     return theta4_5_6;
 }
 
@@ -1176,18 +1185,36 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
 
     double id = 0;
     std::vector<double> config1;
+    config1.clear();
     std::vector<double> config2;
+    config2.clear();
     std::vector<double> config3;
+    config3.clear();
     std::vector<double> config4;
+    config4.clear();
     std::vector<double> config5;
+    config5.clear();
     std::vector<double> config6;
+    config6.clear();
     std::vector<double> config7;
+    config7.clear();
     std::vector<double> config8;
+    config8.clear();
     std::vector<double> vec_id;
     std::vector<vector<double>> sol_theta_4_5_6;
     sol_theta_4_5_6.clear();
     vec_id.push_back(id);
     sol_theta_4_5_6.push_back(vec_id);
+    std::cout << "Theta 4: " << solution_standard_4_5_6[0] << std::endl;
+    std::cout << "Theta 4: " << solution_standard_4_5_6[1] << std::endl;
+    std::cout << "Theta 4: " << solution_standard_4_5_6[2] << std::endl;
+    std::cout << "Theta 4: " << solution_standard_4_5_6[3] << std::endl;
+    std::cout << "Theta 5: " << solution_standard_4_5_6[4] << std::endl;
+    std::cout << "Theta 5: " << solution_standard_4_5_6[5] << std::endl;
+    std::cout << "Theta 6: " << solution_standard_4_5_6[6] << std::endl;
+    std::cout << "Theta 6: " << solution_standard_4_5_6[7] << std::endl;
+    std::cout << "Theta 6: " << solution_standard_4_5_6[8] << std::endl;
+    std::cout << "Theta 6: " << solution_standard_4_5_6[9] << std::endl;
     //filtering case of equal configurations for theta 4, 5, 6, especially for 0, 0 ,0
     if((solution_standard_4_5_6[0] == solution_standard_4_5_6[2]) &&
     (solution_standard_4_5_6[4] == solution_standard_4_5_6[5]) &&
@@ -1857,7 +1884,42 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     // checking for shoulder singularity
     if((wcp[0] + margin_point <= 0 && wcp[0] + margin_point >= 0) && (wcp[1] + margin_point <= 0 && wcp[1] + margin_point >= 0)){
         std::cout << "There is a shoulder singularity." << std::endl;
-        std::cout << "Needs to be implemented." << std::endl;
+        //theta 1 is chosen as 0
+        theta1= 0;
+        std::cout << "theta1: " << theta1 << std::endl;
+        double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
+        std::cout << "d1: " << d1 << std::endl;
+
+        if((-185 < theta1 && theta1 < -175) || (185 > theta1 && theta1 > 175) || (-5 < theta1 && theta1 < 5)){
+            solution_vec = inv_checktheta(theta1, d1, wcp, _pos);
+        }
+        else {
+            //solution_vec contains the possible configurations for a standardcase for all joints
+            solution_standard = inv_standardcase(theta1, d1, wcp);
+            solution_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, solution_standard);
+
+
+            //othercases
+            sol_othercase_1_vec_config = inv_othercase_1(theta1, d1, wcp, _pos);
+            sol_othercase_2_vec_config = inv_othercase_2(theta1, d1, wcp, _pos);
+
+            // add configs from othercases to solution
+            if (sol_othercase_1_vec_config != NULL) {
+                double size_othercase1 = sol_othercase_1_vec_config->size();
+                for (int i = 0; i < size_othercase1; i++) {
+                    //add configurations to solution vector
+                    solution_vec->push_back(sol_othercase_1_vec_config->at(i));
+                }
+            }
+            if (sol_othercase_2_vec_config != NULL) {
+                double size_othercase2 = sol_othercase_2_vec_config->size();
+                for (int i = 0; i < size_othercase2; i++) {
+                    //add configurations to solution vector
+                    solution_vec->push_back(sol_othercase_2_vec_config->at(i));
+                }
+            }
+        }
+
     }
 
     //vector<Configuration*>* solutions = new vector<Configuration*>();
