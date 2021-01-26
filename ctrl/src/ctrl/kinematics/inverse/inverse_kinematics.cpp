@@ -104,6 +104,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos, bool se
             {theta4[3], theta5[2], theta6[3]},
         };
         
+        
         if(!setJointLimits)
         {
             for (int j = 0; j < 8;j++)
@@ -122,7 +123,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos, bool se
                                     }
                 }
                 else if((j<4 && Configs[j][1] < singularityMargin && Configs[j][1] > 0) ||
-                        (j>4 && Configs[j][1] > -singularityMargin && Configs[j][1] < 0))
+                        (j>3 && Configs[j][1] > -singularityMargin && Configs[j][1] < 0))
                 {
                     //cout << "Wrist Singularity Detected!" << endl;
                     array<double, 3>* wristRotation = new array<double, 3>;
@@ -159,6 +160,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos, bool se
         }
     }
     
+    
     //prepare the result vector for the configurations
     // you should call your inverse kinematics functions here!
     
@@ -194,7 +196,7 @@ void InvKinematics::setToLimits(double* theta5, int j)
             *theta5 = JOINT_5_MAX;
     }
     else
-        if(*theta5 > singularityMargin)
+        if(*theta5 > -singularityMargin)
             *theta5=0;
         else if(*theta5 < -JOINT_5_MAX)
             *theta5 = -JOINT_5_MAX;

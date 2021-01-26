@@ -27,7 +27,6 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
         t = _positions->at(i);
         //TODO: check for overhead and elbow singularity.
         //(before IVKinematics is calculated!)
-        
         configs = invK->get_inv_kinematics(t, true);
         
         if (configs->size() > 0){
@@ -62,8 +61,6 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
             trajectory->add_configuration(start_cfg);
             break;
         }
-            
-        
     }
     
     //Check if joint velocitys are in range and adjust them by adding points if necessary.
@@ -79,7 +76,7 @@ Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _conf
     for (int i = 0; i < NbConfigs; i++) {
         Configuration* ActConfig = _configs->at(i);
         double actDist = 0;
-        for (int j = 0; j > 6; j++) {
+        for (int j = 0; j < NUM_JOINTS; j++) {
             actDist += pow((*ActConfig)[j] - (*_prevConfig)[j], 2);
         }
         actDist = sqrt(actDist);
@@ -106,13 +103,13 @@ void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _pos
                (((*_trajectory->get_configuration(i-NbExeptions))[j] - ((*_trajectory->get_configuration(i-1-NbExeptions))[j]))
                          / robot->time_interval) > robot->velocities[j]){
                 exeption = true;
-                cout << "Velocity too high at: " << (i-NbExeptions) << endl;
             }
         }
         if(exeption){
             if(Interpolate(_trajectory, _positions, i-NbExeptions)){
                 NbExeptions++;
             }
+            if(NbExeptions > 500) break;
         }
     }
 
@@ -187,7 +184,7 @@ Trajectory* IVMovement::wsInterpolation(Configuration* startConfig, Trajectory* 
         
         configs->add_configuration(new Configuration(newConfig));
     }
-    cout << "Wrist configurations at singularities interpolated. " << endl;
+    //cout << "Wrist configurations at singularities interpolated. " << endl;
     return configs;
 }
 
