@@ -6,44 +6,6 @@
 #include "ConfigProvider.h"
 #include "Singularity.h"
 
-double o = 115;
-double m = 330;
-double n = 645;
-double a = 1150;
-double b = 1220;
-
-
-std::vector<Configuration*>* solution_vec = new vector<Configuration*>();
-
-std::vector<vector<double>> solution;
-std::array<double, 4> theta2_theta3;
-std::vector<std::vector<double>> solution_standard;
-std::vector<std::vector<double>> sol_standard;
-std::array<double,10> theta4_5_6;
-
-std::vector<std::vector<double>> sol_specialcase1_1;
-std::vector<std::vector<double>> sol_specialcase1_2;
-
-std::vector<Configuration*>* sol_specialcase1_1_vec = new vector<Configuration*>();
-std::vector<Configuration*>* sol_specialcase1_2_vec = new vector<Configuration*>();
-std::vector<Configuration*>* sol_specialcase1_3_vec = new vector<Configuration*>();
-
-std::vector<vector<double>> sol_theta1_special1_1;
-std::vector<vector<double>> sol_theta1_special1_2;
-std::vector<vector<double>> sol_theta1_special1_3;
-
-// 2 vectors that are used in the othercase functions
-vector<vector<double>> sol_othercase_1_vec;
-vector<vector<double>> sol_othercase_2_vec;
-//vectors are used to store solution from othercase functions in main function
-vector<Configuration *> *sol_othercase_1_vec_config = new vector<Configuration*>();
-vector<Configuration *> *sol_othercase_2_vec_config = new vector<Configuration*>();
-vector<Configuration*>* solution_othercase_1_vec = new vector<Configuration*>();
-vector<Configuration*>* solution_othercase_2_vec = new vector<Configuration*>();
-
-double margin_point = ConfigProvider::getInstance().getmargin_point();
-
-
 /* Calculating the transposed Matrix for R03
  * @requires: this TMatrix RotationMatrix 4x4 of R03
  * @ensures:  transposed TMatrix 4x4 R03
@@ -247,9 +209,9 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
 
 /* Calculating the special cases for Theta 1
  * @requires:   Theta1  :   Rotation of the first joint in degree
- *              d1      :   distnance between the rootjoint and the wcp in mm
+ *              d1      :   distance between the rootjoint and the wcp in mm
  *              wcp     :   Position of the robots wrist center point (x,y,z)
- *              _pos    :   Inputvalues of the user containing position and orientation of the end position
+ *              _pos    :   Input values of the user containing position and orientation of the end position
  * @ensures:    sol_theta1_specialcases_vec :   a configuration vector with all possible configurations of the joints
  * */
 std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos) {
@@ -955,19 +917,19 @@ elbow_down_vec.clear();
 elbow_up_vec.clear();
 solution.clear();
 
-    if (-185 < theta1 && theta1 < 185) {
+    if (theta1_l <= theta1 && theta1 <= theta1_u) {
         std::cout << "theta1: " << theta1 << std::endl;
-        if (-140 < theta2_theta3[0] && theta2_theta3[0] < -5) {
+        if (theta2_l <= theta2_theta3[0] && theta2_theta3[0] < theta2_u) {
             std::cout << "theta2: " << theta2_theta3[0] << std::endl;
-             if (-120 < theta2_theta3[2] && theta2_theta3[2] < 168) {
+             if (theta3_l <= theta2_theta3[2] && theta2_theta3[2] < theta3_u) {
                 std::cout << "theta3: " << theta2_theta3[2] << std::endl;
                 elbowup = true;
             }
 
         }
-        if(-140 <= theta2_theta3[1] && theta2_theta3[1] <= -5) {
+        if(theta2_l <= theta2_theta3[1] && theta2_theta3[1] <= theta2_u) {
             std::cout << "theta2: " << theta2_theta3[1] << std::endl;
-            if (-120 <= theta2_theta3[3] && theta2_theta3[3] <= 168) {
+            if (theta3_l <= theta2_theta3[3] && theta2_theta3[3] <= theta3_u) {
                 std::cout << "theta3: " << theta2_theta3[3] << std::endl;
                 elbowdown = true;
             }
@@ -1215,9 +1177,9 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
         solution_standard_4_5_6[5] = 1000;
         solution_standard_4_5_6[8] = 1000;
     }
-    if(-125 <= solution_standard_4_5_6[4] && solution_standard_4_5_6[4] <=  125){
-        if(-350 <= solution_standard_4_5_6[0] && solution_standard_4_5_6[0] <= 350){
-            if(-350 <= solution_standard_4_5_6[6] && solution_standard_4_5_6[6] <= 350){
+    if(theta5_l <= solution_standard_4_5_6[4] && solution_standard_4_5_6[4] <=  theta5_u){
+        if(theta4_l <= solution_standard_4_5_6[0] && solution_standard_4_5_6[0] <= theta4_u){
+            if(theta6_l <= solution_standard_4_5_6[6] && solution_standard_4_5_6[6] <= theta6_u){
                 //Config 1
                 id++;
                 config1.push_back(solution_standard_4_5_6[0]);
@@ -1225,7 +1187,7 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
                 config1.push_back(solution_standard_4_5_6[6]);
                 sol_theta_4_5_6.push_back(config1);
             }
-            if(-350 <= solution_standard_4_5_6[7] && solution_standard_4_5_6[7] <= 350){
+            if(theta6_l <= solution_standard_4_5_6[7] && solution_standard_4_5_6[7] <= theta6_u){
                 //Config 2
                 id++;
                 config2.push_back(solution_standard_4_5_6[0]);
@@ -1234,8 +1196,8 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
                 sol_theta_4_5_6.push_back(config2);
             }
         }
-        if(-350 <= solution_standard_4_5_6[1] && solution_standard_4_5_6[1] <= 350){
-            if(-350 <= solution_standard_4_5_6[6] && solution_standard_4_5_6[6] <= 350){
+        if(theta4_l <= solution_standard_4_5_6[1] && solution_standard_4_5_6[1] <= theta4_u){
+            if(theta6_l <= solution_standard_4_5_6[6] && solution_standard_4_5_6[6] <= theta6_u){
                 //Config 3
                 id++;
                 config3.push_back(solution_standard_4_5_6[1]);
@@ -1243,7 +1205,7 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
                 config3.push_back(solution_standard_4_5_6[6]);
                 sol_theta_4_5_6.push_back(config3);
             }
-            if(-350 <= solution_standard_4_5_6[7] && solution_standard_4_5_6[7] <= 350){
+            if(theta6_l <= solution_standard_4_5_6[7] && solution_standard_4_5_6[7] <= theta6_u){
                 //Config 4
                 id++;
                 config4.push_back(solution_standard_4_5_6[1]);
@@ -1254,9 +1216,9 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
         }
     }
 
-    if(-125 <= solution_standard_4_5_6[5] && solution_standard_4_5_6[5]<= 125){
-        if(-350 <= solution_standard_4_5_6[2] && solution_standard_4_5_6[2] <= 350){
-            if(-350 <= solution_standard_4_5_6[8] && solution_standard_4_5_6[8] <= 350){
+    if(theta5_l <= solution_standard_4_5_6[5] && solution_standard_4_5_6[5]<= theta5_u){
+        if(theta4_l <= solution_standard_4_5_6[2] && solution_standard_4_5_6[2] <= theta4_u){
+            if(theta6_l <= solution_standard_4_5_6[8] && solution_standard_4_5_6[8] <= theta6_u){
                 //Config 5
                 id++;
                 config5.push_back(solution_standard_4_5_6[2]);
@@ -1264,7 +1226,7 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
                 config5.push_back(solution_standard_4_5_6[8]);
                 sol_theta_4_5_6.push_back(config5);
             }
-            if(-350 <= solution_standard_4_5_6[9] && solution_standard_4_5_6[9] <= 350){
+            if(theta6_l <= solution_standard_4_5_6[9] && solution_standard_4_5_6[9] <= theta6_u){
                 //Config 6
                 id++;
                 config6.push_back(solution_standard_4_5_6[2]);
@@ -1273,8 +1235,8 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
                 sol_theta_4_5_6.push_back(config6);
             }
         }
-        if(-350 <= solution_standard_4_5_6[3] && solution_standard_4_5_6[3] <= 350){
-            if(-350 <= solution_standard_4_5_6[8] && solution_standard_4_5_6[8]<= 350){
+        if(theta4_l <= solution_standard_4_5_6[3] && solution_standard_4_5_6[3] <= theta4_u){
+            if(theta6_l <= solution_standard_4_5_6[8] && solution_standard_4_5_6[8]<= theta6_u){
                 //Config 7
                 id++;
                 config7.push_back(solution_standard_4_5_6[3]);
@@ -1282,7 +1244,7 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
                 config7.push_back(solution_standard_4_5_6[8]);
                 sol_theta_4_5_6.push_back(config7);
             }
-            if(-350 <= solution_standard_4_5_6[9] && solution_standard_4_5_6[9] <= 350){
+            if(theta6_l <= solution_standard_4_5_6[9] && solution_standard_4_5_6[9] <= theta6_u){
                 //Config 8
                 id++;
                 config8.push_back(solution_standard_4_5_6[3]);

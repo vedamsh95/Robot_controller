@@ -12,6 +12,14 @@ private:
     double steps_per_second = 15;
     //ToDo: Insert paramters for boundaries, etc.
 
+    //----------------------------------Robot-Dimensions----------------------------------------------------------------
+
+    double o = 115;
+    double m = 330;
+    double n = 645;
+    double a = 1150;
+    double b = 1220;
+
     //----------------------------------Joint-Boundaries----------------------------------------------------------------
 
     //Maximum Acceleration for all joints
@@ -76,9 +84,34 @@ public:
 
     //ToDo: Insert Getter-Function for specific parameter --> Usage of ConfigProvider in specific class: ConfigProvider::getInstance().getParamA()
 
+
     double getsteps_per_second() const{return this->steps_per_second; }
+
+    //Robot-Dimensions
+    double geto() {return this-> o;}
+    double getm() {return this-> m;}
+    double getn() {return this-> n;}
+    double geta() {return this-> a;}
+    double getb() {return this-> b;}
+
+    //Margin point for singularities
     double getmargin_point() const{return this->margin_point; }
+
+    //Joint boundaries
     double getTheta1_lower_border(){return this->theta1_lower_border;}
+    double getTheta1_upper_border(){return this->theta1_upper_border;}
+    double getTheta2_lower_border(){return this->theta2_lower_border;}
+    double getTheta2_upper_border(){return this->theta2_upper_border;}
+    double getTheta3_lower_border(){return this->theta3_lower_border;}
+    double getTheta3_upper_border(){return this->theta3_upper_border;}
+    double getTheta4_lower_border(){return this->theta4_lower_border;}
+    double getTheta4_upper_border(){return this->theta4_upper_border;}
+    double getTheta5_lower_border(){return this->theta5_lower_border;}
+    double getTheta5_upper_border(){return this->theta5_upper_border;}
+    double getTheta6_lower_border(){return this->theta6_lower_border;}
+    double getTheta6_upper_border(){return this->theta6_upper_border;}
+
+    //Joint-Velocities
     double getJoint1_max_vel(){return this->joint1_v_max;}
     double getJoint2_max_vel(){return this->joint2_v_max;}
     double getJoint3_max_vel(){return this->joint3_v_max;}
