@@ -21,6 +21,7 @@ private:
     int num_points;
     std::vector<Vector<double, 3>> *points;
     double M_PII = 3.141592654;
+    double timesteps;
 
 
 
