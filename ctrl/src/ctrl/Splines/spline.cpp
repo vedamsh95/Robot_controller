@@ -60,7 +60,7 @@ Trajectory* Spline::calculateSpline() {
     double di =0, tmp=0;                                                                                                                             // contains distances between point n and n-1
     double time_for_accel = this->acceleration/this->speed;
     double d_for_accel = 0.5 * this->acceleration*(time_for_accel*time_for_accel);
-    double timesteps = ConfigProvider::getInstance().getsteps_per_second();
+    timesteps = ConfigProvider::getInstance().getsteps_per_second();
     // initialize vector to store the chosen configurations at every timepoint
     std::vector<Configuration*> config_vec;
     // write start configuration to a new configuration data type
@@ -308,27 +308,43 @@ Trajectory* Spline::calculateSpline() {
     std::vector<Vector<double, 3>> spline_points;
     // vector to store time needed for every segment
     std::vector<double> time_vec;
+    // bool to see if last segment is to short for decelerating
+    bool last_to_short;
+    // double t = double(j)/timesteps;
+    double t = 0;
+    double speed_temp = 0;
+    // add distances of the segments together
+    double moved_distance = 0;
+    // add passed time of the segments together
+    double passed_t = 0;
+    // vector to store number of points for each segment
+    std::vector<double> num_pts_segment;
+
     for (int i = 0; i < num_points; ++i) {
         int k = i * 5;
-        for (int j = 0; j < timesteps; ++j) {
-            // double t = double(j)/timesteps;
-            double t = 0;
-            double speed_temp;
-            // add distances of the segments together
-            double moved_distance = 0;
-            // add passed time of the segments together
-            double passed_t = 0;
+
             // first segment
-            double t_temp = speed/acceleration;                                         // time when end effector reaches maximum velocity
+            // time when end effector reaches maximum velocity
+            double t_temp = speed/acceleration;
             if(i == 0){
                 // time needed for end effector to reach last point of first segment
                 t = sqrt(2 * (distance_i.at(i) / acceleration));
-                if (t > t_temp){                                                            // end effector reaches maximum velocity before reaching end point
+                // check how long we need for the last segment
+                double t_last_segment = sqrt(2 * (distance_i.at(distance_i.size()-1) / acceleration));
+                if (t_temp < t_last_segment){
+                    last_to_short = false;
+                }else{
+                    last_to_short = true;
+                    // idea: set maximum velocity if its to short, so it is not to short anymore
+                    speed = acceleration * t_last_segment;
+                    t_temp = speed/acceleration;
+                }
+                if (t > t_temp){        // end effector reaches maximum velocity before reaching end point
                     double distance_for_accel = 0.5 * acceleration * t_temp * t_temp;
                     double time_with_constant_vel = (distance_i.at(i) - distance_for_accel) / speed;
                     t = t_temp + time_with_constant_vel;
                     speed_temp = speed;
-                }else{                                                                      // end effector does not reach max velocity
+                }else{                  // end effector does not reach max velocity
                     // time needed for end effector to reach last point of first segment
                     t = sqrt(2 * (distance_i.at(i) / acceleration));
                     // calculate speed at the end point
@@ -336,7 +352,7 @@ Trajectory* Spline::calculateSpline() {
                 }
                 moved_distance = distance_i.at(i);
                 passed_t = t;
-                time_vec.push_back(t / timesteps);
+                time_vec.push_back(t);
             }
 
             // other segment
@@ -356,7 +372,7 @@ Trajectory* Spline::calculateSpline() {
                         // for this we calculate the time to reach the total distance traveled and subtract the already passed time
                         t = sqrt(2 * ( moved_distance + distance_i.at(i)) / acceleration) - passed_t;
                         // calculate speed that we have at the endpoint
-                        speed_temp = acceleration * sqrt(2 * ( moved_distance + distance_i.at(i)));
+                        speed_temp = acceleration * t + speed_temp;
 
                     }else{
                         // calculate distance left after reaching max velocity
@@ -364,21 +380,45 @@ Trajectory* Spline::calculateSpline() {
                         // time we travel with constant velocity to reach end point
                         double time_with_constant_vel = distance_for_const_vel / speed;
                         // add times together to get time we need to reach end point
-                        t = t_temp + time_with_constant_vel;
+                        t = t_temp + time_with_constant_vel - passed_t;
                         // set speed at endpoint to max speed
                         speed_temp = speed;
                     }
                 }
                 passed_t = passed_t + t;
                 moved_distance = moved_distance + distance_i.at(i);
-                time_vec.push_back(t / timesteps);
+                time_vec.push_back(t);
             }
 
+            // last segment
+            if (i == num_points-1){
+                if (last_to_short){
+                    // last segment is too short for decelerating from max speed to 0. Therefore we reduced the max speed to the maximum speed possible
+                    t = sqrt(2 * (distance_i.at(i) / acceleration));
+                    speed_temp = 0;
+                }else{              // last segment is not too short for decelerating
+                    // time needed for decelerating
+                    double distance_decel =  0.5 * acceleration * t_temp * t_temp;
+                    double distance_with_constant_vel = distance_i.at(i) - distance_decel;
+                    double t_constant_vel = distance_with_constant_vel / speed_temp;
+                    t = t_constant_vel + t_temp;
+                    speed_temp = 0;
+                }
+                passed_t = passed_t + t;
+                moved_distance = moved_distance + distance_i.at(i);
+                time_vec.push_back(t);
 
+            }
+            // create points for each segment and push to spline_points
+            double stepsize = 0;
+            // add number of points for this segment to a vector
+            num_pts_segment.push_back(round(t*timesteps + 1));
+            for (int l = 0; l <= (t*timesteps); ++l) {
+                stepsize += 1/(t*timesteps);
+                spline_points.push_back(quintic_bezier_function(total_point_vec.at(k), total_point_vec.at(k+1), total_point_vec.at(k+2),
+                                                                total_point_vec.at(k+3),total_point_vec.at(k+4), total_point_vec.at(k+5), stepsize));
+            }
 
-            spline_points.push_back(quintic_bezier_function(total_point_vec.at(k), total_point_vec.at(k+1), total_point_vec.at(k+2),
-                                                            total_point_vec.at(k+3),total_point_vec.at(k+4), total_point_vec.at(k+5), t)) ;
-        }
     }
 
     for(unsigned int i = 0; i < spline_points.size(); ++i) {
@@ -401,6 +441,14 @@ Trajectory* Spline::calculateSpline() {
     for (int i = 0; i < spline_points.size(); ++i) {        // do not need first point, because the config is the start config
         temp_configs = invKin.get_inv_kinematics(new SixDPos(spline_points.at(i)[0], spline_points.at(i)[1], spline_points.at(i)[2],
                                                              start_orientation[0] , start_orientation[1], start_orientation[2]));
+        double num_pts_temp;
+        for (int j = 0; j < num_points; ++j) {
+            if (i <= num_pts_segment.at(j) - 1) {
+                num_pts_temp = num_pts_segment.at(j);
+            }
+        }
+
+
         if(temp_configs->size() != 0 ){
             std::vector<double> distances;
             double distance = 10000;
@@ -461,6 +509,10 @@ double Spline::calc_num(double stemp, int n) {
 
 Vector<double, 3> Spline::quintic_bezier_function(Vector<double, 3> point0, Vector<double, 3> point1, Vector<double, 3> point2, Vector<double, 3> point3,
                                           Vector<double, 3> point4, Vector<double, 3> point5, double t){
+   // check if t is > 1 due to rounding issues
+    if (t > 1){
+        t = 1;
+    }
     Vector<double, 3> s_t, tmp0,tmp1,tmp2,tmp3,tmp4,tmp5;
     double coeff0 = calc_num(t,5);
     double coeff1 = 5*calc_num(t,4) * t;
