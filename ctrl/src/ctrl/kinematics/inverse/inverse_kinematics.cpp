@@ -6,17 +6,22 @@
 using namespace std;
 #include <TMatrix.h>
 
-double phi1,phi2,phi3;
+
+double phi1,phi2,phi3,phi4,phi5,phi6,i;
+vector<double> vec_phi1,vec_phi2,vec_phi3,vec_phi4,vec_phi5,vec_phi6;
 double x,y,z,r_a,r_b,r_c;
 double xc,yc,zc ;
 double d1,d2,d3,px_dash,py_dash;
 double px,py;
 double m,n,a,b,o,d;
 double alpha1,alpha2,beta;
+
 vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 {
     //TODO: IMPLEMENT Compute the inverse kinematics for a given position
-  m =330;
+
+
+    m =330;
  n= 645;
  a = 1150;
  b = 1220;
@@ -50,12 +55,42 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
    d1 = sqrt(xc*xc + yc*yc);
    cout << "d1 " << d1 <<endl;
 
+
+
    angles_phi1();
    angles_phi2();
    angles_phi3();
-   R36Matrix();
+    R36Matrix();
+
+    for(i=0 ; i<vec_phi3.size();i++ ){
+      if(((vec_phi3[i]>-120) &&(vec_phi3[i]<168))) {
+          cout << "vec phi3 is - " << vec_phi3[i] << endl;
+      }
+    }
+    for(i=0 ; i<vec_phi1.size();i++ ){
+        if(((vec_phi1[i]>-185) &&(vec_phi1[i]<185))) {
+            cout << "vec phi1 is - " << vec_phi1[i] << endl;
+        }
+    }
+    for(i=0 ; i<vec_phi2.size();i++ ){
+        if(((vec_phi2[i]>-140) &&(vec_phi2[i]<-5))) {
+            cout << "vec phi2 is - " << vec_phi2[i] << endl;
+        }
+    }
 
     vector<Configuration*>* solutions = new vector<Configuration*>();
+    for(i=0 ; i<vec_phi3.size();i++ ){
+
+       if(((vec_phi1[i]>-185) &&(vec_phi1[i]<185))  && ((vec_phi3[i]>-120) &&(vec_phi3[i]<168)))  {
+
+           cout <<"phi1 "<< vec_phi1[i]<<"phi2 "<<vec_phi2[i]<< " phi3 " << vec_phi3[i] << "phi4 " << vec_phi4[i] << "phi5 "<<vec_phi5[i] << "phi6 " << vec_phi6[i]<<  endl;
+           solutions->push_back(new Configuration({vec_phi1[i],vec_phi2[i],vec_phi3[i],vec_phi4[i],vec_phi5[i],vec_phi6[i]}));
+       }
+    }
+
+
+
+/*
     solutions->push_back(new Configuration({0,0,1,0,0,0}));
     solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
@@ -64,21 +99,28 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     solutions->push_back(new Configuration({5/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));
-
+*/
     return solutions;
 }
 //calculating  phi1 angle
  double InvKinematics::  angles_phi1() {
 
      if (xc < 0 && yc > 0) {
-         phi1 = (180 - atan(yc / (-xc))) ;
+         phi1=(180 - atan(yc / (-xc))) ;
          cout << "phi1 " << phi1 <<endl;
+         vec_phi1.push_back(phi1);
      } else if (xc < 0 && yc < 0) {
          phi1 = 180 - atan(yc / xc);
+         cout << "phi1 " << phi1 <<endl;
+         vec_phi1.push_back(phi1);
      } else if (xc < 0 && yc < 0) {
          phi1 = atan(yc / xc);
+         cout << "phi1 " << phi1 <<endl;
+         vec_phi1.push_back(phi1);
      } else if (d1 > m) {
          phi1 = -atan(yc / xc);
+         cout << "phi1 " << phi1 <<endl;
+         vec_phi1.push_back(phi1);
      }
  }
 
@@ -95,22 +137,30 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 
     d3 = sqrt(px_dash*px_dash + py_dash*py_dash);
     cout << "d3 " << d3 << endl;
-    d2 = sqrt(o*o+b*b);
+    d2 = sqrt((o*o)+(b*b));
     cout << "d2 " << d2 << endl;
-    beta = acos(((d3*d3)-(a*a)-(d2*d2))/(-2*a*d2)) ;
+    beta = acos(((d3*d3)-(a*a)-(d2*d2))/(-2 * a * d2)) * 180 /M_PI ;
     cout<< "beta " << beta << endl;
     alpha2 = asin(py_dash/d3) * 180 /M_PI;
     cout << " alpha2 " << alpha2 << endl;
-    alpha1 = asin(sin(beta) * (d2/d3))* 180 /M_PI ;
+    alpha1 = asin(sin(beta * M_PI/180) * (d2/d3))* (180 /M_PI) ;
     cout << "alpha1 " << alpha1 << endl;
 
     double phi2_elbowdown_forward = -(alpha2-alpha1) ;
     cout << "phi2 Elbowdown forward = " << phi2_elbowdown_forward << endl;
+    vec_phi2.push_back(phi2_elbowdown_forward);
+
     double phi2_elbowup_forward = -(alpha1+alpha2);
     cout << "phi2 Elbowdup forward = " << phi2_elbowup_forward << endl;
-    double phi2_elbowdown_backward = (alpha1+alpha2) -180;
-    double phi2_elbowup_backward = (alpha2-alpha1)-180;
+    vec_phi2.push_back(phi2_elbowup_forward);
 
+    double phi2_elbowdown_backward = (alpha1+alpha2) -180;
+     cout << "phi2 Elbowddown backward = " << phi2_elbowdown_backward << endl;
+     vec_phi2.push_back(phi2_elbowdown_backward);
+
+    double phi2_elbowup_backward = (alpha2-alpha1)-180;
+     cout << "phi2 Elbowup backward = " << phi2_elbowup_backward << endl;
+     vec_phi2.push_back(phi2_elbowup_backward);
     }
 
     //calculating phi3
@@ -118,10 +168,19 @@ double InvKinematics:: angles_phi3(){
 
     double phi3_elbowdown_forward = beta - asin(b/d2) -90;
     cout << "Phi3 elbowdown forward " << phi3_elbowdown_forward << endl;
-    double phi3_elbowup_forward = 360-beta-asin(b/d2)-90;
-    double phi2_elbowdown_backward = 270 - beta -asin(b/d2);
-    double phi2_elbowup_backward = -(90-(beta -asin(b/d2)));
+    vec_phi3.push_back(phi3_elbowdown_forward);
 
+    double phi3_elbowup_forward = 360-beta-asin(b/d2)-90;
+        cout << "Phi3 elbowup forward " << phi3_elbowup_forward << endl;
+        vec_phi3.push_back(phi3_elbowup_forward);
+
+    double phi3_elbowdown_backward = 270 - beta -asin(b/d2);
+        cout << "Phi3 elbowdown backward " << phi3_elbowdown_backward << endl;
+        vec_phi3.push_back(phi3_elbowdown_backward);
+
+    double phi3_elbowup_backward = -(90-(beta -asin(b/d2)));
+        cout << "Phi3 elbowup backward " << phi3_elbowup_backward << endl;
+        vec_phi3.push_back(phi3_elbowup_backward);
 }
 
 TMatrix InvKinematics::R36Matrix() {
@@ -166,8 +225,11 @@ TMatrix InvKinematics::R36Matrix() {
             if (-350 <= phi6_1 && phi6_1 < 350) {
 
                 cout << "phi4_1 " << phi4_1 << endl;
+                vec_phi4.push_back(phi4_1);
                 cout << "phi5_1 " << phi5_1 << endl;
+                vec_phi5.push_back(phi5_1);
                 cout << "phi6_1 " << phi6_1 << endl;
+                vec_phi6.push_back(phi6_1);
             }
         }
     }
@@ -175,8 +237,11 @@ TMatrix InvKinematics::R36Matrix() {
         if (-350 <= phi4_2 && phi4_2 < 350) {
             if (-350 <= phi6_2 && phi6_2 < 350) {
         cout<< "phi4_2 " << phi4_2<< endl;
+                vec_phi4.push_back(phi4_2);
         cout<< "phi5_2 " << phi5_2<< endl;
+                vec_phi5.push_back(phi5_2);
         cout<< "phi6_2 " << phi6_2 << endl;
+                vec_phi6.push_back(phi6_2);
 
             }
         }
