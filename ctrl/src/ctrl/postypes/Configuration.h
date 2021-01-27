@@ -92,9 +92,6 @@ public:
 	 */
     void deserialize_from_json(Json::Value json_value);
 
-    //tesing for splines
-    std::vector<double> Spline_config(Json::Value _jv);
-    void deserialize_from_json_config(Json::Value _jv);
 
 };
 #endif

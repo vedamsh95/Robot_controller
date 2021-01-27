@@ -31,10 +31,8 @@ public:
     void out();
     Trajectory* calculateSpline();
 
-    void recalc_timestamp();
     double  calc_num(double num, int n);
     double calc_config_difference(Configuration* config1, Configuration* config2);
-    std::vector<Vector<double,3>> calc_spline();
     Vector<double, 3> quintic_bezier_function(Vector<double, 3> point0, Vector<double, 3> point1, Vector<double, 3> point2, Vector<double, 3> point3,
                                               Vector<double, 3> point4, Vector<double, 3> point5, double t);
     bool checkconfiglimits(Configuration* config1, Configuration* config2,
