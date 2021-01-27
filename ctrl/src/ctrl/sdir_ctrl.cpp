@@ -32,11 +32,10 @@ Trajectory* SdirCtrl::move_robot_ptp(SixDPos* start, SixDPos* end)
     return NULL;
 }
 
-Trajectory* SdirCtrl::move_robot_ptp(Configuration* start, Configuration* end)
+Trajectory* SdirCtrl::move_robot_ptp(Configuration* start, Configuration* end, bool sync)
 {
-    //ToDo: IMPLEMENT!
     Ptp ptp;
-    return ptp.get_ptp_trajectory(start, end);
+    return ptp.get_ptp_trajectory(start, end, sync);
 }
 
 

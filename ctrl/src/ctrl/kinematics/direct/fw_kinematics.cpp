@@ -48,7 +48,6 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
 
     // Euler Angles: can be used to get the rotation of the end effector
     // extrinsic xyz is used here
-    // TODO:
 
     double roll = 0; // phi
     double pitch = 0; // theta
