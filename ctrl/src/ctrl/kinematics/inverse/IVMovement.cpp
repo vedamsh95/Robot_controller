@@ -134,7 +134,7 @@ bool IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>* _position
     
     Configuration* correctConfig;
     vector<Configuration*>* configs;
-    configs = invK->get_inv_kinematics(PosC);
+    configs = invK->get_inv_kinematics(PosC, true );
     correctConfig =  GetClosestConfiguration(configs, trajectory->get_configuration(index-1));
     
     //check for wrist singularity.
