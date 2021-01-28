@@ -22,6 +22,8 @@ private:
     std::vector<Vector<double, 3>> *points;
     double M_PII = 3.141592654;
     double timesteps;
+    std::vector<Configuration*> config_vec;
+    std::vector<Configuration*> temp_vec;
 
 
 
@@ -38,6 +40,8 @@ public:
                                               Vector<double, 3> point4, Vector<double, 3> point5, double t);
     bool checkconfiglimits(Configuration* config1, Configuration* config2,
                                    std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
+    void add_middle_cfg(Configuration* config1, Configuration* config2,
+                                         std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
 
 
 };
