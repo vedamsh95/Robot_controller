@@ -16,47 +16,60 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     Configuration* prevConfig = start_cfg;
     Configuration* correctConfig;
     vector<Configuration*>* configs;
-    Trajectory* singTrajectory = new Trajectory(); 
+    Trajectory* singTrajectory = new Trajectory();
+    Trajectory* wsTrajectory = new Trajectory();
+    Trajectory* osTrajectory = new Trajectory();
     SixDPos* t;
     bool singularity = false;
-    int SingStart;
-    int SingLength = 0;
+    bool wSingularity = false;
+    bool oSingularity = false;
+    int wsLength = 0;
+    int osLength = 0;
+    trajectory->add_configuration(start_cfg);
 
-    for (int i = 0; i< _positions->size(); i++)
+
+    for (int i = 1; i< _positions->size(); i++)
     {
         t = _positions->at(i);
-        //TODO: check for overhead and elbow singularity.
+        //TODO: check for elbow singularity.
         //(before IVKinematics is calculated!)
+
         configs = invK->get_inv_kinematics(t, true);
-        
+
         if (configs->size() > 0){
             correctConfig =  GetClosestConfiguration(configs, prevConfig);
-        
-            //Wrist singularity.
-            if((*correctConfig)[4] == 0 && i != (_positions->size()-1)){
-                //cout << "Configuration " << i << " is wrist singularity!" << endl;
-                if(!singularity){
-                    singularity = true;
-                    singTrajectory->add_configuration(correctConfig);
-                }
-                else singTrajectory->add_configuration(correctConfig);
+            trajectory->add_configuration(correctConfig);
+            
+            if(wristSingularity(correctConfig)){
+                wSingularity = true;
+                wsLength++;
             }
-            else{
-                if(singularity){
-                    singTrajectory->add_configuration(correctConfig);
-                    trajectory->append(wsInterpolation(prevConfig, singTrajectory));
-                    singularity = false;
-                    singTrajectory->clear();
-                    prevConfig = correctConfig;
-                }
-                else{
-                    prevConfig = correctConfig;
-                    trajectory->add_configuration(correctConfig);
-                }
+            if(overheadSingularity(t)){
+                oSingularity = true;
+                osLength++;
+            }
+
+            if(!wristSingularity(correctConfig)&& wSingularity){
+                wsLength++;
+                wsInterpolation(trajectory, wsLength);
+                wSingularity = false;
+                wsLength = 0;
+            }
+
+            if(!overheadSingularity(t)&& oSingularity){
+                osLength++;
+                osInterpolation(trajectory, osLength);
+                oSingularity = false;
+                osLength = 0;
+            }
+
+            if(!wristSingularity(correctConfig)&& !wSingularity &&
+               !overheadSingularity(t)&& !oSingularity){
+                prevConfig = correctConfig;
             }
         }
         else{
-            cout << "Trajectory can not be calculated!" << endl; 
+            cout << "Trajectory can not be calculated!" << endl;
             trajectory->clear();
             trajectory->add_configuration(start_cfg);
             break;
@@ -66,6 +79,8 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     //Check if joint velocitys are in range and adjust them by adding points if necessary.
     CheckVelocities(trajectory, _positions);
     
+    //crop trajectory because first Configuration* is current configuration of robot.
+    trajectory->startAt(1);
     return trajectory;
 }
 
@@ -138,8 +153,15 @@ bool IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>* _position
     correctConfig =  GetClosestConfiguration(configs, trajectory->get_configuration(index-1));
     
     //check for wrist singularity.
-    if((*correctConfig)[4] == 0){
+    if(wristSingularity(correctConfig)){
         correctConfig = wsInterpolation(trajectory->get_configuration(index-1),
+                              correctConfig,
+                              trajectory->get_configuration(index));
+    }
+    
+    //check for overhead singularity.
+    if(overheadSingularity(PosC)){
+        correctConfig = osInterpolation(trajectory->get_configuration(index-1),
                               correctConfig,
                               trajectory->get_configuration(index));
     }
@@ -151,41 +173,74 @@ bool IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>* _position
         return true;
     }
     else return false;
-    
 }
+
 
 Configuration* IVMovement::wsInterpolation(Configuration *startConfig, Configuration *curConfig, Configuration *endConfig)
 {
     Trajectory* A = new Trajectory();
     Trajectory* C = new Trajectory();
     
+    A->add_configuration(startConfig);
     A->add_configuration(curConfig);
     A->add_configuration(endConfig);
-    C = wsInterpolation(startConfig, A);
+    wsInterpolation(A, 2);
     
-    return C->get_configuration(0);
+    return A->get_configuration(1);
 }
 
-Trajectory* IVMovement::wsInterpolation(Configuration* startConfig, Trajectory* trajectory)
+Configuration* IVMovement::osInterpolation(Configuration *startConfig, Configuration *curConfig, Configuration *endConfig)
+{
+    Trajectory* A = new Trajectory();
+    Trajectory* C = new Trajectory();
+    
+    A->add_configuration(startConfig);
+    A->add_configuration(curConfig);
+    A->add_configuration(endConfig);
+    osInterpolation(A, 2);
+    
+    return A->get_configuration(1);
+}
+
+void IVMovement::wsInterpolation(Trajectory* trajectory, int length)
 {
     Trajectory* configs = new Trajectory();
-    int length = trajectory->get_length();
-    Configuration* endConfig = trajectory->get_configuration(length-1);
+    int traSize = trajectory->get_length();
+    Configuration* startConfig = trajectory->get_configuration(traSize-length-1);
+    Configuration* endConfig = trajectory->get_configuration(traSize-1);
     std::array<double, NUM_JOINTS> newConfig {};
-    
+
     for(int i = 0; i < length; i++){
-        Configuration* actConfig = trajectory->get_configuration(i);
+        Configuration* actConfig = trajectory->get_configuration(traSize-length+i);
         for(int j= 0; j < 3; j++){
             newConfig[j] = (*actConfig)[j];
         }
         newConfig[3] = (*startConfig)[3] + (i+1)/(double)(length)*((*endConfig)[3]-(*startConfig)[3]);
         newConfig[4] = (*actConfig)[4];
         newConfig[5] = (*startConfig)[5] + (i+1)/(double)(length)*((*endConfig)[5]-(*startConfig)[5]);
-        
-        configs->add_configuration(new Configuration(newConfig));
+
+        trajectory->set_configuration(new Configuration(newConfig), traSize-length+i);
     }
-    //cout << "Wrist configurations at singularities interpolated. " << endl;
-    return configs;
+    //cout << "Wrist configurations at singularities interpolated. " << endl
+}
+
+
+void IVMovement::osInterpolation(Trajectory* trajectory, int length){
+    Trajectory* configs = new Trajectory();
+    int traSize = trajectory->get_length();
+    Configuration* startConfig = trajectory->get_configuration(traSize-length-1);
+    Configuration* endConfig = trajectory->get_configuration(traSize-1);
+    std::array<double, NUM_JOINTS> newConfig {};
+    
+    for(int i = 0; i < length; i++){
+        Configuration* actConfig = trajectory->get_configuration(traSize-length+i);
+        newConfig[0] = (*startConfig)[0] + (i+1)/(double)(length)*((*endConfig)[0]-(*startConfig)[0]);
+        for(int j= 1; j < NUM_JOINTS; j++){
+            newConfig[j] = (*actConfig)[j];
+        }
+        trajectory->set_configuration(new Configuration(newConfig), traSize-length+i);
+    }
+    cout << "Theta1 configurations at overhead singularities interpolated. " << endl;
 }
 
 double IVMovement::distance(Configuration* A, Configuration* B)
@@ -199,5 +254,18 @@ double IVMovement::distance(Configuration* A, Configuration* B)
 }
 
 
+bool IVMovement::wristSingularity(Configuration* _config)
+{
+    if(std::abs((*_config)[4])< SINGULARITY_MARGIN) return true;
+    else return false;
+}
 
+bool IVMovement::overheadSingularity(SixDPos* _pos)
+{
+    if(std::abs(_pos->get_X())< SINGULARITY_MARGIN &&
+       std::abs(_pos->get_Y())< SINGULARITY_MARGIN){
+        return true;
+    }
+    else return false;
+}
 

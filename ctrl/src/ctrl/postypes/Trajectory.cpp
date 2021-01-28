@@ -28,7 +28,6 @@ void Trajectory::operator=(Trajectory& copy)
     this->set_trajectory( *(copy.get_all_configuration()) );
 }
 
-
 void Trajectory::set_trajectory(const vector<Configuration*> _configurations)
 {
     this->m_configs.clear();
@@ -60,5 +59,21 @@ void Trajectory::insert(Configuration* config, int index)
 void Trajectory::clear()
 {
     this->m_configs.clear();
+}
+
+void Trajectory::set_configuration(Configuration *config, int index)
+{
+    this->m_configs.at(index) = config;
+}
+
+void Trajectory::startAt(int index)
+{
+    vector<Configuration*> B;
+    for(int i = index; i < this->m_configs.size(); i++)
+    {
+        B.push_back(this->m_configs.at(i));
+    }
+    this->m_configs.clear();
+    this->m_configs = B;
 }
 

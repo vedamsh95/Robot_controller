@@ -8,6 +8,8 @@
 #include <math.h>
 #include <cmath>
 
+#define SINGULARITY_MARGIN 0.05
+
 class IVMovement
 {
 public:
@@ -44,14 +46,14 @@ private:
      bool Interpolate(Trajectory* trajectory, vector<SixDPos*>* _positions, int index);
     
     /**
-     * Computes configurations at wrist singularities (theta5  == 0) by interpolating theta4 and theta6 from values outside of singularity (startConfig and last configuration in trajectory).
+     * Computes configurations at wrist singularities (theta5  == 0) by interpolating theta4 and theta6 from values outside of singularity (trajectory(-length) and trajectory(-1)).
+     * And changes corresponding values in trajectory.
      *
-     * @param startConfig  Configuration before singularity.
-     * @param trajectory  Configruations in singularity (last configuration is the first configuration outside of the singularity)
-     * @return a reference containing the trajectory of the interpolated configurations.
+     * @param trajectory  trajectory containing configurations
+     * @param length length of the singularity
      */
-    Trajectory* wsInterpolation(Configuration* startConfig, Trajectory* trajectory);
-    
+    void wsInterpolation(Trajectory* trajectory, int length);
+
     /**
      * Computes one single configuration at wrist singularities (theta5  == 0) by interpolating theta4 and theta6 from two given values (startConfig & endConfig).
      *
@@ -63,8 +65,33 @@ private:
      */
     Configuration* wsInterpolation(Configuration* startConfig, Configuration* curConfig, Configuration* endConfig);
     
+    Configuration* osInterpolation(Configuration* startConfig, Configuration* curConfig, Configuration* endConfig);
+    
+    /**
+     * Computes configurations at overhead singularities ( x & y ==0) by interpolating theta1 from values outside of singularity trajectory(-length) and trajectory(-1)).
+     * And changes corresponding values in trajectory.
+     *
+     * @param trajectory  trajectory containing configurations
+     * @param length length of the singularity
+     */
+    void osInterpolation(Trajectory* trajectory, int length);
+    
+    /**
+     * Gets distance inbetween Configuration* A and Configuration* B
+     */
     double distance(Configuration* A, Configuration* B);
-
+    
+    /**
+     * Checks if configuration _config is wrist singularity
+     */
+    bool wristSingularity(Configuration* _config);
+    
+    /**
+     * Checks if position _pos is overhead singularity
+     */
+    bool overheadSingularity(SixDPos* _pos);
+    
+    
 };
 
 

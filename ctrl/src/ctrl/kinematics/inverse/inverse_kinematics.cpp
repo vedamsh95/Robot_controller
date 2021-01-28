@@ -122,8 +122,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos, bool se
                                             Configs[j][2]}));
                                     }
                 }
-                else if((j<4 && Configs[j][1] < singularityMargin && Configs[j][1] > 0) ||
-                        (j>3 && Configs[j][1] > -singularityMargin && Configs[j][1] < 0))
+                else if(std::abs(Configs[j][1]) < singularityMargin)
                 {
                     //cout << "Wrist Singularity Detected!" << endl;
                     array<double, 3>* wristRotation = new array<double, 3>;
@@ -136,7 +135,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos, bool se
                             actPos->at(1),
                             actPos->at(2),
                             Configs[j][0],
-                            wristRotation->at(1),
+                            Configs[j][1],
                             Configs[j][2]}));
                     }
                 }
@@ -190,13 +189,13 @@ array<double, 3>* InvKinematics::CalculateSingularity(TMatrix R36)
 void InvKinematics::setToLimits(double* theta5, int j)
 {
     if(j<4){
-        if(*theta5 < singularityMargin)
+        if(*theta5 < 0)
             *theta5=0;
         else if(*theta5 > JOINT_5_MAX)
             *theta5 = JOINT_5_MAX;
     }
     else
-        if(*theta5 > -singularityMargin)
+        if(*theta5 > 0)
             *theta5=0;
         else if(*theta5 < -JOINT_5_MAX)
             *theta5 = -JOINT_5_MAX;

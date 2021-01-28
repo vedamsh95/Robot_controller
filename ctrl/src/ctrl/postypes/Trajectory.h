@@ -2,7 +2,9 @@
 #define SDRI_CTRL2019_TRAJECTORY_H
 
 #include <vector>
+#include <iostream>
 #include "Configuration.h"
+
 
 using namespace std;
 
@@ -32,7 +34,11 @@ public:
     
     void insert(Configuration* config, int index);
     
+    void set_configuration(Configuration* config, int index);
+    
     void clear();
+    
+    void startAt(int index);
 
 };
 
