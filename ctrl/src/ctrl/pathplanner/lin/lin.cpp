@@ -50,10 +50,9 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
         }
         new_pos->set_position(*new_p);
 
-
     }
 
-    //InvKinematics
+
 
 
     //Dummy trajectory
