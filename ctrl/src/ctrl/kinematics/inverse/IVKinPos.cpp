@@ -12,18 +12,11 @@ IVKinPos::~IVKinPos()
 
 std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 {
-	std::cout << "get_IVKinPos" << endl;
 	double phi1;
-	//Wrist Point
-	//_pos = new SixDPos(0.0, 0.0, 1.5, 0.0, 1.0, 1.0);
-	TMatrix m_transEndeffector2Wrist = TMatrix(_pos->get_C(), _pos->get_B(), _pos->get_A(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
-	Position wristPoint;
-	wristPoint.x = _pos->get_X() - d_6 * m_transEndeffector2Wrist.get(0, 2);
-	wristPoint.y = _pos->get_Y() - d_6 * m_transEndeffector2Wrist.get(1, 2);
-	wristPoint.z = _pos->get_Z() - d_6 * m_transEndeffector2Wrist.get(2, 2);
-
-	std::cout << "wristPoint " << wristPoint.x << " " << wristPoint.y << " " << wristPoint.z << endl;
-	double maximumDistance = sqrt(wristPoint.x  *wristPoint.x + wristPoint.y*wristPoint.y + wristPoint.z * wristPoint.z);
+	std::array<double, 3>* a_wristPoint = getWristCenterPoint(_pos);
+	Position wristPoint = Position(a_wristPoint->at(0), a_wristPoint->at(1), a_wristPoint->at(2));
+	
+	
 
 	if (wristPoint.x > -marginSingularity && wristPoint.x < marginSingularity &&
 		wristPoint.y > -marginSingularity && wristPoint.y < marginSingularity)
@@ -32,9 +25,8 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 		std::cout << "Overhead Singularity" << endl;
 	}
 	else
-		phi1 = -rad2Deg(atan2(wristPoint.y, wristPoint.x));//vielleicht noch - zeichen, da clockwise vs counterclockwise
+		phi1 = -rad2Deg(atan2(wristPoint.y, wristPoint.x));
 
-	std::cout << "phi1 " << phi1 << endl;
 	return calc_configurations(phi1, wristPoint);
 	////1 Quadrant
 	//if ((wristPoint.x > 0 && wristPoint.y > 0))
@@ -68,6 +60,16 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 	//}
 
 
+}
+
+std::array<double, 3>* IVKinPos::getWristCenterPoint(SixDPos * _pos)
+{
+	TMatrix m_transEndeffector2Wrist = TMatrix(_pos->get_C(), _pos->get_B(), _pos->get_A(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
+	std::array<double, 3> wristPoint;
+	wristPoint.at(0) = _pos->get_X() - d_6 * m_transEndeffector2Wrist.get(0, 2);
+	wristPoint.at(1) = _pos->get_Y() - d_6 * m_transEndeffector2Wrist.get(1, 2);
+	wristPoint.at(2) = _pos->get_Z() - d_6 * m_transEndeffector2Wrist.get(2, 2);
+	return &wristPoint;
 }
 
 

@@ -17,7 +17,7 @@ public:
 	~IVKinPos();
 
 	std::vector<std::array<double, 3>*>* get_IVKinPos(SixDPos* _pos);
-
+	static std::array<double, 3>* getWristCenterPoint(SixDPos* _pos);
 	struct Position
 	{
 		double x, y, z;
