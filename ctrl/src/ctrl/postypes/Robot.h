@@ -81,6 +81,27 @@ public:
            360 / 180.0 * M_PI,
            360 / 180.0 * M_PI
    };
+    
+    /**
+     *  length of link b
+     */
+    const double b = 1.220;
+    /**
+     *  offset of link b
+     */
+    const double o = 0.115;
+    /**
+     *  offset of base column from the z0 Axis
+     */
+    const double m = 0.330;
+    /**
+     *  offset of link 1 from link 0
+     */
+    const double n = 0.645;
+    /**
+     *  offset of link 1 from link 0
+     */
+    const double a = 1.150;
 
 private:
   /**

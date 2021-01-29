@@ -16,11 +16,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     Configuration* prevConfig = start_cfg;
     Configuration* correctConfig;
     vector<Configuration*>* configs;
-    Trajectory* singTrajectory = new Trajectory();
-    Trajectory* wsTrajectory = new Trajectory();
-    Trajectory* osTrajectory = new Trajectory();
     SixDPos* t;
-    bool singularity = false;
     bool wSingularity = false;
     bool oSingularity = false;
     int wsLength = 0;
@@ -33,7 +29,16 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
         t = _positions->at(i);
         //TODO: check for elbow singularity.
         //(before IVKinematics is calculated!)
-
+        while(elbowSingularity(t)){
+            cout << "Elbow Singularity" << endl;
+            t = new SixDPos(t->get_X()-(invK->sign(t->get_X())*0.05),
+                            t->get_Y()-(invK->sign(t->get_Y())*0.05),
+                            t->get_Z(),
+                            t->get_A(),
+                            t->get_B(),
+                            t->get_C());
+        }
+        
         configs = invK->get_inv_kinematics(t, true);
 
         if (configs->size() > 0){
@@ -77,7 +82,8 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     }
     
     //Check if joint velocitys are in range and adjust them by adding points if necessary.
-    CheckVelocities(trajectory, _positions);
+    //CheckVelocities(trajectory, _positions);
+    CheckJointVelocities(trajectory);
     
     //crop trajectory because first Configuration* is current configuration of robot.
     trajectory->startAt(1);
@@ -102,7 +108,6 @@ Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _conf
         }
     }
     return _configs->at(minConfig);
-
 }
 
 void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _positions)
@@ -132,7 +137,34 @@ void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _pos
         cout << "Too high velocities detected, corresponding points changed." << endl;
     }
     else return;
-    
+}
+
+void IVMovement::CheckJointVelocities(Trajectory* _trajectory)
+{
+    int NbExeptions = 0;
+    cout << "Checking velocities" << endl;
+    for(int i = 1; i < _trajectory->get_length()+NbExeptions; i++)
+    {
+        bool exeption = false;
+        for(int j = 0; j < 6; j++)
+        {
+            if( std::abs
+               (((*_trajectory->get_configuration(i-NbExeptions))[j] - ((*_trajectory->get_configuration(i-1-NbExeptions))[j]))
+                         / robot->time_interval) > robot->velocities[j]){
+                exeption = true;
+            }
+        }
+        if(exeption){
+            if(JointInterpolate(trajectory, i-NbExeptions)){
+                NbExeptions++;
+            }
+            if(NbExeptions > 500) break;
+        }
+    }
+
+    if(NbExeptions > 0){
+        cout << "Too high velocities detected, corresponding points changed." << endl;
+    }
 }
 
 bool IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>* _positions, int index)
@@ -170,6 +202,25 @@ bool IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>* _position
        < distance(trajectory->get_configuration(index), trajectory->get_configuration(index-1))){
         _positions->insert(_positions->begin()+index, PosC);
         trajectory->insert(correctConfig, index);
+        return true;
+    }
+    else return false;
+}
+
+bool IVMovement::JointInterpolate(Trajectory* trajectory, int index)
+{
+    Configuration* ConfigA = trajectory->get_configuration(index-1);
+    Configuration* ConfigB = trajectory->get_configuration(index);
+    std::array<double, NUM_JOINTS> newConfig {};
+
+    for(int j= 0; j < NUM_JOINTS; j++){
+        newConfig[j] = (*ConfigA)[j] + 0.5* ((*ConfigB)[j]- (*ConfigA)[j]);
+    }
+    
+    Configuration* ConfigC = new Configuration(newConfig);
+    
+    if( distance(ConfigC, ConfigB) < distance(ConfigA, ConfigB)){
+        trajectory->insert(ConfigC, index);
         return true;
     }
     else return false;
@@ -267,5 +318,19 @@ bool IVMovement::overheadSingularity(SixDPos* _pos)
         return true;
     }
     else return false;
+}
+
+bool IVMovement::elbowSingularity(SixDPos* _pos)
+{
+    double d1 = sqrt(pow(_pos->get_X(),2)+pow(_pos->get_Y(),2));
+    double d2 = sqrt(pow(robot->b, 2)+pow(robot->o, 2));
+    
+    double Px = abs(d1-robot->m);
+    double Py = _pos->get_Z() - robot->n;
+    
+    if(std::abs(pow((robot->a + d2), 2) - (Px*Px + Py*Py)) < SINGULARITY_MARGIN)
+        return true;
+    else return false;
+        
 }
 

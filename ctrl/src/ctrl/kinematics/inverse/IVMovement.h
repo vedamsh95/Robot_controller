@@ -91,6 +91,15 @@ private:
      */
     bool overheadSingularity(SixDPos* _pos);
     
+    /**
+     * Checks if position _pos is overhead singularity
+     */
+    bool elbowSingularity(SixDPos* _pos);
+    
+    void CheckJointVelocities(Trajectory* _trajectory);
+    
+    bool JointInterpolate(Trajectory* trajectory, int index);
+    
     
 };
 

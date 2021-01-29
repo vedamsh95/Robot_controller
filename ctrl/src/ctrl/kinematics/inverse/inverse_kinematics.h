@@ -31,8 +31,7 @@ private:
      * @param j position in configuration matrix to decide weather theta 5 has to be > or < 0
      */
     void setToLimits(double* theta5, int j);
-    
-    double sign(double value);
+
     
 public:
     /**
@@ -59,5 +58,7 @@ public:
      * @return a reference to a array containing the configurations
      */
     array<double, 3>* CalculateSingularity(TMatrix R36);
+    
+    double sign(double value);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
