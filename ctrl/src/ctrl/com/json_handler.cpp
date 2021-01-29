@@ -68,6 +68,24 @@ string JsonHandler::get_json_string(Configuration* _cfg)
     return value.toStyledString();
 }
 
+string JsonHandler::get_json_string(const std::vector<std::vector<SixDPos*>> &loopPoints)
+{
+    Json::Value value;
+    Json::Value op(11);
+    Json::Value data;
+    for(auto &loop : loopPoints) {
+        Json::Value tmp;
+        for(SixDPos* tmp_pos : loop) {
+            tmp.append(*(tmp_pos->serialize_to_json()));
+        }
+        data.append(tmp);
+    }
+
+    value["op"] = op;
+    value["data"] = data;
+
+    return value.toStyledString();
+}
 
 string JsonHandler::get_json_string(vector<Configuration*>* _cfg)
 {

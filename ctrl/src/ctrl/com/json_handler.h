@@ -99,6 +99,14 @@ public:
     string get_json_string(vector<Configuration*>* _cfg);
 
     /**
+     * Returns the string representation of the passed vector of vectors of SixDPos'
+     *
+     * @param loopPoints A vector op loops, where each loop represents a vector of SixDPos'
+     * @return json string representation of the passed points
+     */
+    string get_json_string(const std::vector<std::vector<SixDPos*>> &loopPoints);
+
+    /**
      * Returns the velocity transmitted in the json string
      *
      * @return velocity, default = 0.0

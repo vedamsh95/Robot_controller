@@ -194,6 +194,27 @@ int main() {
 
                 std::vector<std::vector<SixDPos*>> loopPoints;
                 Trajectory* trajectory = ctrl.move_robot_lin(&start_cfg, &end_cfg, vel, acc, &loopPoints);
+                string json_loop_string = jsonHandler.get_json_string(loopPoints);
+
+
+                std::vector<SixDPos*> path_points;
+                for (Configuration* cur_cfg : *(trajectory->get_all_configuration()))
+                {
+                    SixDPos* return_pos = ctrl.get_pos_from_config(cur_cfg);
+                    path_points.push_back(return_pos);
+                }
+
+                //std::vector<SixDPos*> spline_points; // <--- Den hier mit den SixDPos* deines Splines befüllen, danach den rest unten an dieser Stelle ausführen
+                string json_string = jsonHandler.get_json_string(&path_points);
+                simxSetStringSignal(ID, "path_loops",
+                                    reinterpret_cast<const simxUChar *>(json_loop_string.c_str()), json_loop_string.length(), simx_opmode_oneshot);
+                simxSetStringSignal(ID, "path_general",
+                                    reinterpret_cast<const simxUChar *>(json_string.c_str()), json_string.length(), simx_opmode_oneshot);
+                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "show_calculated_path", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
+
+
+
+
                 for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
                     c[0] = (*cur_cfg)[0];
                     c[1] = (*cur_cfg)[1];
@@ -222,9 +243,11 @@ int main() {
                 auto *pos = new SixDPos( jsonHandler.get_data()[static_cast<int>(i)]);
                 points.push_back(pos);
               }
+
               std::vector<std::vector<SixDPos*>> loopPoints;
               Trajectory* trajectory = ctrl.move_robot_spline(points, &start_cfg, vel, acc, &loopPoints, elong,spline_type);
-			  
+			  string json_loop_string = jsonHandler.get_json_string(loopPoints);
+
 			  
 			  std::vector<SixDPos*> spline_points;
 			  for (Configuration* cur_cfg : *(trajectory->get_all_configuration()))
@@ -235,9 +258,11 @@ int main() {
               
               //std::vector<SixDPos*> spline_points; // <--- Den hier mit den SixDPos* deines Splines befüllen, danach den rest unten an dieser Stelle ausführen
               string json_string = jsonHandler.get_json_string(&spline_points);
-              simxSetStringSignal(ID, "splineSignal",
+			  simxSetStringSignal(ID, "path_loops",
+                                    reinterpret_cast<const simxUChar *>(json_loop_string.c_str()), json_loop_string.length(), simx_opmode_oneshot);
+              simxSetStringSignal(ID, "path_general",
                                     reinterpret_cast<const simxUChar *>(json_string.c_str()), json_string.length(), simx_opmode_oneshot);
-              simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "show_calculated_spline", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
+              simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "show_calculated_path", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
                
 
               for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {

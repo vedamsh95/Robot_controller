@@ -146,6 +146,7 @@ function returnSignal()
                     cconf[i] = {obj.data[i].j0,obj.data[i].j1,obj.data[i].j2,obj.data[i].j3,obj.data[i].j4,obj.data[i].j5}
                     simUI.insertComboboxItem(ui,1013,i,i..". Configuration")
                 end
+                switchConfig(ui_1, 1013, 1)
             elseif (obj.op==1) then
                 simUI.setEditValue(ui,1000,tostring(obj.data[1].m_x))
                 simUI.setEditValue(ui,1001,tostring(obj.data[1].m_y))
@@ -398,10 +399,13 @@ Input:
 --]]
 function switchMVMode(ui,id)
     if (id==1007) then
+        -- PTP Mode
         simUI.setEnabled(ui,1009,true)
         simUI.setEnabled(ui,1010,true)
         simUI.setRadiobuttonValue(ui,1009,1)
+        lin_path_hide(true)
     else
+        -- LIN Mode
         simUI.setEnabled(ui,1009,false)
         simUI.setEnabled(ui,1010,false)
     end
@@ -454,18 +458,21 @@ Input:
 --]]
 function switchSplineMode(ui,id)
     if (id==1021) then
+        -- Normal mode
         if (movement_allowed) then
             simUI.setEnabled(ui,1019,true)
         else
             simUI.setEnabled(ui,1011,false)
         end
         simUI.setEnabled(ui,1020,false)
-        hidePath(true)
+        spline_path_hide(true)
     else
+        -- Spline Mode
         simUI.setEnabled(ui,1019,false)
         simUI.setEnabled(ui,1020,true)
         simUI.setEnabled(ui,1011,true)
-        hidePath(false)
+        spline_path_hide(false)
+        lin_path_hide(true)
     end
 end
 
@@ -813,6 +820,19 @@ function spline_init()
     return sim.createPath(-1, pathIntParams, nullptr, pathColor)
 end
 
+function lin_init()
+    -- Default values
+    local path_size = 5                 -- The line thickness of the path
+    local path_color_r = 0              -- The red   component of the paths color
+    local path_color_g = 1              -- The green component of the paths color
+    local path_color_b = 0              -- The blue  component of the paths color
+
+    local pathIntParams = { path_size, 0, 0 }
+    local pathColor = { path_color_r, path_color_g, path_color_b, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+
+    return sim.createPath(-1, pathIntParams, nullptr, pathColor)
+end
+
 --[[
 This functions updates the path for the spline functionality. It will start at the
 current position and connects the entered points.
@@ -854,14 +874,32 @@ end
 --[[
 This function can show or hide the spline path.
 Input:
-    should_hide = true:  The path is invisible
-                  false: The path is visible
+    should_hide = true:  Any path is invisible
+                  false: The crude path is visible
 --]]
-function hidePath(should_hide)
+function spline_path_hide(should_hide)
     if (should_hide) then
         sim.cutPathCtrlPoints(spline_path_handle, -1, 0)
+        for i=1,#loop_path_handles do
+            sim.cutPathCtrlPoints(loop_path_handles[i], -1, 0)
+        end
     else
         update_spline_path(spline_path_handle, spline_points_raw)
+    end
+end
+
+--[[
+This function can hide the lin path.
+Input:
+    should_hide = true:   The path is invisible
+                  false:  Nothing happens, since the path is only shown when calculate is pressed
+--]]
+function lin_path_hide(should_hide)
+    if (should_hide) then
+        sim.cutPathCtrlPoints(lin_path_handle, -1, 0)
+        for i=1,#loop_path_handles do
+            sim.cutPathCtrlPoints(loop_path_handles[i], -1, 0)
+        end
     end
 end
 
@@ -869,26 +907,75 @@ end
 This function gets called by the controller when the correct spline has been calculated. It
 will show this new spline and destroy the previous temporary spline.
 --]]
-function show_calculated_spline()
-    local ret = sim.getStringSignal("splineSignal")
-    if ret then
-        local obj, _, err = json.decode (ret, 1, nil)
-        if err then
-            sim.addStatusbarMessage("Error:", err)
-        else
-            local tmp = {}
-            local count = #obj.data
-            for i=1,count do
-                table.insert(tmp, obj.data[i].m_x)
-                table.insert(tmp, obj.data[i].m_y)
-                table.insert(tmp, obj.data[i].m_z)
+function show_calculated_path()
+
+    local ret1 = sim.getStringSignal("path_general")
+    local ret2 = sim.getStringSignal("path_loops")
+
+    if not ret1 or not ret2 then
+        return {},{},{},''
+    end
+
+    local obj1, _, err1 = json.decode(ret1, 1, nil)
+    if err1 then
+        sim.addStatusbarMessage("Error:", err1)
+        return {},{},{},''
+    end
+
+    local obj2, _, err2 = json.decode(ret2, 1, nil)
+    if err2 then
+        sim.addStatusbarMessage("Error:", err2)
+        return {},{},{},''
+    end
+
+    if obj1.data == nil then
+        simUI.show(ui_2)
+        return {},{},{},''
+    end
+
+    local tmp = {}
+    local count = #obj1.data
+    for i=1,count do
+        table.insert(tmp, obj1.data[i].m_x)
+        table.insert(tmp, obj1.data[i].m_y)
+        table.insert(tmp, obj1.data[i].m_z)
+        for _=1,8 do
+            table.insert(tmp, 0)
+        end
+    end
+    if simUI.getRadiobuttonValue(ui_1, 1022)==1 then
+        sim.cutPathCtrlPoints(spline_path_handle, -1, 0)
+        sim.insertPathCtrlPoints(spline_path_handle, 0, 0, count, tmp)
+    else
+        sim.cutPathCtrlPoints(lin_path_handle, -1, 0)
+        sim.insertPathCtrlPoints(lin_path_handle, 0, 0, count, tmp)
+    end
+
+    -- Extract the loop values, create the paths and show them
+    if obj2.data ~= nil then
+        local pathIntParams = { 6, 0, 0 }
+        local pathColor = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+
+        local loop_count = #obj2.data
+        for i=1,loop_count do
+            local point_count = #obj2.data[i]
+            local final_points = {}
+            for j=1,point_count do
+                table.insert(final_points, obj2.data[i][j].m_x)
+                table.insert(final_points, obj2.data[i][j].m_y)
+                table.insert(final_points, obj2.data[i][j].m_z)
                 for _=1,8 do
-                    table.insert(tmp, 0)
+                    table.insert(final_points, 0)
                 end
             end
-            sim.cutPathCtrlPoints(spline_path_handle, -1, 0)
-            sim.insertPathCtrlPoints(spline_path_handle, 0, 0, count, tmp)
+            if loop_path_handles[i] ~= nil then
+                sim.cutPathCtrlPoints(loop_path_handles[i], -1, 0)
+            else
+                loop_path_handles[i] = sim.createPath(-1, pathIntParams, nullptr, pathColor)
+            end
+            sim.insertPathCtrlPoints(loop_path_handles[i], 0, 0, point_count, final_points)
         end
+        simUI.show(ui_4)
     end
     return {},{},{},''
 end
@@ -1148,6 +1235,12 @@ for the lin and spline movement:"></label>
 	<button text="OK" onclick="buttonok"></button>
 </ui>]]
 
+    error2 = [[<ui closeable="false" on-close="closeEventHandler" layout="vbox" title="Error">
+	<label text="There is no continuous path. The best solution is shown.
+The problematic regions are marked in red."></label>
+	<button text="OK" onclick="closeEventHandler"></button>
+</ui>]]
+
     splineIO = [[<ui closeable="false" on-close="ui_advanced_ok" layout="vbox" title="CSV functionality">
     <group layout="vbox">
         <label text="You can either import spline points from a vsc file
@@ -1189,16 +1282,19 @@ or export the current points to a file."></label>
     ui_1=simUI.create(coord_dialog)
     ui_2=simUI.create(error)
     ui_3=simUI.create(splineIO)
+    ui_4=simUI.create(error2)
 
-    local myuis = {ui_1,ui_2,ui_3}
+    local myuis = {ui_1,ui_2,ui_3,ui_4}
     sim.setStringSignal("uisignal",sim.packTable(myuis))
 
     ----------Added variables---------
     movement_allowed = false    -- Whether apply has been pressed once
     -- and the normal movement is allowed
 
-    spline_points_raw = {}
+    spline_points_raw  = {}
     spline_path_handle = spline_init()
+    lin_path_handle    = lin_init()
+    loop_path_handles  = {}
     ----------------------------------
 
     ----------Added initialization---------
@@ -1228,6 +1324,7 @@ or export the current points to a file."></label>
     sim.setObjectOrientation(ik_target, robot, tip_ori)
     simUI.hide(ui_2)
     simUI.hide(ui_3)
+    simUI.hide(ui_4)
     simUI.setRadiobuttonValue(ui_1,2008,1)
 
     for i=1,6 do
@@ -1251,5 +1348,6 @@ if (sim_call_type==sim.syscb_cleanup) then
     simUI.destroy(ui_1)
     simUI.destroy(ui_2)
     simUI.destroy(ui_3)
+    simUI.destroy(ui_4)
     --sim.removeObjectFromSelection(sim.handle_single, ik_test)
 end
