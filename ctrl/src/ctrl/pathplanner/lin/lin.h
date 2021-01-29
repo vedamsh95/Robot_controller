@@ -21,7 +21,7 @@ public:
      * @param _end_cfg {@ref Configruation} of the target point of the path
      * @return {@ref Trajectoy} for the movement of the robot
      */
-    SixDPos get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg);
+    Trajectory* get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg);
 };
 
 
