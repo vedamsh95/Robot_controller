@@ -10,23 +10,19 @@ using namespace std;
 double phi1,phi2,phi3,phi4,phi5,phi6,i;
 vector<double> vec_phi1,vec_phi2,vec_phi3,vec_phi4,vec_phi5,vec_phi6;
 double x,y,z,r_a,r_b,r_c;
-double xc,yc,zc ;
-double d1,d2,d3,px_dash,py_dash;
-double px,py;
+double zc ;
 double m,n,a,b,o,d;
 double alpha1,alpha2,beta;
 
 vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 {
     //TODO: IMPLEMENT Compute the inverse kinematics for a given position
-
-
-    m =330;
- n= 645;
- a = 1150;
- b = 1220;
- o = 115 ;
- d =215;
+    m =0.330;
+ n= 0.645;
+ a = 1.150;
+ b = 1.220;
+ o = 0.115 ;
+ d =0.215;
 
 
     //prepare the result vector for the configurations
@@ -46,33 +42,42 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     r_c =_pos->get_C();
     cout << "value of r_c" << r_c << endl;
 
-        xc = x -  d * (sin(r_c) *sin(r_a) + cos(r_c) * sin(r_b) * cos(r_a));
+        double xc = x -  d * (sin(r_c) *sin(r_a) + cos(r_c) * sin(r_b) * cos(r_a));
         cout<<"value of xc "<<xc << endl;
-        yc = y - d * (-1* cos(r_c)*sin(r_a)+ sin(r_c)*sin(r_b)*cos(r_a));
+        double yc = y - d * (-1* cos(r_c)*sin(r_a)+ sin(r_c)*sin(r_b)*cos(r_a));
     cout<<"value of yc "<<yc << endl;
         zc = z - d * (cos(r_b)*cos(r_a));
 
-   d1 = sqrt(xc*xc + yc*yc);
+        phi1=atan(yc / (-xc))*180/M_PI;
+
+   double d1 = sqrt(xc*xc + yc*yc);
    cout << "d1 " << d1 <<endl;
 
 
+    /*for(i=0 ; i<5;i++ ) {*/
+        angles_phi1(xc,yc,d1);
+        angles_phi2_forward(zc,d1);
+        angles_phi2_backward(zc,d1);
+        angles_phi3();
+        R36Matrix();
 
-   angles_phi1();
-   angles_phi2();
-   angles_phi3();
-    R36Matrix();
+
+    for(i=0 ; i<vec_phi1.size();i++ ){
+
+        if(((vec_phi1[i]>-185) &&(vec_phi1[i]<185))) {
+            cout << "vec phi1 is - " << vec_phi1[i] << endl;
+        }
 
     for(i=0 ; i<vec_phi3.size();i++ ){
+
       if(((vec_phi3[i]>-120) &&(vec_phi3[i]<168))) {
           cout << "vec phi3 is - " << vec_phi3[i] << endl;
       }
     }
-    for(i=0 ; i<vec_phi1.size();i++ ){
-        if(((vec_phi1[i]>-185) &&(vec_phi1[i]<185))) {
-            cout << "vec phi1 is - " << vec_phi1[i] << endl;
-        }
+
     }
     for(i=0 ; i<vec_phi2.size();i++ ){
+
         if(((vec_phi2[i]>-140) &&(vec_phi2[i]<-5))) {
             cout << "vec phi2 is - " << vec_phi2[i] << endl;
         }
@@ -83,7 +88,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 
        if(((vec_phi1[i]>-185) &&(vec_phi1[i]<185))  && ((vec_phi3[i]>-120) &&(vec_phi3[i]<168)))  {
 
-           cout <<"phi1 "<< vec_phi1[i]<<"phi2 "<<vec_phi2[i]<< " phi3 " << vec_phi3[i] << "phi4 " << vec_phi4[i] << "phi5 "<<vec_phi5[i] << "phi6 " << vec_phi6[i]<<  endl;
+           cout <<" phi1 "<< vec_phi1[i]<<" phi2 "<<vec_phi2[i]<< " phi3 " << vec_phi3[i] << " phi4 " << vec_phi4[i] << " phi5 "<<vec_phi5[i] << " phi6 " << vec_phi6[i]<<  endl;
            solutions->push_back(new Configuration({vec_phi1[i],vec_phi2[i],vec_phi3[i],vec_phi4[i],vec_phi5[i],vec_phi6[i]}));
        }
     }
@@ -103,69 +108,92 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     return solutions;
 }
 //calculating  phi1 angle
- double InvKinematics::  angles_phi1() {
+ double InvKinematics::  angles_phi1(double xc,double yc,double d1) {
 
      if (xc < 0 && yc > 0) {
-         phi1=(180 - atan(yc / (-xc))) ;
+         phi1=(180 - phi1) ;
          cout << "phi1 " << phi1 <<endl;
          vec_phi1.push_back(phi1);
      } else if (xc < 0 && yc < 0) {
-         phi1 = 180 - atan(yc / xc);
+         phi1 = 180 - phi1;
          cout << "phi1 " << phi1 <<endl;
          vec_phi1.push_back(phi1);
      } else if (xc < 0 && yc < 0) {
-         phi1 = atan(yc / xc);
-         cout << "phi1 " << phi1 <<endl;
-         vec_phi1.push_back(phi1);
-     } else if (d1 > m) {
-         phi1 = -atan(yc / xc);
+         phi1 = phi1;
          cout << "phi1 " << phi1 <<endl;
          vec_phi1.push_back(phi1);
      }
+     /*else if (d1 > m) {
+         phi1 = -phi1;
+         cout << "phi1 " << phi1 <<endl;
+         vec_phi1.push_back(phi1);
+     }*/
  }
 
  //calculating phi2 angles
- double InvKinematics::  angles_phi2() {
+ double InvKinematics::  angles_phi2_forward(double zc,double d1) {
 
     if(d1>m) {
-        px_dash = d1 - m;
+        double px_dash = d1 - m;
 
-    }else if(d1<m){
-        px_dash = m-d1;
-    }
-    py_dash = zc-n;
+        double py_dash = zc - n;
 
-    d3 = sqrt(px_dash*px_dash + py_dash*py_dash);
-    cout << "d3 " << d3 << endl;
-    d2 = sqrt((o*o)+(b*b));
-    cout << "d2 " << d2 << endl;
-    beta = acos(((d3*d3)-(a*a)-(d2*d2))/(-2 * a * d2)) * 180 /M_PI ;
-    cout<< "beta " << beta << endl;
-    alpha2 = asin(py_dash/d3) * 180 /M_PI;
-    cout << " alpha2 " << alpha2 << endl;
-    alpha1 = asin(sin(beta * M_PI/180) * (d2/d3))* (180 /M_PI) ;
-    cout << "alpha1 " << alpha1 << endl;
+        double d3 = sqrt(px_dash * px_dash + py_dash * py_dash);
+        cout << "d3 " << d3 << endl;
+        double d2 = sqrt((o * o) + (b * b));
+        cout << "d2 " << d2 << endl;
+        beta = acos(((d3 * d3) - (a * a) - (d2 * d2)) / (-2 * a * d2)) ;
+        cout << "beta " << beta << endl;
+        alpha2 = asin(py_dash / d3) * 180 / M_PI;
+        cout << " alpha2 " << alpha2 << endl;
+        alpha1 = asin(sin(beta ) * (d2 / d3)) * (180 / M_PI);
+        cout << "alpha1 " << alpha1 << endl;
 
-    double phi2_elbowdown_forward = -(alpha2-alpha1) ;
-    cout << "phi2 Elbowdown forward = " << phi2_elbowdown_forward << endl;
-    vec_phi2.push_back(phi2_elbowdown_forward);
+        double phi2_elbowdown_forward = -(alpha2 - alpha1);
+        cout << "phi2 Elbowdown forward = " << phi2_elbowdown_forward << endl;
+        vec_phi2.push_back(phi2_elbowdown_forward);
 
-    double phi2_elbowup_forward = -(alpha1+alpha2);
-    cout << "phi2 Elbowdup forward = " << phi2_elbowup_forward << endl;
-    vec_phi2.push_back(phi2_elbowup_forward);
-
-    double phi2_elbowdown_backward = (alpha1+alpha2) -180;
-     cout << "phi2 Elbowddown backward = " << phi2_elbowdown_backward << endl;
-     vec_phi2.push_back(phi2_elbowdown_backward);
-
-    double phi2_elbowup_backward = (alpha2-alpha1)-180;
-     cout << "phi2 Elbowup backward = " << phi2_elbowup_backward << endl;
-     vec_phi2.push_back(phi2_elbowup_backward);
+        double phi2_elbowup_forward = -(alpha1 + alpha2);
+        cout << "phi2 Elbowdup forward = " << phi2_elbowup_forward << endl;
+        vec_phi2.push_back(phi2_elbowup_forward);
     }
 
-    //calculating phi3
+    }
+
+double InvKinematics::  angles_phi2_backward(double zc,double d1) {
+
+    if(d1<m) {
+        double px_dash = m - d1;
+
+        double py_dash = zc - n;
+
+        double d3 = sqrt(px_dash * px_dash + py_dash * py_dash);
+        cout << "d3 " << d3 << endl;
+        double d2 = sqrt((o * o) + (b * b));
+        cout << "d2 " << d2 << endl;
+        beta = acos(((d3 * d3) - (a * a) - (d2 * d2)) / (-2 * a * d2)) * 180 / M_PI;
+        cout << "beta " << beta << endl;
+        alpha2 = asin(py_dash / d3) * 180 / M_PI;
+        cout << " alpha2 " << alpha2 << endl;
+        alpha1 = asin(sin(beta * M_PI / 180) * (d2 / d3)) * (180 / M_PI);
+        cout << "alpha1 " << alpha1 << endl;
+
+
+        double phi2_elbowdown_backward = (alpha2 + alpha1) - 180;
+        cout << "phi2 Elbowddown backward = " << phi2_elbowdown_backward << endl;
+        vec_phi2.push_back(phi2_elbowdown_backward);
+
+        double phi2_elbowup_backward = (alpha2 - alpha1) - 180;
+        cout << "phi2 Elbowup backward = " << phi2_elbowup_backward << endl;
+        vec_phi2.push_back(phi2_elbowup_backward);
+    }
+}
+
+
+//calculating phi3
 double InvKinematics:: angles_phi3(){
 
+double d2 = sqrt((o * o) + (b * b));
     double phi3_elbowdown_forward = beta - asin(b/d2) -90;
     cout << "Phi3 elbowdown forward " << phi3_elbowdown_forward << endl;
     vec_phi3.push_back(phi3_elbowdown_forward);
@@ -186,8 +214,8 @@ double InvKinematics:: angles_phi3(){
 TMatrix InvKinematics::R36Matrix() {
     TMatrix T01(0,180,0,645);
     TMatrix T12(0+phi1,90,330,0);
-    TMatrix T23(0+phi2,0,1150,0);
-    TMatrix T34(-90+phi3,90,115,0);
+    TMatrix T23(0+vec_phi2[i],0,1150,0);
+    TMatrix T34(-90+vec_phi3[i],90,115,0);
 
     TMatrix* R03 = T01.multiply( &T12) ->multiply(&T23) -> multiply(&T34);
     R03->print();
