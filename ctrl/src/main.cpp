@@ -74,6 +74,8 @@ simxInt Initial() {
     return clientID;
 }
 
+vector<SixDPos*> spline_path;
+
 int main() {
     // Example for forward kinematics
     SixDPos *fwkinSample = (new FwKinematics())->get_fw_kinematics(new Configuration(
@@ -216,6 +218,22 @@ int main() {
                     // synchronize with vrep simulation environment
                     this_thread::sleep_for(std::chrono::milliseconds(50));
                 }
+            }
+
+            if (jsonHandler.get_op_mode() == OpMode::SPLINE_RESET) {
+                spline_path.clear();
+                // Keep first element free in case the robot moves while adding points.
+                // In SPLINE_MOVE, it gets set to the current start point.
+                spline_path.push_back(nullptr);
+            }
+            if (jsonHandler.get_op_mode() == OpMode::SPLINE_ADD) {
+                SixDPos* next_pos = new SixDPos((jsonHandler.get_data())[0]);
+                spline_path.push_back(next_pos);
+            }
+            if (jsonHandler.get_op_mode() == OpMode::SPLINE_MOVE) {
+                SixDPos* start_pos = new SixDPos((jsonHandler.get_data())[0]);
+                spline_path[0] = start_pos;
+                Trajectory *trajectory = ctrl.move_robot_spline(spline_path);
             }
 
             simxClearStringSignal(ID, "callsignal", simx_opmode_blocking);

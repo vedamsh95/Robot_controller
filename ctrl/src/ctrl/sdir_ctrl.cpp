@@ -5,6 +5,7 @@
 #include "kinematics/inverse/inverse_kinematics.h"
 #include "pathplanner/ptp/ptp.h"
 #include "pathplanner/lin/lin.h"
+#include "pathplanner/spline/spline.h"
 #include <Trajectory.h>
 
 SixDPos* SdirCtrl::get_pos_from_config(Configuration* _cfg)
@@ -51,4 +52,9 @@ Trajectory* SdirCtrl::move_robot_lin(Configuration* start, Configuration* end)
     //ToDo: IMPLEMENT!
     Lin lin;
     return lin.get_lin_trajectory(start, end);
+}
+
+Trajectory *SdirCtrl::move_robot_spline(vector<SixDPos *> path) {
+    Spline spline;
+    return spline.get_spline_trajectory(path);
 }

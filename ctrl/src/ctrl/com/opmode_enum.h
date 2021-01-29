@@ -8,7 +8,7 @@
  * - PTP: initiate a ptp movement
  * - LIN: initiate a lin movement
  */
-enum OpMode{ CFG_2_POS, POS_2_CFG, PTP, PTPSYNC, LIN };
+enum OpMode{ CFG_2_POS, POS_2_CFG, PTP, PTPSYNC, LIN, SPLINE_RESET, SPLINE_ADD, SPLINE_MOVE };
 
 
 #endif //SDRI_CTRL2019_OPMODE_ENUM_H

@@ -11,9 +11,10 @@ add_dependencies(Ctrl FWKin IVKin)
 
 add_subdirectory(pathplanner/lin)
 add_subdirectory(pathplanner/ptp)
-add_dependencies(Ctrl PTP LIN)
+add_subdirectory(pathplanner/spline)
+add_dependencies(Ctrl PTP LIN Spline)
 
 add_subdirectory(postypes)
 add_dependencies(Ctrl PosTypes)
 
-target_link_libraries(Ctrl Com FWKin IVKin PTP LIN PosTypes)
+target_link_libraries(Ctrl Com FWKin IVKin PTP LIN Spline PosTypes)
