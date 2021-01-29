@@ -76,5 +76,7 @@ private:
 	FwKinematics* fwK;
 	bool plot;
 	int sample;
+	vector<int> samples;
+	double sampleDistance;
 
 };

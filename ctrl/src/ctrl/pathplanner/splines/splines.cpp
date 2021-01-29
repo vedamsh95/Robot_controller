@@ -7,11 +7,11 @@ Splines::Splines() :plot(true)
 	ivMovement = new IVMovement();
 	fwK = new FwKinematics();
 	sample = 1000;
+	sampleDistance = 0.0005;
 }
 Splines::~Splines()
 {
-}
-;
+};
 Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start_cfg,double _velocity, double _acceleration, double _elong, int _spline_type)
 {
 	
@@ -23,9 +23,19 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 		return trajectory;
 	}
 	vector<Position> points;
+	Position P_i, P_i1;
+	double dBtwP;
+	//vector<int> samples;
 	for (int i = 0; i < n; i++)
 	{
 		points.push_back(Position(_points.at(i)->get_X(), _points.at(i)->get_Y(), _points.at(i)->get_Z()));
+		if (i > 0)
+		{
+			P_i = Position(points.at(i).x, points.at(i).y, points.at(i).z);
+			P_i1 = Position(points.at(i -1).x, points.at(i - 1).y, points.at(i - 1).z);
+			dBtwP = sqrt(pow(P_i.x - P_i1.x, 2) + pow(P_i.y - P_i1.y, 2) + pow(P_i.y - P_i1.y, 2));
+			samples.push_back((dBtwP / sampleDistance));
+		}
 	}
 
 	vector<Splines::Position>* secondControlPoints = new vector<Splines::Position>(n-1);
@@ -35,9 +45,9 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 	vector<Splines::Position> cubicTagents(n);
 	for(int i = 0; i< n-1; i++)
 	{ 
-		cubicTagents[i] = firstControlPoints->at(i) - points[i] * _elong;
+		cubicTagents[i] = firstControlPoints->at(i) - points[i];
 	}
-	cubicTagents[n - 1] = points[n - 1] - secondControlPoints->at(n - 2) * _elong;
+	cubicTagents[n - 1] = points[n - 1] - secondControlPoints->at(n - 2);
 
 	std::vector<Splines::Position> tangents;
 	std::vector<Splines::Position> accelerations = getAccelerationsQuintic(points,cubicTagents);
@@ -58,7 +68,7 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 	 
 	std::vector<double> tValues = getTValues(distance, _velocity, _acceleration);
 
-	int nr =0;
+	int nr = 0;
 	double t;
 	vector<Position> trajectPoints;
 	vector<SixDPos*>* trajectSixDPos = new vector<SixDPos*>();
@@ -67,6 +77,8 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 	int index = 0;
 	double actDistance;
 	vector<double> t_vec;
+
+	sample = 0;
 	for (int i = 0; i < tValues.size(); i++)
 	{
 		actDistance = tValues[i] * distance;
@@ -74,16 +86,21 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 		{
 			index++;
 		}
+		if (index > (sample + samples[nr]))
+		{
 			
-		if (index % sample == 0)
-			t = 0;
-		else 
-			t = (double)(index % sample)/sample;
+			sample = sample + samples[nr];
+			nr++;
+		}
+		t = (double)(index - sample)/samples[nr];
+
 		t_vec.push_back(t);
-		nr = (int)index / sample;
+		//nr = (int)index / sample;
 		if (nr == numberOfSplines)
 		{
-			tP = points.back();
+			//tP = points.back();
+			break;
+			
 		}
 		else
 		{
@@ -366,9 +383,9 @@ void Splines::sampleDistancesCubic(std::vector<Position> _points, std::vector<Po
 	P_0 = _points.at(0);
 	for (int i = 0; i < numberOfSplines; i++)
 	{
-		for (int j = 0; j < sample; j++)
+		for (int j = 0; j < samples[i]; j++)
 		{
-			double t = (double)j / sample;
+			double t = (double)j / samples[i];
 			P_1 = getCubicBezier(t, i, _points, &_firstControlPoints, &_secondControlPoints);
 
 			_sampleDist->push_back(_sampleDist->back() + L2Norm(P_1 - P_0));
