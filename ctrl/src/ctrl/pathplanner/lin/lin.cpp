@@ -5,7 +5,7 @@ Lin::Lin() :plot(false){
     trajectory = new Trajectory();
 }
 
-Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration)
+Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration,std::vector<std::vector<SixDPos*>>* loopPoints)
 {
     //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
     bool AdjustOrientation = false;

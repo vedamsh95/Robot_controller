@@ -42,13 +42,14 @@ public:
     /**
      * Example function computing the trajectory for a given path (defined by two configurations) as lin movement.
      *
-     * @param _start_cfg {@ref Configruation} of the starting point of the path
-     * @param _end_cfg {@ref Configruation} of the target point of the path
+     * @param _start_cfg {@ref Configuration} of the starting point of the path
+     * @param _end_cfg {@ref Configuration} of the target point of the path
      * @param velocity The velocity for the lin movement used in the corresponding trajectory
      * @param acceleration The acceleration for lin movement used in the corresponding trajectory
-     * @return {@ref Trajectoy} for the movement of the robot
+     * @param Vector of loop points that cannot be traversed correctly - Will be filled
+     * @return {@ref Trajectory} for the movement of the robot
      */
-    Trajectory* get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration);
+    Trajectory* get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration, std::vector<std::vector<SixDPos*>>* loopPoints);
     
     /**
      * Checks for a given configuration whether it is feasible and if not,

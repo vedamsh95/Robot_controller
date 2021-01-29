@@ -20,7 +20,7 @@ public:
 
 	Splines();
 	~Splines();
-	Trajectory *getSpline(vector<SixDPos*> &_points, Configuration * start, double _velocity, double _acceleration, double _elong = 0.5, int spline_type = 0);
+	Trajectory *getSpline(vector<SixDPos*> &_points, Configuration * start, double _velocity, double _acceleration, std::vector<std::vector<SixDPos*>>* loopPoints, double _elong = 0.5, int spline_type = 0);
 	struct Position
 	{
 		double x, y, z;

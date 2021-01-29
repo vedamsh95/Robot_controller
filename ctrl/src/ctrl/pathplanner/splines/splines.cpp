@@ -12,7 +12,7 @@ Splines::Splines() :plot(true)
 Splines::~Splines()
 {
 };
-Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start_cfg,double _velocity, double _acceleration, double _elong, int _spline_type)
+Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start_cfg,double _velocity, double _acceleration, std::vector<std::vector<SixDPos*>>* loopPoints, double _elong, int _spline_type)
 {
 	
 	size_t n = _points.size();

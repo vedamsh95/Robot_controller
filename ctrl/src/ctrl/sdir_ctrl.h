@@ -63,7 +63,7 @@ public:
      * @param acceleration The acceleration at the start and at the end of the movement
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_lin(Configuration* start, Configuration* end, double velocity, double acceleration);
+    Trajectory* move_robot_lin(Configuration* start, Configuration* end, double velocity, double acceleration, std::vector<std::vector<SixDPos*>>* loopPoints);
 
     /**
      * Computes a spline that starts at the first given point and ends
@@ -74,7 +74,7 @@ public:
      * @param acceleration The acceleration at the start and at the end of the movement
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_spline(vector<SixDPos*> &points, Configuration * start, double velocity, double acceleration, double _elong = 0.5, int _spline_type = 0);
+    Trajectory* move_robot_spline(vector<SixDPos*> &points, Configuration * start, double velocity, double acceleration, std::vector<std::vector<SixDPos*>>* loopPoints, double _elong = 0.5, int _spline_type = 0);
 };
 
 
