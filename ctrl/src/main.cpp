@@ -38,36 +38,31 @@ extern "C" {
 
 using namespace std;
 
-simxInt* jh = new simxInt[6];
+simxInt *jh = new simxInt[6];
 
-simxInt Initial()
-{
+simxInt Initial() {
     string Joint;
-    simxInt *check = new simxInt[1];
+    auto *check = new simxInt[1];
     int portNb = 19997;
-    simxInt clientID = -1;
+    simxInt clientID;
     simxFinish(-1);
 
     clientID = simxStart("127.0.0.1", portNb, true, true, 5000, 5);
-//    clientID = simxStart("141.44.29.96", portNb, true, true, 5000, 5);
+    //clientID = simxStart("141.44.29.96", portNb, true, true, 5000, 5);
 
-    if (clientID > -1)
-    {
+    if (clientID > -1) {
         //Starten der Simulation
         simxStartSimulation(clientID, simx_opmode_oneshot);
-		cout << "Simulation started" << endl;
+        cout << "Simulation started" << endl;
 
-        for (int i = 0; i < 6; i++)
-        {
+        for (int i = 0; i < 6; i++) {
             //Abfrage der einzelnen Joint Handles des Manipulators
             Joint = "KR120_2700_2_joint" + to_string(i + 1);
-            const char* c = Joint.c_str();
-            simxGetObjectHandle(clientID, (const simxChar *)c, check, simx_opmode_oneshot_wait);
+            const char *c = Joint.c_str();
+            simxGetObjectHandle(clientID, (const simxChar *) c, check, simx_opmode_oneshot_wait);
             jh[i] = check[0];
         }
-    }
-    else
-    {
+    } else {
         printf("Connection Fail");
         getchar();
         extApi_sleepMs(10);
@@ -81,7 +76,7 @@ int main() {
     SdirCtrl ctrl;
     float c[6];
     simxInt ID = Initial();
-    simxUChar* value = new simxUChar;
+    auto *value = new simxUChar;
     simxInt length = -1;
 
     setvbuf(stdout, nullptr, _IONBF, 0);
@@ -91,15 +86,14 @@ int main() {
     /*
      * While VREP remote connection is available
      */
-    while (simxGetConnectionId(ID) != -1 ) {
+    while (simxGetConnectionId(ID) != -1) {
         // read data from vrep
         simxGetStringSignal(ID, "callsignal", &value, &length, simx_opmode_blocking);
 
         // if data via signal "callsignal" has been received
-        if(length > 0)
-        {
+        if (length > 0) {
             // cast vrep data to string
-            string t = string(reinterpret_cast<const char*>(value), length);
+            string t = string(reinterpret_cast<const char *>(value), length);
             cout << t << endl;
             // deserialize the json input
             JsonHandler jsonHandler(t);
@@ -107,122 +101,135 @@ int main() {
             /*
              * compute a configuration from a position
              */
-            if(jsonHandler.get_op_mode() == OpMode::POS_2_CFG){
+            if (jsonHandler.get_op_mode() == OpMode::POS_2_CFG) {
                 SixDPos pos(jsonHandler.get_data()[0]);
-//                cout << jsonHandler.get_json_string(&pos) << endl;
-                vector<Configuration*>* result_cfg = ctrl.get_config_from_pos(&pos);
+                //cout << jsonHandler.get_json_string(&pos) << endl;
+                vector<Configuration *> *result_cfg = ctrl.get_config_from_pos(&pos);
                 string json_return_string = jsonHandler.get_json_string(result_cfg);
-//                cout << json_return_string << endl;
+                //cout << json_return_string << endl;
                 simxSetStringSignal(ID, "returnsignal",
-                                    reinterpret_cast<const simxUChar *>(json_return_string.c_str()), json_return_string.length(), simx_opmode_oneshot);
-                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "returnSignal", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
+                                    reinterpret_cast<const simxUChar *>(json_return_string.c_str()),
+                                    json_return_string.length(), simx_opmode_oneshot);
+                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "returnSignal", 0, nullptr, 0,
+                                       nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                       nullptr, nullptr, nullptr, simx_opmode_blocking);
             }
 
             /*
              * compute a position from a configuration
              */
-            if(jsonHandler.get_op_mode() == OpMode::CFG_2_POS){
+            if (jsonHandler.get_op_mode() == OpMode::CFG_2_POS) {
                 Configuration cfg(jsonHandler.get_data()[0]);
-//                cout << jsonHandler.get_json_string(&cfg) << endl;
-                SixDPos* return_pos = ctrl.get_pos_from_config(&cfg);
+                //cout << jsonHandler.get_json_string(&cfg) << endl;
+                SixDPos *return_pos = ctrl.get_pos_from_config(&cfg);
                 string json_return_string = jsonHandler.get_json_string(return_pos);
-//                cout << json_return_string << endl;
+                //cout << json_return_string << endl;
                 simxSetStringSignal(ID, "returnsignal",
-                                    reinterpret_cast<const simxUChar *>(json_return_string.c_str()), json_return_string.length(), simx_opmode_oneshot);
-                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "returnSignal", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
+                                    reinterpret_cast<const simxUChar *>(json_return_string.c_str()),
+                                    json_return_string.length(), simx_opmode_oneshot);
+                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "returnSignal", 0, nullptr, 0,
+                                       nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                       nullptr, nullptr, nullptr, simx_opmode_blocking);
             }
 
             /*
              * Compute a PTP trajectory and move the robot asynchronous in VREP
              */
-            if(jsonHandler.get_op_mode() == OpMode::PTP){
+            if (jsonHandler.get_op_mode() == OpMode::PTP) {
                 Configuration start_cfg((jsonHandler.get_data())[0]);
                 Configuration end_cfg((jsonHandler.get_data())[1]);
-//                cout << "Path Configuration" << endl;
-//                cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
-//                cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
+                //cout << "Path Configuration" << endl;
+                //cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
+                //cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
 
-                Trajectory* trajectory = ctrl.move_robot_ptp(&start_cfg, &end_cfg);
-                for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
-                    c[0] = (*cur_cfg)[0];
-                    c[1] = (*cur_cfg)[1];
-                    c[2] = (*cur_cfg)[2];
-                    c[3] = (*cur_cfg)[3];
-                    c[4] = (*cur_cfg)[4];
-                    c[5] = (*cur_cfg)[5];
-                    simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL, 6, c, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, simx_opmode_oneshot_wait);
+                Trajectory *trajectory = ctrl.move_robot_ptp(&start_cfg, &end_cfg);
+                for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {
+                    c[0] = static_cast<float>((*cur_cfg)[0]);
+                    c[1] = static_cast<float>((*cur_cfg)[1]);
+                    c[2] = static_cast<float>((*cur_cfg)[2]);
+                    c[3] = static_cast<float>((*cur_cfg)[3]);
+                    c[4] = static_cast<float>((*cur_cfg)[4]);
+                    c[5] = static_cast<float>((*cur_cfg)[5]);
+                    simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, nullptr, 6, c,
+                                           0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                           simx_opmode_oneshot_wait);
                     // synchronize with vrep simulation environment
                     this_thread::sleep_for(std::chrono::milliseconds(50));
                 }
             }
 
-           /*
-            * Compute a PTP trajectory and move the robot synchronous in VREP
-            */
-           if (jsonHandler.get_op_mode() == OpMode::PTPSYNC) {
-            Configuration start_cfg((jsonHandler.get_data())[0]);
-            Configuration end_cfg((jsonHandler.get_data())[1]);
-            //                cout << "Path Configuration" << endl;
-            //                cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
-            //                cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
+            /*
+             * Compute a PTP trajectory and move the robot synchronous in VREP
+             */
+            if (jsonHandler.get_op_mode() == OpMode::PTPSYNC) {
+                Configuration start_cfg((jsonHandler.get_data())[0]);
+                Configuration end_cfg((jsonHandler.get_data())[1]);
+                //cout << "Path Configuration" << endl;
+                //cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
+                //cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
 
-            Trajectory* trajectory = ctrl.move_robot_ptp(&start_cfg, &end_cfg, true);
-            for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
-             c[0] = (*cur_cfg)[0];
-             c[1] = (*cur_cfg)[1];
-             c[2] = (*cur_cfg)[2];
-             c[3] = (*cur_cfg)[3];
-             c[4] = (*cur_cfg)[4];
-             c[5] = (*cur_cfg)[5];
-             simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL, 6, c, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, simx_opmode_oneshot_wait);
-             // synchronize with vrep simulation environment
-             this_thread::sleep_for(std::chrono::milliseconds(50));
+                Trajectory *trajectory = ctrl.move_robot_ptp(&start_cfg, &end_cfg, true);
+                for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {
+                    c[0] = static_cast<float>((*cur_cfg)[0]);
+                    c[1] = static_cast<float>((*cur_cfg)[1]);
+                    c[2] = static_cast<float>((*cur_cfg)[2]);
+                    c[3] = static_cast<float>((*cur_cfg)[3]);
+                    c[4] = static_cast<float>((*cur_cfg)[4]);
+                    c[5] = static_cast<float>((*cur_cfg)[5]);
+                    simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, nullptr, 6, c,
+                                           0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                           simx_opmode_oneshot_wait);
+                    // synchronize with vrep simulation environment
+                    this_thread::sleep_for(std::chrono::milliseconds(50));
+                }
             }
-           }
 
             /*
              * Compute a LIN trajectory and move the robot in VREP
              */
-            if(jsonHandler.get_op_mode() == OpMode::LIN){
+            if (jsonHandler.get_op_mode() == OpMode::LIN) {
                 double vel = jsonHandler.get_velocity();
                 double acc = jsonHandler.get_acceleration();
                 Configuration start_cfg((jsonHandler.get_data())[0]);
                 Configuration end_cfg((jsonHandler.get_data())[1]);
-//                cout << "Path Configuration" << endl;
-//                cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
-//                cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
+                //cout << "Path Configuration" << endl;
+                //cout << "start config: " << start_cfg [0] << ", " << start_cfg [1] << ", " << start_cfg [2] << ", " << start_cfg [3] << ", " << start_cfg [4] << ", " << start_cfg [5] << endl;
+                //cout << "end config: " << end_cfg [0] << ", " << end_cfg [1] << ", " << end_cfg [2] << ", " << end_cfg [3] << ", " << end_cfg [4] << ", " << end_cfg [5] << endl;
 
-                std::vector<std::vector<SixDPos*>> loopPoints;
-                Trajectory* trajectory = ctrl.move_robot_lin(&start_cfg, &end_cfg, vel, acc, &loopPoints);
+                std::vector<std::vector<SixDPos *>> loopPoints;
+
+                // Call the lin function
+                Trajectory *trajectory = ctrl.move_robot_lin(&start_cfg, &end_cfg, vel, acc, &loopPoints);
+
+                // Create the data for the path plotting functionality in VREP and send it using a signal
                 string json_loop_string = jsonHandler.get_json_string(loopPoints);
-
-
-                std::vector<SixDPos*> path_points;
-                for (Configuration* cur_cfg : *(trajectory->get_all_configuration()))
-                {
-                    SixDPos* return_pos = ctrl.get_pos_from_config(cur_cfg);
+                std::vector<SixDPos *> path_points;
+                for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {
+                    SixDPos *return_pos = ctrl.get_pos_from_config(cur_cfg);
                     path_points.push_back(return_pos);
                 }
-
-                //std::vector<SixDPos*> spline_points; // <--- Den hier mit den SixDPos* deines Splines befüllen, danach den rest unten an dieser Stelle ausführen
                 string json_string = jsonHandler.get_json_string(&path_points);
                 simxSetStringSignal(ID, "path_loops",
-                                    reinterpret_cast<const simxUChar *>(json_loop_string.c_str()), json_loop_string.length(), simx_opmode_oneshot);
+                                    reinterpret_cast<const simxUChar *>(json_loop_string.c_str()),
+                                    json_loop_string.length(), simx_opmode_oneshot);
                 simxSetStringSignal(ID, "path_general",
-                                    reinterpret_cast<const simxUChar *>(json_string.c_str()), json_string.length(), simx_opmode_oneshot);
-                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "show_calculated_path", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
+                                    reinterpret_cast<const simxUChar *>(json_string.c_str()), json_string.length(),
+                                    simx_opmode_oneshot);
+                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "show_calculated_path", 0,
+                                       nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                       nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
 
 
-
-
-                for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
-                    c[0] = (*cur_cfg)[0];
-                    c[1] = (*cur_cfg)[1];
-                    c[2] = (*cur_cfg)[2];
-                    c[3] = (*cur_cfg)[3];
-                    c[4] = (*cur_cfg)[4];
-                    c[5] = (*cur_cfg)[5];
-                    simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL, 6, c, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, simx_opmode_oneshot_wait);
+                for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {
+                    c[0] = static_cast<float>((*cur_cfg)[0]);
+                    c[1] = static_cast<float>((*cur_cfg)[1]);
+                    c[2] = static_cast<float>((*cur_cfg)[2]);
+                    c[3] = static_cast<float>((*cur_cfg)[3]);
+                    c[4] = static_cast<float>((*cur_cfg)[4]);
+                    c[5] = static_cast<float>((*cur_cfg)[5]);
+                    simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, nullptr, 6, c,
+                                           0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                           simx_opmode_oneshot_wait);
                     // synchronize with vrep simulation environment
                     this_thread::sleep_for(std::chrono::milliseconds(50));
                 }
@@ -231,52 +238,58 @@ int main() {
             /*
              * Compute a spline trajectory and move the robot accordingly
              */
-            if(jsonHandler.get_op_mode() == OpMode::SPLINE) {
-              double vel = jsonHandler.get_velocity();
-              double acc = jsonHandler.get_acceleration();
-              Configuration start_cfg(jsonHandler.get_start_configuration());
-              int spline_type = jsonHandler.get_spline_type();
-              double elong = jsonHandler.get_elongation();
-              vector<SixDPos*> points;
-              size_t count = jsonHandler.get_data().size();
-              for(size_t i = 0; i < count; i++) {
-                auto *pos = new SixDPos( jsonHandler.get_data()[static_cast<int>(i)]);
-                points.push_back(pos);
-              }
+            if (jsonHandler.get_op_mode() == OpMode::SPLINE) {
+                double vel = jsonHandler.get_velocity();
+                double acc = jsonHandler.get_acceleration();
+                Configuration start_cfg(jsonHandler.get_start_configuration());
+                int spline_type = jsonHandler.get_spline_type();
+                double elong = jsonHandler.get_elongation();
+                vector<SixDPos *> points;
+                size_t count = jsonHandler.get_data().size();
+                for (size_t i = 0; i < count; i++) {
+                    auto *pos = new SixDPos(jsonHandler.get_data()[static_cast<int>(i)]);
+                    points.push_back(pos);
+                }
 
-              std::vector<std::vector<SixDPos*>> loopPoints;
-              Trajectory* trajectory = ctrl.move_robot_spline(points, &start_cfg, vel, acc, &loopPoints, elong,spline_type);
-			  string json_loop_string = jsonHandler.get_json_string(loopPoints);
+                std::vector<std::vector<SixDPos *>> loopPoints;
 
-			  
-			  std::vector<SixDPos*> spline_points;
-			  for (Configuration* cur_cfg : *(trajectory->get_all_configuration()))
-			  {
-				  SixDPos* return_pos = ctrl.get_pos_from_config(cur_cfg);
-				  spline_points.push_back(return_pos);
-			  }
-              
-              //std::vector<SixDPos*> spline_points; // <--- Den hier mit den SixDPos* deines Splines befüllen, danach den rest unten an dieser Stelle ausführen
-              string json_string = jsonHandler.get_json_string(&spline_points);
-			  simxSetStringSignal(ID, "path_loops",
-                                    reinterpret_cast<const simxUChar *>(json_loop_string.c_str()), json_loop_string.length(), simx_opmode_oneshot);
-              simxSetStringSignal(ID, "path_general",
-                                    reinterpret_cast<const simxUChar *>(json_string.c_str()), json_string.length(), simx_opmode_oneshot);
-              simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "show_calculated_path", 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
-               
+                // Call the spline function
+                Trajectory *trajectory = ctrl.move_robot_spline(points, &start_cfg, vel, acc, &loopPoints, elong,
+                                                                spline_type);
 
-              for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
-                c[0] = (*cur_cfg)[0];
-                c[1] = (*cur_cfg)[1];
-                c[2] = (*cur_cfg)[2];
-                c[3] = (*cur_cfg)[3];
-                c[4] = (*cur_cfg)[4];
-                c[5] = (*cur_cfg)[5];
-                simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL, 6, c, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, simx_opmode_oneshot_wait);
-                // synchronize with vrep simulation environment
-                this_thread::sleep_for(std::chrono::milliseconds(50));
-              }
-              points.clear();
+                // Create the data for the path plotting functionality in VREP and send it using a signal
+                string json_loop_string = jsonHandler.get_json_string(loopPoints);
+                std::vector<SixDPos *> spline_points;
+                for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {
+                    SixDPos *return_pos = ctrl.get_pos_from_config(cur_cfg);
+                    spline_points.push_back(return_pos);
+                }
+                string json_string = jsonHandler.get_json_string(&spline_points);
+                simxSetStringSignal(ID, "path_loops",
+                                    reinterpret_cast<const simxUChar *>(json_loop_string.c_str()),
+                                    json_loop_string.length(), simx_opmode_oneshot);
+                simxSetStringSignal(ID, "path_general",
+                                    reinterpret_cast<const simxUChar *>(json_string.c_str()), json_string.length(),
+                                    simx_opmode_oneshot);
+                simxCallScriptFunction(ID, "Coord_Dialog", sim_scripttype_childscript, "show_calculated_path", 0,
+                                       nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                       nullptr, nullptr, nullptr, nullptr, simx_opmode_blocking);
+
+
+                for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {
+                    c[0] = static_cast<float>((*cur_cfg)[0]);
+                    c[1] = static_cast<float>((*cur_cfg)[1]);
+                    c[2] = static_cast<float>((*cur_cfg)[2]);
+                    c[3] = static_cast<float>((*cur_cfg)[3]);
+                    c[4] = static_cast<float>((*cur_cfg)[4]);
+                    c[5] = static_cast<float>((*cur_cfg)[5]);
+                    simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, nullptr, 6, c,
+                                           0, nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                           simx_opmode_oneshot_wait);
+                    // synchronize with vrep simulation environment
+                    this_thread::sleep_for(std::chrono::milliseconds(50));
+                }
+                points.clear();
             }
 
             simxClearStringSignal(ID, "callsignal", simx_opmode_blocking);
