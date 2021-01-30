@@ -75,8 +75,6 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
         else{
             cout << "Trajectory can not be calculated!" << endl;
             trajectory->clear();
-            trajectory->add_configuration(start_cfg);
-            trajectory->add_configuration(start_cfg);
             break;
         }
     }
