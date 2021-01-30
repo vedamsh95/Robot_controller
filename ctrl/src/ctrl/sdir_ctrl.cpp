@@ -62,6 +62,6 @@ Trajectory* SdirCtrl::move_robot_spline(vector<SixDPos*> &points, Configuration 
     std::cout << (*pos)[0] << ", " << (*pos)[1] << ", " << (*pos)[2] << std::endl;
   }
   Splines splines;
-  return splines.getSpline(points, start, velocity, acceleration, loopPoints, _spline_type);
+  return splines.getSpline(points, start, velocity, acceleration, loopPoints,_elong, _spline_type);
   
 }
