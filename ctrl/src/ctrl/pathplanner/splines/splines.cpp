@@ -149,7 +149,7 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 		plotSpline(trajectPoints, t_vec);
 	
 	//find corresponding joint configurations to trajectory
-	trajectory = ivMovement->getMovement(trajectSixDPos, start_cfg);
+	trajectory = ivMovement->getMovement(trajectSixDPos, start_cfg, loopPoints);
 
 
 	return 	trajectory;

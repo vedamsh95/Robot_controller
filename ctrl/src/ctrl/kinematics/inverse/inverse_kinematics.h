@@ -22,6 +22,7 @@
 class InvKinematics {
 private:
     Robot *robot;
+    vector<Configuration*>* solutions;
     static constexpr double singularityMargin = 0.05;
     
     /**
@@ -44,11 +45,32 @@ public:
      * configuration for the position of the wrist point and the orientation at the tcp.
      *
      * @param _pos {@ref SixDPos} to compute the configuration for
+     * @param setJointLimits when true values for the wrist joints are set to limits if they are exceeded.
      * @return  a reference to a <code>vector<code> containing all possible configurations for the passed position
      */
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos, bool setJointLimits = false);
     
     /**
+     * Allows the calculation of all available configurations for given values for the arm joints.
+     *
+     * @param _pos {@ref SixDPos} to compute the configuration for
+     * @param armJoint vector containing the configurations of first three joints
+     * @return  a reference to a <code>vector<code> containing all possible configurations for the passed position
+     */
+    vector<Configuration*>* get_inv_kinematics(SixDPos* _pos, array<double, 3>* armJoints);
+    
+    /**
+     * This method computes all available configurations for a given Matrix R_06 and the rotation for the arm joints
+     * and returns them as a vector.
+     *
+     * @param _pos {@ref SixDPos} to compute the configuration for
+     * @param setJointLimits when true values for the wrist joints are set to limits if they are exceeded.
+     * @return  a reference to a <code>vector<code> containing all possible configurations for the passed position
+     */
+    void calcSolutions(TMatrix* R_06, array<double,3>* ActPos, bool setJointLimits);
+    
+    /**
+     *
      * Calculation of the configurations of wrist joints in case of wrist singularity (theta5 = 0).
      * The sum of theta4 and theta6 is calculated from the matrix R36.
      * theta4+theta5 = arccos(R36[1][1])

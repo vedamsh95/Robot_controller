@@ -56,6 +56,11 @@ void Trajectory::insert(Configuration* config, int index)
     this->m_configs.insert(m_configs.begin()+ index, config);
 }
 
+void Trajectory::insert(Trajectory* _trajectory, int index)
+{
+    this->m_configs.insert(m_configs.begin()+ index, _trajectory->m_configs.begin(), _trajectory->m_configs.end());
+}
+
 void Trajectory::clear()
 {
     this->m_configs.clear();
@@ -77,3 +82,7 @@ void Trajectory::startAt(int index)
     this->m_configs = B;
 }
 
+Configuration* Trajectory::get_last()
+{
+    return this->m_configs.back();
+}

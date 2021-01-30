@@ -33,12 +33,15 @@ public:
     void append(Trajectory* endTrajectory);
     
     void insert(Configuration* config, int index);
+    void insert(Trajectory* trajectory, int index);
     
     void set_configuration(Configuration* config, int index);
     
     void clear();
     
     void startAt(int index);
+    
+    Configuration* get_last();
 
 };
 

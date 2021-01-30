@@ -3,6 +3,7 @@
 #include <Trajectory.h>
 #include <SixDPos.h>
 #include "inverse_kinematics.h"
+#include "../direct/fw_kinematics.h"
 #include <Robot.h>
 #include <iostream>
 #include <math.h>
@@ -15,7 +16,7 @@ class IVMovement
 public:
     IVMovement();
     ~IVMovement();
-    Trajectory* getMovement(vector<SixDPos *>* _positions, Configuration * start_cfg);
+    Trajectory* getMovement(vector<SixDPos *>* _positions, Configuration * start_cfg, std::vector<std::vector<SixDPos*>>* loopPoints);
     
     /**
      * Calculates if joint velocities are too high so that _positions can be changed accordingly.
@@ -30,8 +31,10 @@ private:
 	Configuration* GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig);
     
 	InvKinematics *invK;
+    FwKinematics* fwK;
 	Trajectory *trajectory;
     Robot *robot;
+    std::vector<std::vector<SixDPos*>>* loopVector;
     
     /**
      * Computes the configuration of a new SixDPos C that is interpolated from the SixDPos _position->at(index) and _position->at(index-1).
@@ -64,8 +67,7 @@ private:
      * @return a reference containing the interpolated configuration.
      */
     Configuration* wsInterpolation(Configuration* startConfig, Configuration* curConfig, Configuration* endConfig);
-    
-    Configuration* osInterpolation(Configuration* startConfig, Configuration* curConfig, Configuration* endConfig);
+
     
     /**
      * Computes configurations at overhead singularities ( x & y ==0) by interpolating theta1 from values outside of singularity trajectory(-length) and trajectory(-1)).
@@ -74,12 +76,27 @@ private:
      * @param trajectory  trajectory containing configurations
      * @param length length of the singularity
      */
-    void osInterpolation(Trajectory* trajectory, int length);
+    void osInterpolation(Trajectory* trajectory, int lengths, vector<SixDPos*>* _positions);
     
     /**
-     * Gets distance inbetween Configuration* A and Configuration* B
+     * Computes configurations at overhead singularities ( x & y ==0) by interpolating theta1  from two given values (startConfig & endConfig).
+     *
+     * @param startConfig  Configuration before singularity.
+     * @param curConfig  singularity configuration.
+     * @param endConfig  Configuration after singularity.
+     *
+     * @return a reference containing the interpolated configuration.
      */
-    double distance(Configuration* A, Configuration* B);
+    Configuration* osInterpolation(Configuration* startConfig, Configuration* curConfig, Configuration* endConfig, SixDPos* pos);
+    
+    /**
+     * Computes new sixDPos at elbow singularity.
+     *
+     * @param _pos current positon
+     *
+     * @return reference containing the adjusted SixDPos
+     */
+    SixDPos* esCalculation(SixDPos* _pos);
     
     /**
      * Checks if configuration _config is wrist singularity
@@ -96,9 +113,31 @@ private:
      */
     bool elbowSingularity(SixDPos* _pos);
     
-    void CheckJointVelocities(Trajectory* _trajectory);
-    
+    /**
+     * Computes the configuration  that is interpolated from the Configurations  trajectory->at(index) and trajectory->at(index-1).
+     *
+     * @param trajectory  trajectory to get previous configurations from.
+     * @param index index of _positions that needs to be interpolated
+     * @return true if values were interpolated and inserted
+     */
     bool JointInterpolate(Trajectory* trajectory, int index);
+    
+    
+    /**
+     * Gets distance inbetween Configuration* A and Configuration* B
+     */
+    double distance(Configuration* A, Configuration* B);
+    
+    /**
+     * Gets maximal distance distance inbetween Configuration* A and Configuration* B
+     */
+    double getMaxDiff(Configuration* ConifgA, Configuration* ConfigB);
+    
+    
+    /**
+     * Stores the interpolated poins in loopPoints. 
+     */
+    void getLoopPoints(std::vector<int> LoopStart, std::vector<int> LoopSize);
     
     
 };

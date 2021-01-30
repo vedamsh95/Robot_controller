@@ -3,16 +3,19 @@
 IVMovement::IVMovement()
 {
     invK = new InvKinematics();
+    fwK = new FwKinematics();
     trajectory = new Trajectory();
     robot = &Robot::getInstance();
+    loopVector = new std::vector<std::vector<SixDPos*>>();
 }
 
 IVMovement::~IVMovement()
 {
 }
 
-Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration * start_cfg)
+Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration * start_cfg, std::vector<std::vector<SixDPos*>>* loopPoints)
 {
+    loopVector = loopPoints;
     Configuration* prevConfig = start_cfg;
     Configuration* correctConfig;
     vector<Configuration*>* configs;
@@ -21,51 +24,47 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     bool oSingularity = false;
     int wsLength = 0;
     int osLength = 0;
+    
     trajectory->add_configuration(start_cfg);
-
 
     for (int i = 1; i< _positions->size(); i++)
     {
         t = _positions->at(i);
-        //TODO: check for elbow singularity.
-        //(before IVKinematics is calculated!)
+
+        //check for elbow singularity.
         while(elbowSingularity(t)){
-            cout << "Elbow Singularity" << endl;
-            t = new SixDPos(t->get_X()-(invK->sign(t->get_X())*0.05),
-                            t->get_Y()-(invK->sign(t->get_Y())*0.05),
-                            t->get_Z(),
-                            t->get_A(),
-                            t->get_B(),
-                            t->get_C());
+            t = esCalculation(t);
         }
         
+        //calculate inverse kinematic for the position t.
         configs = invK->get_inv_kinematics(t, true);
 
         if (configs->size() > 0){
             correctConfig =  GetClosestConfiguration(configs, prevConfig);
             trajectory->add_configuration(correctConfig);
             
-            if(wristSingularity(correctConfig)){
-                wSingularity = true;
-                wsLength++;
-            }
             if(overheadSingularity(t)){
                 oSingularity = true;
                 osLength++;
             }
 
-            if(!wristSingularity(correctConfig)&& wSingularity){
+            if(!overheadSingularity(t)&& oSingularity){
+                osLength++;
+                osInterpolation(trajectory, osLength, _positions);
+                oSingularity = false;
+                osLength = 0;
+            }
+            
+            if(wristSingularity(trajectory->get_last())){
+                wSingularity = true;
+                wsLength++;
+            }
+            
+            if(!wristSingularity(trajectory->get_last())&& wSingularity){
                 wsLength++;
                 wsInterpolation(trajectory, wsLength);
                 wSingularity = false;
                 wsLength = 0;
-            }
-
-            if(!overheadSingularity(t)&& oSingularity){
-                osLength++;
-                osInterpolation(trajectory, osLength);
-                oSingularity = false;
-                osLength = 0;
             }
 
             if(!wristSingularity(correctConfig)&& !wSingularity &&
@@ -77,23 +76,26 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
             cout << "Trajectory can not be calculated!" << endl;
             trajectory->clear();
             trajectory->add_configuration(start_cfg);
+            trajectory->add_configuration(start_cfg);
             break;
         }
     }
     
     //Check if joint velocitys are in range and adjust them by adding points if necessary.
-    //CheckVelocities(trajectory, _positions);
-    CheckJointVelocities(trajectory);
+    CheckVelocities(trajectory, _positions);
     
     //crop trajectory because first Configuration* is current configuration of robot.
     trajectory->startAt(1);
+    
     return trajectory;
 }
 
-Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig) {
-    vector<Configuration*>::size_type NbConfigs = _configs->size();
+Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig)
+{
+    int NbConfigs = _configs->size();
     double minDist = 1000;
     int minConfig = 0;
+    
     for (int i = 0; i < NbConfigs; i++) {
         Configuration* ActConfig = _configs->at(i);
         double actDist = 0;
@@ -112,61 +114,87 @@ Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _conf
 
 void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _positions)
 {
-    int NbExeptions = 0;
-    cout << "Checking velocities" << endl;
-    for(int i = 1; i < _trajectory->get_length()+NbExeptions; i++)
+    int NbExceptions = 0;
+    bool exception;
+    
+    //Check joint velocities that are too high due to distance between points and
+    //add points to reduce the velocity.
+    //(the difference inbetween consecutive joint configuratinos is higher than
+    //the limits for the joint but lower than a certain threshold)
+    for(int i = 1; i < _trajectory->get_length()+NbExceptions; i++)
     {
-        bool exeption = false;
+        exception = false;
         for(int j = 0; j < 6; j++)
         {
             if( std::abs
-               (((*_trajectory->get_configuration(i-NbExeptions))[j] - ((*_trajectory->get_configuration(i-1-NbExeptions))[j]))
+               (((*_trajectory->get_configuration(i-NbExceptions))[j] - ((*_trajectory->get_configuration(i-1-NbExceptions))[j]))
                          / robot->time_interval) > robot->velocities[j]){
-                exeption = true;
+                if (getMaxDiff(_trajectory->get_configuration(i-NbExceptions),
+                               _trajectory->get_configuration(i-1-NbExceptions)) < 0.5*M_PI){
+                    exception = true;
+                }
             }
         }
-        if(exeption){
-            if(Interpolate(_trajectory, _positions, i-NbExeptions)){
-                NbExeptions++;
-            }
-            if(NbExeptions > 500) break;
+        if(exception){
+            if(Interpolate(_trajectory, _positions, i-NbExceptions))
+                NbExceptions++;
+            if(NbExceptions > 1000) break;
         }
+        
     }
 
-    if(NbExeptions > 0){
+    if(NbExceptions > 0){
         cout << "Too high velocities detected, corresponding points changed." << endl;
     }
-    else return;
-}
-
-void IVMovement::CheckJointVelocities(Trajectory* _trajectory)
-{
-    int NbExeptions = 0;
-    cout << "Checking velocities" << endl;
-    for(int i = 1; i < _trajectory->get_length()+NbExeptions; i++)
+    
+    //detect "flipping" of joints and interpolate configurations.
+    NbExceptions = 0;
+    std::vector<SixDPos*> temp;
+    std::vector<int> LoopSize;
+    std::vector<int> LoopStart;
+    int actSize = 0;
+    
+    for(int i = 1; i < _trajectory->get_length()+NbExceptions; i++)
     {
-        bool exeption = false;
+        exception = false;
         for(int j = 0; j < 6; j++)
         {
-            if( std::abs
-               (((*_trajectory->get_configuration(i-NbExeptions))[j] - ((*_trajectory->get_configuration(i-1-NbExeptions))[j]))
+            if(std::abs
+               (((*_trajectory->get_configuration(i-NbExceptions))[j] - ((*_trajectory->get_configuration(i-1-NbExceptions))[j]))
                          / robot->time_interval) > robot->velocities[j]){
-                exeption = true;
+                exception = true;
             }
         }
-        if(exeption){
-            if(JointInterpolate(trajectory, i-NbExeptions)){
-                NbExeptions++;
+        if(exception){
+            //store values of start and size of each flipping loop.
+            if(JointInterpolate(trajectory, i-NbExceptions)){
+                if(LoopStart.size()==0){
+                    LoopStart.push_back(i-NbExceptions);
+                }
+                else if(i-NbExceptions - (LoopStart.back()+actSize) > 3){
+                    LoopSize.push_back(actSize+1);
+                    actSize = 0;
+                    LoopStart.push_back(i-NbExceptions);
+                }
+                else actSize++;
+                
+                NbExceptions++;
+                if(NbExceptions > 1000) break;
             }
-            if(NbExeptions > 500) break;
         }
     }
+    LoopSize.push_back(actSize+1);
 
-    if(NbExeptions > 0){
-        cout << "Too high velocities detected, corresponding points changed." << endl;
+    getLoopPoints(LoopStart, LoopSize);
+    
+    if(NbExceptions > 0){
+        cout << "Flipping of joints detected, configurations interpolated" << endl;
     }
 }
 
+/*
+ Interpolation functions.
+ */
 bool IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>* _positions, int index)
 {
     SixDPos* PosA = _positions->at(index-1);
@@ -178,33 +206,44 @@ bool IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>* _position
                                PosA->get_B(),
                                PosA->get_C());
 
-    
-    Configuration* correctConfig;
-    vector<Configuration*>* configs;
-    configs = invK->get_inv_kinematics(PosC, true );
-    correctConfig =  GetClosestConfiguration(configs, trajectory->get_configuration(index-1));
-    
-    //check for wrist singularity.
-    if(wristSingularity(correctConfig)){
-        correctConfig = wsInterpolation(trajectory->get_configuration(index-1),
-                              correctConfig,
-                              trajectory->get_configuration(index));
+    //check for elbow singularity.
+    while(elbowSingularity(PosC)){
+        PosC = esCalculation(PosC);
     }
     
-    //check for overhead singularity.
-    if(overheadSingularity(PosC)){
-        correctConfig = osInterpolation(trajectory->get_configuration(index-1),
-                              correctConfig,
-                              trajectory->get_configuration(index));
-    }
+    vector<Configuration*>* configs = invK->get_inv_kinematics(PosC, true );
     
-    if( distance(correctConfig, trajectory->get_configuration(index-1))
-       < distance(trajectory->get_configuration(index), trajectory->get_configuration(index-1))){
-        _positions->insert(_positions->begin()+index, PosC);
-        trajectory->insert(correctConfig, index);
-        return true;
+    if(configs->size()>0)
+    {
+        Configuration* correctConfig = GetClosestConfiguration(configs, trajectory->get_configuration(index-1));
+        
+        //check for overhead singularity.
+        if(overheadSingularity(PosC)){
+            correctConfig = osInterpolation(trajectory->get_configuration(index-1),
+                                  correctConfig,
+                                  trajectory->get_configuration(index), PosC);
+        }
+        
+        
+        //check for wrist singularity.
+        if(wristSingularity(correctConfig)){
+            correctConfig = wsInterpolation(trajectory->get_configuration(index-1),
+                                  correctConfig,
+                                  trajectory->get_configuration(index));
+        }
+        
+        //only add point if distance inbetween configurations is reduced by interpolation.
+        if( distance(correctConfig, trajectory->get_configuration(index-1))
+           < distance(trajectory->get_configuration(index),
+                      trajectory->get_configuration(index-1))){
+            _positions->insert(_positions->begin()+index, PosC);
+            trajectory->insert(correctConfig, index);
+            return true;
+        }
+        else return false;
     }
     else return false;
+    
 }
 
 bool IVMovement::JointInterpolate(Trajectory* trajectory, int index)
@@ -226,11 +265,13 @@ bool IVMovement::JointInterpolate(Trajectory* trajectory, int index)
     else return false;
 }
 
+/*
+ Calculation of values at singularities.
+ */
 
 Configuration* IVMovement::wsInterpolation(Configuration *startConfig, Configuration *curConfig, Configuration *endConfig)
 {
     Trajectory* A = new Trajectory();
-    Trajectory* C = new Trajectory();
     
     A->add_configuration(startConfig);
     A->add_configuration(curConfig);
@@ -240,22 +281,8 @@ Configuration* IVMovement::wsInterpolation(Configuration *startConfig, Configura
     return A->get_configuration(1);
 }
 
-Configuration* IVMovement::osInterpolation(Configuration *startConfig, Configuration *curConfig, Configuration *endConfig)
-{
-    Trajectory* A = new Trajectory();
-    Trajectory* C = new Trajectory();
-    
-    A->add_configuration(startConfig);
-    A->add_configuration(curConfig);
-    A->add_configuration(endConfig);
-    osInterpolation(A, 2);
-    
-    return A->get_configuration(1);
-}
-
 void IVMovement::wsInterpolation(Trajectory* trajectory, int length)
 {
-    Trajectory* configs = new Trajectory();
     int traSize = trajectory->get_length();
     Configuration* startConfig = trajectory->get_configuration(traSize-length-1);
     Configuration* endConfig = trajectory->get_configuration(traSize-1);
@@ -275,23 +302,137 @@ void IVMovement::wsInterpolation(Trajectory* trajectory, int length)
     //cout << "Wrist configurations at singularities interpolated. " << endl
 }
 
+Configuration* IVMovement::osInterpolation(Configuration *startConfig, Configuration *curConfig, Configuration *endConfig, SixDPos* pos)
+{
+    Trajectory* A = new Trajectory();
+    vector<SixDPos*>* positions = new vector<SixDPos*>();
+    
+    A->add_configuration(startConfig);
+    A->add_configuration(curConfig);
+    A->add_configuration(endConfig);
+    positions->push_back(pos);
+    positions->push_back(pos);
+    
+    osInterpolation(A, 2, positions);
+    
+    return A->get_configuration(1);
+}
 
-void IVMovement::osInterpolation(Trajectory* trajectory, int length){
-    Trajectory* configs = new Trajectory();
+void IVMovement::osInterpolation(Trajectory* trajectory, int length, vector<SixDPos*>* _positions)
+{
+    vector<SixDPos*>* configs = new vector<SixDPos*>();
     int traSize = trajectory->get_length();
     Configuration* startConfig = trajectory->get_configuration(traSize-length-1);
     Configuration* endConfig = trajectory->get_configuration(traSize-1);
-    std::array<double, NUM_JOINTS> newConfig {};
+    std::array<double, 3> newConfig {};
     
     for(int i = 0; i < length; i++){
         Configuration* actConfig = trajectory->get_configuration(traSize-length+i);
         newConfig[0] = (*startConfig)[0] + (i+1)/(double)(length)*((*endConfig)[0]-(*startConfig)[0]);
-        for(int j= 1; j < NUM_JOINTS; j++){
-            newConfig[j] = (*actConfig)[j];
-        }
-        trajectory->set_configuration(new Configuration(newConfig), traSize-length+i);
+        newConfig[1] = (*actConfig)[1];
+        newConfig[2] = (*actConfig)[2];
+
+        vector<Configuration*>* configs = invK->get_inv_kinematics(_positions->at(traSize-length+i), &newConfig);
+        Configuration* correctConfig =  GetClosestConfiguration(configs, trajectory->get_configuration(traSize-length+i-1));
+        
+    trajectory->set_configuration(correctConfig, traSize-length+i);
     }
-    cout << "Theta1 configurations at overhead singularities interpolated. " << endl;
+    //cout << "Theta1 configurations at overhead singularities interpolated. " << endl;
+}
+
+SixDPos* IVMovement::esCalculation(SixDPos* _pos)
+{
+    return new SixDPos(_pos->get_X()-(invK->sign(_pos->get_X())*0.05),
+                    _pos->get_Y()-(invK->sign(_pos->get_Y())*0.05),
+                    _pos->get_Z(),
+                    _pos->get_A(),
+                    _pos->get_B(),
+                    _pos->get_C());
+}
+
+
+
+/*
+ Conditions for singularities.
+ */
+bool IVMovement::wristSingularity(Configuration* _config)
+{
+    if(std::abs((*_config)[4])< SINGULARITY_MARGIN) return true;
+    else return false;
+}
+
+bool IVMovement::overheadSingularity(SixDPos* _pos)
+{
+    std::array<double, 3>* WCP = IVKinPos::getWristCenterPoint(_pos);
+    if(std::abs(WCP->at(0))< SINGULARITY_MARGIN &&
+       std::abs(WCP->at(1))< SINGULARITY_MARGIN){
+        return true;
+    }
+    else return false;
+}
+
+bool IVMovement::elbowSingularity(SixDPos* _pos)
+{
+    std::array<double, 3>* WCP = IVKinPos::getWristCenterPoint(_pos);
+    
+    double d1 = sqrt(pow(WCP->at(0),2)+pow(WCP->at(1),2));
+    double d2 = sqrt(pow(robot->b, 2)+pow(robot->o, 2));
+    
+    double Px = abs(d1-robot->m);
+    double Py = WCP->at(2) - robot->n;
+    
+    if(std::abs(pow((robot->a + d2), 2) - (Px*Px + Py*Py)) < SINGULARITY_MARGIN)
+        return true;
+    else return false;
+        
+}
+
+
+/*
+ Storage of interpolated values for visualization.
+ */
+void IVMovement::getLoopPoints(std::vector<int> LoopStart, std::vector<int> LoopSize)
+{
+    std::vector<SixDPos*> temp;
+    
+    for(int i=0; i < LoopStart.size(); i++)
+    {
+        //adjust the boundaries of loop points to draw the loop correctly.
+        if (LoopStart.at(i)>0
+            && LoopStart.at(i)+LoopSize.at(i) < trajectory->get_length()){
+            LoopStart.at(i) = LoopStart.at(i)-1;
+            LoopSize.at(i) = LoopSize.at(i)+2;
+        }
+        else if(LoopStart.at(i)>0){
+            LoopStart.at(i) = LoopStart.at(i)-1;
+            LoopSize.at(i) = LoopSize.at(i)+1;
+        }
+        else if(LoopStart.at(i)+LoopSize.at(i) < trajectory->get_length()){
+            LoopSize.at(i) = LoopSize.at(i)+1;
+        }
+        
+        for(int j= LoopStart.at(i); j < (LoopStart.at(i)+LoopSize.at(i)); j++)
+        {
+            temp.push_back(fwK->get_fw_kinematics(trajectory->get_configuration(j)));
+        }
+        loopVector->push_back(temp);
+        temp.clear();
+    }
+}
+
+/*
+ General calculations.
+ */
+
+double IVMovement::getMaxDiff(Configuration* ConfigA, Configuration* ConfigB)
+{
+    double maxDist = 0;
+    for(int i= 0; i < NUM_JOINTS; i++){
+        if(std::abs((*ConfigA)[i]-(*ConfigB)[i]) > maxDist){
+            maxDist = std::abs((*ConfigA)[i]-(*ConfigB)[i]);
+        }
+    }
+    return maxDist;
 }
 
 double IVMovement::distance(Configuration* A, Configuration* B)
@@ -303,34 +444,3 @@ double IVMovement::distance(Configuration* A, Configuration* B)
     }
     return sqrt(distance);
 }
-
-
-bool IVMovement::wristSingularity(Configuration* _config)
-{
-    if(std::abs((*_config)[4])< SINGULARITY_MARGIN) return true;
-    else return false;
-}
-
-bool IVMovement::overheadSingularity(SixDPos* _pos)
-{
-    if(std::abs(_pos->get_X())< SINGULARITY_MARGIN &&
-       std::abs(_pos->get_Y())< SINGULARITY_MARGIN){
-        return true;
-    }
-    else return false;
-}
-
-bool IVMovement::elbowSingularity(SixDPos* _pos)
-{
-    double d1 = sqrt(pow(_pos->get_X(),2)+pow(_pos->get_Y(),2));
-    double d2 = sqrt(pow(robot->b, 2)+pow(robot->o, 2));
-    
-    double Px = abs(d1-robot->m);
-    double Py = _pos->get_Z() - robot->n;
-    
-    if(std::abs(pow((robot->a + d2), 2) - (Px*Px + Py*Py)) < SINGULARITY_MARGIN)
-        return true;
-    else return false;
-        
-}
-

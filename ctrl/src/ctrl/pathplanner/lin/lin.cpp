@@ -16,15 +16,11 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
     // so that the motion can still be performed
     makeFeasible(_start_cfg);
     makeFeasible(_end_cfg);
-    
-    SixDPos* start_pos = new SixDPos();
-    SixDPos* end_pos = new SixDPos();
-
-    
+        
     //Calculate start and endposition in cartesian space.
     FwKinematics fw;
-    start_pos = fw.get_fw_kinematics(_start_cfg);
-    end_pos = fw.get_fw_kinematics(_end_cfg);
+    SixDPos* start_pos = fw.get_fw_kinematics(_start_cfg);
+    SixDPos* end_pos = fw.get_fw_kinematics(_end_cfg);
     
     //Get distance between start and endposition.
     double distance = sqrt(pow(end_pos->get_X()-  start_pos->get_X(), 2)
@@ -67,7 +63,7 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
     //convert SixDPoses along the trajectory to configurations.
     IVMovement ivm;
     Trajectory* trajectory = new Trajectory();
-    trajectory = ivm.getMovement(&points, _start_cfg);
+    trajectory = ivm.getMovement(&points, _start_cfg, loopPoints);
     
     //appends movement to achive the given orientation.
     if(AdjustOrientation == true)
@@ -84,15 +80,13 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
         trajectory->append(ptp.get_ptp_trajectory(lastConfig, TargetOrientationConfig, false));
     }
     
-
-    //ivm.CheckVelocities(trajectory, &points);
     
     if(plot){
-        Ptp Plotptp;
+        Ptp PlotPtp;
         vector<Configuration*>* vecTraj = new vector<Configuration*>;
         vecTraj = trajectory->get_all_configuration();
         //PlotVelocity(points);
-        Plotptp.plot_movement(*vecTraj);
+        PlotPtp.plot_movement(*vecTraj);
     }
 
     
