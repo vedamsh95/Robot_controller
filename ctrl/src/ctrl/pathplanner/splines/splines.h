@@ -13,7 +13,11 @@
 #include "../ptp/Max_vel_trajectory.h"
 #include "../ptp/Trapezoidal_trajectory.h"
 #include "../../matplotlib-cpp-master/matplotlibcpp.h"
+
+#ifdef PLOT
 namespace plt = matplotlibcpp;
+#endif
+
 /*
 * This class implements the geometrical computation of cubic or qunitic bezier splines to get a smooth curve between the given points.
 * Furthermore the distance between spline points are determined to fulfill the specified velocity and acceleration

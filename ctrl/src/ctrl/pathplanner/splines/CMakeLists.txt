@@ -14,11 +14,12 @@ if(USE_PYTHON_PLOT)
             ${Python3_NumPy_INCLUDE_DIRS}
             )
 else()
-    target_include_directories(PTP
+    target_include_directories(SPLINES
             PUBLIC
+			"${CMAKE_SOURCE_DIR}/src/ctrl/postypes"
 	    "${CMAKE_SOURCE_DIR}/src/ctrl/kinematics/inverse"
 	    "${CMAKE_SOURCE_DIR}/src/ctrl/kinematics/inverse"
-            "${CMAKE_SOURCE_DIR}/src/ctrl/postypes"
+
             )
 endif()
 

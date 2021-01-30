@@ -1,4 +1,4 @@
-#include "splines.h""
+#include "splines.h"
 
 Splines::Splines() :plot(true)
 {
