@@ -9,15 +9,17 @@ class Singularity{
 
 public:
     Singularity()= default;
-    std::array<double, 2> wrist_singularity(double theta4, double theta6){
+    std::array<double, 3> wrist_singularity(double theta4, double theta5, double theta6){
 
         theta4 = 0;
+        theta5 = 0;
         theta6 = 0;
 
-        std::array<double, 2> singularity_wrist;
+        std::array<double, 3> singularity_wrist{};
 
         singularity_wrist[0] = theta4;
-        singularity_wrist[1] = theta6;
+        singularity_wrist[1] = theta5;
+        singularity_wrist[2] = theta6;
 
         return singularity_wrist;
 

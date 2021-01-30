@@ -115,7 +115,7 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
     array<double, 4> theta4{};
     array<double, 2> theta5{};
     array<double, 4> theta6{};
-    array<double, 2> sing_theta4_6{};
+    array<double, 3> sing_theta4_5_6{};
 
     //For theta 5 > 0
     //handle error cases of atan2 for ay, ax
@@ -181,13 +181,13 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
     }
 
     //check for wrist singularity for theta 5
-    if((theta5[0] <= 0 + margin_point && theta5[0] >= 0 - margin_point) || (theta5[1] <= 0 + margin_point && theta5[1] >= 0 - margin_point)){
+    if(( (theta5[0] <= 0 + margin_point) && (theta5[0] >= 0 - margin_point)) || ((theta5[1] <= 0 + margin_point) && (theta5[1] >= 0 - margin_point)) ){
         std::cout << "There is a Wrist Singularity." << std::endl;
-        sing_theta4_6 = inv_singularity.wrist_singularity(theta4[0], theta6[0]);
+        sing_theta4_5_6 = inv_singularity.wrist_singularity(theta4[0], theta5[0], theta6[0]);
 
-        theta4_5_6 = {sing_theta4_6[0],sing_theta4_6[0],sing_theta4_6[0],sing_theta4_6[0],
-                      theta5[0],theta5[1],
-                      sing_theta4_6[1],sing_theta4_6[1],sing_theta4_6[1],sing_theta4_6[1]};
+        theta4_5_6 = {sing_theta4_5_6[0], sing_theta4_5_6[0], sing_theta4_5_6[0], sing_theta4_5_6[0],
+                      sing_theta4_5_6[0], sing_theta4_5_6[0],
+                      sing_theta4_5_6[1], sing_theta4_5_6[1], sing_theta4_5_6[1], sing_theta4_5_6[1]};
 
     }else{
         theta4_5_6 = {theta4[0],theta4[1],theta4[2],theta4[3],
@@ -1888,13 +1888,13 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     //returning solution_vec
     if(solution_vec != nullptr ) {//return solutions;
         std::cout << "There are " << solution_vec->size() << " possible configurations." << std::endl;
-        return solution_vec;
     }
+    return solution_vec;
 
-    //returning null pointer
-    else{
-        Configuration *no_config;
-        std::cout << "There are no possible configurations for this position." << std::endl;
-        return nullptr;
-    }
+//    //returning null pointer
+//    else{
+//        Configuration *no_config;
+//        std::cout << "There are no possible configurations for this position." << std::endl;
+//        return nullptr;
+//    }
 }

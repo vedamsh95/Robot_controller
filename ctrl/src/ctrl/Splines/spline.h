@@ -11,6 +11,7 @@
 #include <json.h>
 #include "Trajectory.h"
 #include <inverse_kinematics.h>
+#include "ConfigProvider.h"
 
 class Spline {
 
@@ -22,14 +23,17 @@ private:
     std::vector<Vector<double, 3>> *points;
     double M_PII = 3.141592654;
     double timesteps;
-    std::vector<Configuration*> config_vec;
-    std::vector<Configuration*> temp_vec;
-
+    double marginpoint = ConfigProvider::getInstance().getmargin_point();
+    double config_switch_limit = ConfigProvider::getInstance().getconfig_switch_limit();
+    int config_switch_indent = -1;
 
 
 public:
     //-------------------create vector to store acceleration and speed of every joint at every time point---------------
     std::vector<vector<double>> joint_velocities_vec;
+    std::vector<Configuration*> config_vec;
+    std::vector<Configuration*> temp_vec;
+
     Spline(Vector<double,3> start_point, Vector<double,3> start_orientation,std::vector<Vector<double, 3>> *points, double speed, double acceleration, Vector<double, 6> start_config_vec);
     void out();
     Trajectory* calculateSpline();
@@ -42,6 +46,8 @@ public:
                                    std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
     void add_middle_cfg(Configuration* config1, Configuration* config2,
                                          std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
+    void add_middle_cfg2(Configuration* config1, Configuration* config2,
+                                 std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps)
 
 
 };

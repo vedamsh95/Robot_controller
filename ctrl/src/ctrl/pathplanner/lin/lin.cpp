@@ -126,8 +126,9 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     //------------------------------------------------------------------------------------------------------------------
 
     //Calculate points for Endeffector along linear path ---------------------------------------------------------------
-    std::array<double,3> t_pos_vec;
-    std::array<double,3> t_ori_vec;
+    std::array<double,3> t_pos_vec{};
+
+   // std::array<double,3> t_ori_vec{};
 //    t_pos_vec[0] = -0.718376830;
 //    t_pos_vec[1] = 1.89742719;
 //    t_pos_vec[2] = 0.232490439;
@@ -209,7 +210,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             std::vector<double> distances;
             double distance = 10000;
             int best_config = -1;
-            for (int j = 0; j < temp_configs->size(); ++j) {
+            for (unsigned int j = 0; j < temp_configs->size(); ++j) {
                 if(calc_config_difference(new_start_cfg, temp_configs->at(j)) < distance){
                     bool temp = checkconfiglimits(new_start_cfg, temp_configs->at(j),
                                                   &joint_velocities_vec.at(i), a_max, joint_max_vel, timesteps);
@@ -244,7 +245,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             std::vector<double> distances;
             double distance = 10000;
             int best_config = -1;
-            for (int j = 0; j < temp_configs->size(); ++j) {
+            for (unsigned int j = 0; j < temp_configs->size(); ++j) {
                 if(calc_config_difference(configurations_vec.at(configurations_vec.size()-1), temp_configs->at(j)) < distance){
 
                     // check if new config at new timepoint exceeds our limits of v & a
@@ -310,8 +311,8 @@ std::array<double,3> Lin::max_vel_profile(Vector<double, 3> start_pos, double di
 
 std::array<double,3> Lin::trapezoidal_prof(Vector<double, 3> start_pos, Vector<double, 3> end_pos,
                                         double t_f, double t, double t_c, double a_max, double v_max, Vector<double, 3> path_dir_vec) {
-    std::array<double,3> t_pos;
-    std::array<double,3> sign;
+    std::array<double,3> t_pos{};
+    std::array<double,3> sign{};
     //----------------------------------------------getting direction of the path for x,y,z ----------------------------
     for (int i = 0; i < 3; ++i) {
         if(path_dir_vec[i] < 0){

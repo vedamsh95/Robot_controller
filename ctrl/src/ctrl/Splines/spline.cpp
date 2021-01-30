@@ -7,7 +7,7 @@
 #include "math.h"
 #include <iostream>
 #include "Trajectory.h"
-#include "ConfigProvider.h"
+
 
 
 Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientation,
@@ -27,7 +27,7 @@ Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientatio
     this->start_config[2] = start_config_vec[2];
 
     // catch wrist singularity case
-    if ((start_config_vec[4]*180/M_PII) >= - 0.1 && (start_config_vec[4]*180/M_PII) <= 0.1){
+    if ((start_config_vec[4]*180/M_PII) >= - marginpoint && (start_config_vec[4]*180/M_PII) <= marginpoint){
         //we have a wrist singularity
         this->start_config[3] = 0;
         this->start_config[4] = 0;
@@ -80,7 +80,7 @@ Trajectory* Spline::calculateSpline() {
                                                      this->start_config[3], this->start_config[4], this->start_config[5]});
 
     // add first config to config_Vec
-    config_vec.push_back(start_config);
+   // config_vec.push_back(start_config);
 
     //------------------add this from robot class ----------------------------------------------------------------------
     double a_max = ConfigProvider::getInstance().getMax_accel();
@@ -454,15 +454,29 @@ Trajectory* Spline::calculateSpline() {
     for (unsigned int i = 0; i < spline_points.size(); ++i) {
         temp_configs = invKin.get_inv_kinematics(new SixDPos(spline_points.at(i)[0], spline_points.at(i)[1], spline_points.at(i)[2],
                                                              start_orientation[0] , start_orientation[1], start_orientation[2]));
-//        double num_pts_temp;
-//        for (int j = 0; j < num_points; ++j) {
-//            if (i <= num_pts_segment.at(j) - 1) {
-//                num_pts_temp = num_pts_segment.at(j);
-//            }
-//        }
 
+        if (i == 0){
+            // for the beginning we have a special case, because the difference between start cfg and first calculated is too large
+            // we will end up with too high velocities and risk overshooting the next points
+            std::vector<double> distances;
+            double distance = 10000;
+            int best_config = -1;
+            for (unsigned int j = 0; j < temp_configs->size(); ++j) {
 
-        if(temp_configs->size() != 0 ){
+                if(calc_config_difference(start_config, temp_configs->at(j)) < distance){
+                    // check if new config at new timepoint exceeds our limits of v & a
+                        distance = calc_config_difference(start_config, temp_configs->at(j));
+                        best_config = j;
+                        std::cout << "distance of config " << j+1 << " is smaller than previous one" << std::endl;
+                    }else{
+                        std::cout << "distance of config " << j+1 << " is smaller than previous one" << std::endl;
+                        std::cout << "However the new config exceeds robot limits" << std::endl;
+                    }
+                }
+            config_vec.push_back(temp_configs->at(best_config));
+            }
+
+        if(temp_configs->size() != 0 && i != 0){
             std::vector<double> distances;
             double distance = 10000;
             int best_config = -1;
@@ -471,7 +485,7 @@ Trajectory* Spline::calculateSpline() {
                 if(calc_config_difference(config_vec.at(config_vec.size()-1), temp_configs->at(j)) < distance){
                     // check if new config at new timepoint exceeds our limits of v & a
                     if( checkconfiglimits(config_vec.at(config_vec.size()-1), temp_configs->at(j),
-                                          &joint_velocities_vec.at(i), a_max, joint_max_vel, timesteps) ){
+                                          &joint_velocities_vec.at(i-1), a_max, joint_max_vel, timesteps) ){
                         distance = calc_config_difference(config_vec.at(config_vec.size()-1), temp_configs->at(j));
                         best_config = j;
                         std::cout << "distance of config " << j+1 << " is smaller than previous one" << std::endl;
@@ -486,6 +500,7 @@ Trajectory* Spline::calculateSpline() {
                 std::cout << "For the given SixDPos at time t " << i/timesteps << " there are possible configurations" << std::endl;
                 // add best config to configuration vector
                 std::cout << "The best configuration at t: " << i/timesteps << " is: " << best_config << std::endl;
+
                 config_vec.push_back(temp_configs->at(best_config));
             }else{
                 std::cout << "WARNING. At t: " << i/timesteps << std::endl;
@@ -500,12 +515,23 @@ Trajectory* Spline::calculateSpline() {
                 }
                 // here we check the limits of the chosen configuration (middle config gets pushed into config_vec inside the function itself)
                 add_middle_cfg(config_vec.at(config_vec.size()-1), temp_configs->at(best_config),
-                                                        &joint_velocities_vec.at(i), a_max, joint_max_vel, timesteps);
+                                                        &joint_velocities_vec.at(i-1), a_max, joint_max_vel, timesteps);
 
 
             }
         }else{
             std::cout << "ERROR: For the given SixDPos at time t " << i/timesteps << " are no possible configurations available!!!" << std::endl;
+        }
+    }
+    if (config_switch_indent != -1){
+        std::vector<Configuration*>::iterator it = config_vec.begin();
+        while (it != config_vec.end()){
+            if (*it != config_vec.at(config_switch_indent)){
+                it++;
+            }else{
+                config_vec.erase(it, config_vec.end());
+                break;
+            }
         }
     }
 
@@ -554,12 +580,26 @@ Vector<double, 3> Spline::quintic_bezier_function(Vector<double, 3> point0, Vect
 
 double Spline::calc_config_difference(Configuration* config1, Configuration* config2){
 
-    double distance_joint1 = config1->get_configuration().operator[](0) - config2->get_configuration().operator[](0);
-    double distance_joint2 = config1->get_configuration().operator[](1) - config2->get_configuration().operator[](1);
-    double distance_joint3 = config1->get_configuration().operator[](2) - config2->get_configuration().operator[](2);
-    double distance_joint4 = config1->get_configuration().operator[](3) - config2->get_configuration().operator[](3);
-    double distance_joint5 = config1->get_configuration().operator[](4) - config2->get_configuration().operator[](4);
-    double distance_joint6 = config1->get_configuration().operator[](5) - config2->get_configuration().operator[](5);
+    double distance_joint1 = config2->get_configuration().operator[](0) - config1->get_configuration().operator[](0);
+    double distance_joint2 = config2->get_configuration().operator[](1) - config1->get_configuration().operator[](1);
+    double distance_joint3 = config2->get_configuration().operator[](2) - config1->get_configuration().operator[](2);
+    double distance_joint4 = config2->get_configuration().operator[](3) - config1->get_configuration().operator[](3);
+    double distance_joint5 = config2->get_configuration().operator[](4) - config1->get_configuration().operator[](4);
+    double distance_joint6 = config2->get_configuration().operator[](5) - config1->get_configuration().operator[](5);
+    std::vector<double> distances_joints_vec;
+    distances_joints_vec.push_back(distance_joint1);
+    distances_joints_vec.push_back(distance_joint2);
+    distances_joints_vec.push_back(distance_joint3);
+    distances_joints_vec.push_back(distance_joint4);
+    distances_joints_vec.push_back(distance_joint5);
+    distances_joints_vec.push_back(distance_joint6);
+
+    // check if one of the distances is too large (changing from forward to backward case for example)
+    for (int i = 0; i < 6; ++i) {
+        if(distances_joints_vec.at(i) > (config_switch_limit * M_PII/180) ){
+            config_switch_indent = config_vec.size()-1;
+        }
+    }
 
     return abs(distance_joint1) + abs(distance_joint2) + abs(distance_joint3) + abs(distance_joint4) + abs(distance_joint5) + abs(distance_joint6);
 }
@@ -609,6 +649,36 @@ bool Spline::checkconfiglimits(Configuration* config1, Configuration* config2,
 
     return true;
 }
+void Spline::add_middle_cfg2(Configuration* config1, Configuration* config2,
+                            std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps) {
+    std::vector<double> distances_joints_vec;
+    double distance_joint1 = config2->get_configuration().operator[](0) * 180/M_PII - config1->get_configuration().operator[](0) * 180/M_PII;
+    double distance_joint2 = config2->get_configuration().operator[](1) * 180/M_PII - config1->get_configuration().operator[](1) * 180/M_PII;
+    double distance_joint3 = config2->get_configuration().operator[](2) * 180/M_PII - config1->get_configuration().operator[](2) * 180/M_PII;
+    double distance_joint4 = config2->get_configuration().operator[](3) * 180/M_PII - config1->get_configuration().operator[](3) * 180/M_PII;
+    double distance_joint5 = config2->get_configuration().operator[](4) * 180/M_PII - config1->get_configuration().operator[](4) * 180/M_PII;
+    double distance_joint6 = config2->get_configuration().operator[](5) * 180/M_PII - config1->get_configuration().operator[](5) * 180/M_PII;
+    distances_joints_vec.push_back(distance_joint1);
+    distances_joints_vec.push_back(distance_joint2);
+    distances_joints_vec.push_back(distance_joint3);
+    distances_joints_vec.push_back(distance_joint4);
+    distances_joints_vec.push_back(distance_joint5);
+    distances_joints_vec.push_back(distance_joint6);
+
+    // create new config in the middle of the 2 configs
+    double new_cfg_j1 = (config1->get_configuration().operator[](0) * 180/M_PII + distance_joint1 * 0.5) * M_PII/180;
+    double new_cfg_j2 = (config1->get_configuration().operator[](1) * 180/M_PII + distance_joint2 * 0.5) * M_PII/180;
+    double new_cfg_j3 = (config1->get_configuration().operator[](2) * 180/M_PII + distance_joint3 * 0.5) * M_PII/180;
+    double new_cfg_j4 = (config1->get_configuration().operator[](3) * 180/M_PII + distance_joint4 * 0.5) * M_PII/180;
+    double new_cfg_j5 = (config1->get_configuration().operator[](4) * 180/M_PII + distance_joint5 * 0.5) * M_PII/180;
+    double new_cfg_j6 = (config1->get_configuration().operator[](5) * 180/M_PII + distance_joint6 * 0.5) * M_PII/180;
+
+    Configuration *cfg_middle = new Configuration(
+            {new_cfg_j1, new_cfg_j2, new_cfg_j3, new_cfg_j4, new_cfg_j5, new_cfg_j6});
+
+   // checkconfiglimits(config1, cfg_middle);
+
+}
 
 void Spline::add_middle_cfg(Configuration* config1, Configuration* config2,
                                std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps) {
@@ -625,6 +695,13 @@ void Spline::add_middle_cfg(Configuration* config1, Configuration* config2,
     distances_joints_vec.push_back(distance_joint4);
     distances_joints_vec.push_back(distance_joint5);
     distances_joints_vec.push_back(distance_joint6);
+
+    // check if one of the distances is too large (changing from forward to backward case for example)
+//    for (int i = 0; i < 6; ++i) {
+//        if(distances_joints_vec.at(i) > config_switch_limit){
+//            config_switch_indent = config_vec.size()-1;
+//        }
+//    }
 
     //calculate needed acceleration of each joint to arrive at next config in time interval given by timesteps
     double t = 1 / timesteps;
@@ -652,7 +729,22 @@ void Spline::add_middle_cfg(Configuration* config1, Configuration* config2,
     }
 
     // joint with highest acceleration is the limiting factor, so we determine the difference in angle (distance) this joint can reach in the given time interval
-    double possible_distance = 0.5 * a_max * t * t + velocities_vec->at(limit_joint) * t;
+    // we need to check the direction of this joint (sign of distance)
+    double possible_distance = 0;
+    if (distances_joints_vec.at(limit_joint) < 0 && joint_curr_a_vec.at(limit_joint) < 0){
+        // distance is negative, acceleration is negative
+        possible_distance = -0.5 * a_max * t * t + velocities_vec->at(limit_joint) * t;
+    } else if(distances_joints_vec.at(limit_joint) > 0 && joint_curr_a_vec.at(limit_joint) > 0){
+        // acceleration and distance are both positive
+        possible_distance = 0.5 * a_max * t * t + velocities_vec->at(limit_joint) * t;
+    } else if( distances_joints_vec.at(limit_joint) > 0 && joint_curr_a_vec.at(limit_joint) < 0 ){
+        //distance is positive, acceleration is negative
+        possible_distance = -0.5 * a_max * t * t + velocities_vec->at(limit_joint) * t;
+    } else if( distances_joints_vec.at(limit_joint) < 0 && joint_curr_a_vec.at(limit_joint) > 0 ){
+        // distance is negative, acceleration is positive
+        possible_distance = 0.5 * a_max * t * t + velocities_vec->at(limit_joint) * t;
+    }
+
     // determine the factor of the possible distance with the distance before when we exceed the limit
     double factor = abs(possible_distance / distances_joints_vec.at(limit_joint));
     // this factor will be used to determine new configuration that will be between the two configs from the beginning
@@ -713,6 +805,8 @@ void Spline::add_middle_cfg(Configuration* config1, Configuration* config2,
         // add function
         std::cout << "We reached our limits of velocity" << std::endl;
     }
+
+    config_vec.push_back(config2);
 
 }
 

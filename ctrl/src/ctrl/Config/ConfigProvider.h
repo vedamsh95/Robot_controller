@@ -71,7 +71,9 @@ private:
 
 //-----------------------------------------------Singularity------------------------------------------------------------
 
-    double margin_point = 0.1;
+    double margin_point = 0.2;
+    // catch change of configuration type with change of joint angle
+    double config_switch_limit = 90;
 
 
 public:
@@ -96,6 +98,8 @@ public:
 
     //Margin point for singularities
     double getmargin_point() const{return this->margin_point; }
+    // Switch limit for configurations
+    double getconfig_switch_limit() const{return this->config_switch_limit; }
 
     //Joint boundaries
     double getTheta1_lower_border(){return this->theta1_lower_border;}
