@@ -95,11 +95,11 @@ public:
      */
     const double m = 0.330;
     /**
-     *  offset of link 1 from link 0
+     *  offset of link 1 from link 0 
      */
     const double n = 0.645;
     /**
-     *  offset of link 1 from link 0
+     *  length of link a
      */
     const double a = 1.150;
 
