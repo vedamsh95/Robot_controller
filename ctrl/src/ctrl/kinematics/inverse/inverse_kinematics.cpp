@@ -115,7 +115,7 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
     array<double, 4> theta4{};
     array<double, 2> theta5{};
     array<double, 4> theta6{};
-    array<double, 3> sing_theta4_5_6{};
+    array<double, 7> sing_theta4_5_6{};
 
     //For theta 5 > 0
     //handle error cases of atan2 for ay, ax
@@ -183,11 +183,11 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
     //check for wrist singularity for theta 5
     if(( (theta5[0] <= 0 + margin_point) && (theta5[0] >= 0 - margin_point)) || ((theta5[1] <= 0 + margin_point) && (theta5[1] >= 0 - margin_point)) ){
         std::cout << "There is a Wrist Singularity." << std::endl;
-        sing_theta4_5_6 = inv_singularity.wrist_singularity(theta4[0], theta5[0], theta6[0]);
+        sing_theta4_5_6 = inv_singularity.wrist_singularity(theta4[0], theta4[1], theta4[3], theta5[0], theta6[0], theta6[1], theta6[3]);
 
-        theta4_5_6 = {sing_theta4_5_6[0], sing_theta4_5_6[0], sing_theta4_5_6[0], sing_theta4_5_6[0],
-                      sing_theta4_5_6[0], sing_theta4_5_6[0],
-                      sing_theta4_5_6[1], sing_theta4_5_6[1], sing_theta4_5_6[1], sing_theta4_5_6[1]};
+        theta4_5_6 = {sing_theta4_5_6[0], sing_theta4_5_6[1], sing_theta4_5_6[0], sing_theta4_5_6[2],
+                      sing_theta4_5_6[3], sing_theta4_5_6[3],
+                      sing_theta4_5_6[4], sing_theta4_5_6[5], sing_theta4_5_6[4], sing_theta4_5_6[6]};
 
     }else{
         theta4_5_6 = {theta4[0],theta4[1],theta4[2],theta4[3],
@@ -283,7 +283,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             }
 
             //step3
-            double theta1_3 = theta1 + 180;
+            double theta1_3 = theta1 - 180;
             dpx = d1 + m;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
@@ -372,7 +372,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             }
 
 
-            double theta1_3 = theta1 + 180;
+            double theta1_3 = theta1 - 180;
             dpx = d1 + m;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
@@ -437,7 +437,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             }
 
 
-            double theta1_2 = theta1 - 180;
+            double theta1_2 = theta1 + 180;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -527,7 +527,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1 << ")" << std:: endl;
             }
 
-            double theta1_2 = theta1 - 180;
+            double theta1_2 = theta1 + 180;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -625,7 +625,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
 
             double theta1_2 = theta1 - 180;
             dpx = d1 + m;
-            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
             if(id == 2 || id == 3){
@@ -653,7 +653,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
 
 
             double theta1_3 = theta1 + 180;
-            theta2_theta3 = inv_forwardcase(dpx, dpy);
+            theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
             if(id == 2 || id == 3){
@@ -1568,7 +1568,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 
     //Special cases
     //Special case 1:
-    else if((wcp[0] <= 0.001 && wcp[0] >= -0.001) && wcp[1] > 0){
+    else if((wcp[0] <= 0 + margin_point && wcp[0] >= margin_point) && wcp[1] > 0){
         std::cout << "Special Case 1: " << std::endl;
         if(wcp[1] > m){
             double d1 = wcp[1];
@@ -1701,7 +1701,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
     }
     //special case 2:
-    else if(wcp[0]==0 && wcp[1]<0){
+    else if((wcp[0] <= 0 + margin_point && wcp[0] >= margin_point) && wcp[1]<0){
         std::cout << "Special Case 2: " << std::endl;
 
         if(wcp[1] > m){

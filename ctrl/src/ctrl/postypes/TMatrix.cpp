@@ -313,7 +313,7 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
     }
     else {  // normal case
         phi = atan2(trans_1_0, trans_0_0);
-        if(trans_20_is_0 = true){
+        if(trans_20_is_0 == true){
             theta = atan2(trans_2_0, sqrt( trans_2_1*trans_2_1 + trans_2_2*trans_2_2 ));
         }
         else{
