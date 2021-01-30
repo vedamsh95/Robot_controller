@@ -27,7 +27,7 @@ public:
      * @param  {@ref SixDPos} Position and Orientation 
      * @return Array with coordinates of the wrist center point
 	 */
-	static std::array<double, 3>* getWristCenterPoint(SixDPos* _pos);
+	static std::array<double, 3> getWristCenterPoint(SixDPos* _pos);
 
 
 private:

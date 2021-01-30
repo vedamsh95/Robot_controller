@@ -15,9 +15,9 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 {
 	//angle of first joint
 	double phi1;
-	std::array<double, 3>* a_wristPoint = getWristCenterPoint(_pos);
+	std::array<double, 3> a_wristPoint = getWristCenterPoint(_pos);
 	//store Wrist Coordinates in struct Position for better handling
-	Position wristPoint = Position(a_wristPoint->at(0), a_wristPoint->at(1), a_wristPoint->at(2));
+	Position wristPoint = Position(a_wristPoint.at(0), a_wristPoint.at(1), a_wristPoint.at(2));
 	
 	//Handle overhead singularity if only one SixDPos is given (without interpolation) 
 	if (wristPoint.x > -marginSingularity && wristPoint.x < marginSingularity &&
@@ -33,16 +33,16 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 	return calc_configurations(phi1, wristPoint);
 }
 
-std::array<double, 3>* IVKinPos::getWristCenterPoint(SixDPos * _pos)
+std::array<double, 3> IVKinPos::getWristCenterPoint(SixDPos * _pos)
 {
 	//Transformation matrix of tool center point 
 	TMatrix m_transEndeffector = TMatrix(_pos->get_C(), _pos->get_B(), _pos->get_A(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
-	std::array<double, 3> wristPoint;
+	std::array<double, 3> wristPoint = {0.0, 0.0, 0.0};
 	
 	wristPoint.at(0) = _pos->get_X() - d_6 * m_transEndeffector.get(0, 2);
 	wristPoint.at(1) = _pos->get_Y() - d_6 * m_transEndeffector.get(1, 2);
 	wristPoint.at(2) = _pos->get_Z() - d_6 * m_transEndeffector.get(2, 2);
-	return &wristPoint;
+	return wristPoint;
 }
 
 

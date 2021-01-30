@@ -363,9 +363,9 @@ bool IVMovement::wristSingularity(Configuration* _config)
 
 bool IVMovement::overheadSingularity(SixDPos* _pos)
 {
-    std::array<double, 3>* WCP = IVKinPos::getWristCenterPoint(_pos);
-    if(std::abs(WCP->at(0))< SINGULARITY_MARGIN &&
-       std::abs(WCP->at(1))< SINGULARITY_MARGIN){
+    std::array<double, 3> WCP = IVKinPos::getWristCenterPoint(_pos);
+    if(std::abs(WCP.at(0))< SINGULARITY_MARGIN &&
+       std::abs(WCP.at(1))< SINGULARITY_MARGIN){
         return true;
     }
     else return false;
@@ -373,13 +373,13 @@ bool IVMovement::overheadSingularity(SixDPos* _pos)
 
 bool IVMovement::elbowSingularity(SixDPos* _pos)
 {
-    std::array<double, 3>* WCP = IVKinPos::getWristCenterPoint(_pos);
+    std::array<double, 3> WCP = IVKinPos::getWristCenterPoint(_pos);
     
-    double d1 = sqrt(pow(WCP->at(0),2)+pow(WCP->at(1),2));
+    double d1 = sqrt(pow(WCP.at(0),2)+pow(WCP.at(1),2));
     double d2 = sqrt(pow(robot->b, 2)+pow(robot->o, 2));
     
     double Px = abs(d1-robot->m);
-    double Py = WCP->at(2) - robot->n;
+    double Py = WCP.at(2) - robot->n;
     
     if(std::abs(pow((robot->a + d2), 2) - (Px*Px + Py*Py)) < SINGULARITY_MARGIN)
         return true;
