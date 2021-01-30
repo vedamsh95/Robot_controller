@@ -47,7 +47,7 @@ public:
     void add_middle_cfg(Configuration* config1, Configuration* config2,
                                          std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
     void add_middle_cfg2(Configuration* config1, Configuration* config2,
-                                 std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps)
+                                 std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
 
 
 };
