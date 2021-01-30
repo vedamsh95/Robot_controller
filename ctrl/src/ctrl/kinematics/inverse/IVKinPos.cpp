@@ -4,6 +4,7 @@
 
 IVKinPos::IVKinPos()
 {
+	robot = &Robot::getInstance();
 }
 IVKinPos::~IVKinPos()
 {
@@ -12,15 +13,17 @@ IVKinPos::~IVKinPos()
 
 std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 {
+	//angle of first joint
 	double phi1;
 	std::array<double, 3>* a_wristPoint = getWristCenterPoint(_pos);
+	//store Wrist Coordinates in struct Position for better handling
 	Position wristPoint = Position(a_wristPoint->at(0), a_wristPoint->at(1), a_wristPoint->at(2));
 	
-	
-
+	//Handle overhead singularity if only one SixDPos is given (without interpolation) 
 	if (wristPoint.x > -marginSingularity && wristPoint.x < marginSingularity &&
 		wristPoint.y > -marginSingularity && wristPoint.y < marginSingularity)
 	{
+		//setting angle of first angle to default value
 		phi1 = 90.0;
 		std::cout << "Overhead Singularity" << endl;
 	}
@@ -28,47 +31,17 @@ std::vector<std::array<double, 3>*>* IVKinPos::get_IVKinPos(SixDPos* _pos)
 		phi1 = -rad2Deg(atan2(wristPoint.y, wristPoint.x));
 
 	return calc_configurations(phi1, wristPoint);
-	////1 Quadrant
-	//if ((wristPoint.x > 0 && wristPoint.y > 0))
-	//{
-	//	std::cout << "1 Quadrant " << std::endl;
-	//	//eigentlich + phi1 aber in formeln -
-	//	phi1 = rad2Deg(atan(wristPoint.y / wristPoint.x));
-	//	return standardCase_phi1(phi1, wristPoint);
-	//	
-	//}
-	//// 4. Quadrant
-	//if (wristPoint.x > 0 && wristPoint.y < 0)
-	//{
-	//	std::cout << "4 Quadrant " << std::endl;
-	//	phi1 = rad2Deg(atan(wristPoint.y / wristPoint.x));
-	//	return standardCase_phi1(phi1, wristPoint);
-	//}
-	//// 3. Quadrant
-	//if (wristPoint.x < 0 && wristPoint.y < 0)
-	//{
-	//	std::cout << "3 Quadrant " << std::endl;
-	//	phi1 = rad2Deg(M_PI - atan(wristPoint.y / wristPoint.x));
-	//	return standardCase_phi1(phi1, wristPoint);
-	//}
-	////4. Quadrant
-	//if (wristPoint.x < 0 && wristPoint.y > 0)
-	//{
-	//	std::cout << "4 Quadrant " << std::endl;
-	//	phi1 = rad2Deg(M_PI - atan(wristPoint.y / -wristPoint.x));
-	//	return standardCase_phi1(phi1, wristPoint);
-	//}
-
-
 }
 
 std::array<double, 3>* IVKinPos::getWristCenterPoint(SixDPos * _pos)
 {
-	TMatrix m_transEndeffector2Wrist = TMatrix(_pos->get_C(), _pos->get_B(), _pos->get_A(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
+	//Transformation matrix of tool center point 
+	TMatrix m_transEndeffector = TMatrix(_pos->get_C(), _pos->get_B(), _pos->get_A(), _pos->get_X(), _pos->get_Y(), _pos->get_Z());
 	std::array<double, 3> wristPoint;
-	wristPoint.at(0) = _pos->get_X() - d_6 * m_transEndeffector2Wrist.get(0, 2);
-	wristPoint.at(1) = _pos->get_Y() - d_6 * m_transEndeffector2Wrist.get(1, 2);
-	wristPoint.at(2) = _pos->get_Z() - d_6 * m_transEndeffector2Wrist.get(2, 2);
+	
+	wristPoint.at(0) = _pos->get_X() - d_6 * m_transEndeffector.get(0, 2);
+	wristPoint.at(1) = _pos->get_Y() - d_6 * m_transEndeffector.get(1, 2);
+	wristPoint.at(2) = _pos->get_Z() - d_6 * m_transEndeffector.get(2, 2);
 	return &wristPoint;
 }
 
@@ -85,34 +58,29 @@ double IVKinPos::rad2Deg(double _rad)
 
 void IVKinPos::checkLimits(double _phi1, std::array<double, 4>* _solution, std::vector<std::array<double, 3>*>* _ans)
 {
-
-	//TODO Werte in Roboter Klasse nehmen
-	std::cout << "checkLimits " << endl;
 	std::array<double, 3>* config = new std::array<double, 3>();
-	if (-185.0 < _phi1 && _phi1 < (185.0))
+	if (rad2Deg(robot->limits[0].min) < _phi1 && _phi1 < rad2Deg(robot->limits[0].max))
 	{
-		if ((-140.0) < _solution->at(0) && _solution->at(0) < (-5.0)) //
+		if (rad2Deg(robot->limits[1].min) < _solution->at(0) && _solution->at(0) < rad2Deg(robot->limits[1].max)) //
 		{
-			if ((-120.0) < _solution->at(2) && _solution->at(2) < (168))
+			if (rad2Deg(robot->limits[2].min) < _solution->at(2) && _solution->at(2) < rad2Deg(robot->limits[2].max))
 			{
-				std::cout << "Downwards" << endl;
+				//Downward Configuration
 				config = new std::array<double, 3>{ _phi1, _solution->at(0), _solution->at(2) };
 				_ans->push_back(config);
 			}
-
 		}
-		if ((-140.0) < _solution->at(1) && _solution->at(1) < (-5.0)) //
+		if (rad2Deg(robot->limits[1].min) < _solution->at(1) && _solution->at(1) < rad2Deg(robot->limits[1].max)) //
 		{
-			if ((-120.0) < _solution->at(3) && _solution->at(3) < (168))
+			if (rad2Deg(robot->limits[2].min) < _solution->at(3) && _solution->at(3) < rad2Deg(robot->limits[2].max))
 			{
-				std::cout << "Upwards" << endl;
+				//Upward Configuration
 				config = new std::array<double, 3>{ _phi1, _solution->at(1), _solution->at(3) };
 				_ans->push_back(config);
 			}
 		}
 
 	}
-	//std::cout << "Check Limits - Done" << endl;
 }
 
 
@@ -122,18 +90,16 @@ std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1,
 {
 	std::array<double, 4> forwardSolutions;
 	std::array<double, 4> backwardSolutions;
-	std::vector<std::array<double, 3>*>* sol;
+	//
 	std::vector<std::array<double, 3>*>* ans = new std::vector<std::array<double, 3>*>();
-
 
 	double d1 = std::sqrt(_wristPoint.x * _wristPoint.x + _wristPoint.y * _wristPoint.y);
 
-
 	forwardSolutions = forward_calc(d1, _wristPoint);
-
 
 	checkLimits(_phi1, &forwardSolutions, ans);
 
+	//second forward solutions
 	if ((-185.0) <= _phi1 && _phi1 <= (-175.0))
 	{
 		checkLimits(360.0 + _phi1, &forwardSolutions, ans);
@@ -143,24 +109,24 @@ std::vector<std::array<double, 3>*>* IVKinPos::calc_configurations(double _phi1,
 		checkLimits(-(360.0 - _phi1), &forwardSolutions, ans);
 	}
 
-
-
 	backwardSolutions = backward_calc(d1, _wristPoint);
 
-
+	
 	if ((5) >= _phi1 && _phi1 >= (-5.0))
 	{
+		//two backwards solutions
 		checkLimits(+(_phi1 + 180.0), &backwardSolutions, ans);
 		checkLimits(-(180.0 - _phi1), &backwardSolutions, ans);
 
 	}
 	else
 	{
-		double phi1_backward = -rad2Deg(atan2(-_wristPoint.y, -_wristPoint.x));// oder if anweisungen welcher Quadrant
+		//point reflection at origin -> get backward angle of first joint
+		//Alternative: check quadrant and + or - 180.0
+		double phi1_backward = -rad2Deg(atan2(-_wristPoint.y, -_wristPoint.x));
 		checkLimits(phi1_backward, &backwardSolutions, ans);
 	}
 
-	//std::cout << "calc_configurations - done" << endl;
 	return ans;
 }
 
@@ -174,8 +140,8 @@ bool IVKinPos::d1Condition(double _d1)
 
 std::array<double, 4> IVKinPos::forward_calc(double _d1, Position _wristPoint)
 {
-	std::cout << "forward_calc: " << endl;
 	double px_dash, py_dash;
+
 	if (d1Condition(_d1))
 		px_dash = _d1 - m;
 	else
@@ -194,15 +160,13 @@ std::array<double, 4> IVKinPos::forward_calc(double _d1, Position _wristPoint)
 
 
 	double phi2_forward_downward, phi2_forward_upward;
-	if (d1Condition(_d1))
+	if (d1Condition(_d1) || py_dash < 0)
 	{
 		phi2_forward_upward = -1.0 * (alpha2 + alpha1);
 		phi2_forward_downward = -1.0 * (alpha2 - alpha1);
 	}
 	else
 	{
-		//phi2_forward_upward =  (alpha2 - alpha1) - 180.0;
-		//phi2_forward_downward = (alpha2 + alpha1) - 180.0;
 		phi2_forward_upward = -(180.0 - (alpha2 - alpha1));
 		phi2_forward_downward = -(180.0 - (alpha2 + alpha1));
 	}
@@ -210,12 +174,6 @@ std::array<double, 4> IVKinPos::forward_calc(double _d1, Position _wristPoint)
 	double phi3_forward_upward = 360 - beta - rad2Deg(asin(b / d2)) - 90.0;
 	double phi3_forward_downward = beta - rad2Deg(asin(b / d2)) - 90;
 
-	//static std::array<double, 4> ans = 
-
-	//std::cout << "phi2_forward_upward " << phi2_forward_upward << endl;
-	//std::cout << "phi2_forward_downward " << phi2_forward_downward << endl;
-	//std::cout << "phi3_forward_upward " << phi3_forward_upward << endl;
-	//std::cout << "phi3_forward_downward " << phi3_forward_downward << endl;
 	return std::array<double, 4> {
 		phi2_forward_upward,
 			phi2_forward_downward,
@@ -226,8 +184,6 @@ std::array<double, 4> IVKinPos::forward_calc(double _d1, Position _wristPoint)
 
 std::array<double, 4> IVKinPos::backward_calc(double _d1, Position _wristPoint)
 {
-	std::cout << "backward_calc: " << endl;
-
 	double px_dash = _d1 + m;
 	double py_dash = _wristPoint.z - n;
 
@@ -241,30 +197,19 @@ std::array<double, 4> IVKinPos::backward_calc(double _d1, Position _wristPoint)
 	double phi3_backward_upward, phi3_backward_downward;
 	if (d1Condition(_d1))
 	{
-		//phi2_backward_upward = (alpha2 + alpha1) - 180.0;
 		phi2_backward_upward = (alpha2 + alpha1) - 180.0;
-		phi2_backward_downward = (alpha2 - alpha1) - 180.0;//meine Lösug
-
-		//phi2_backward_downward = -(180.0 - alpha2);
+		phi2_backward_downward = (alpha2 - alpha1) - 180.0;
 	}
 	else
 	{
+		//else and if same formulas
 		phi2_backward_upward = -(180.0 - (alpha2 + alpha1));
-		//phi2_backward_downward = -(alpha2 - alpha1);//meineLösug
 		phi2_backward_downward = -(180 - (alpha2 - alpha1));
 
 	}
 	phi3_backward_upward = -(90.0 - (beta - rad2Deg(asin(b / d2))));
 	phi3_backward_downward = 270.0 - beta - rad2Deg(asin(b / d2));
 
-	//double phi3_backward_upward = -1.0 * (90.0 - 1.0 * (beta - rad2Deg(asin(b / d2))));
-	//double phi3_backward_downward = 360.0 - beta - rad2Deg(asin(b / d2)) - 90.0;
-	//double phi3_backward_downward_1 = 270.0 - beta - rad2Deg(asin(b / d2));
-
-	//std::cout << "phi2_backward_upward " << phi2_backward_upward << endl;
-	//std::cout << "phi2_backward_downward " << phi2_backward_downward << endl;
-	//std::cout << "phi3_backward_upward " << phi3_backward_upward << endl;
-	//std::cout << "phi3_backward_downward " << phi3_backward_downward << endl;
 	std::array<double, 4> ans =
 	{
 			phi2_backward_upward,
