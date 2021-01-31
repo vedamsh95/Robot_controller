@@ -100,20 +100,31 @@ void InvKinematics::calcSolutions(TMatrix* R_06, array<double,3>* actPos, bool s
     TMatrix R_36 = (R_03.transpose()).multiply(*R_06);
 
     double theta4[4], theta5[4], theta6[4];
+    if( -acos(R_36.get(2, 2))==0){
+        cout << "wrist singularity " << endl;
+        array<double, 3>* wristRotation = CalculateSingularity(R_36);
+        for(int i= 0; i < 4; i++){
+            theta4[i] = wristRotation->at(0);
+            theta5[i] = wristRotation->at(1);
+            theta5[i] = wristRotation->at(2);
+        }
+    }
+    else{
+        theta4[0] = atan2(-R_36.get(1, 2), -R_36.get(0, 2));
+        theta5[0] = atan2(sqrt(1-pow(R_36.get(2, 2), 2)), -R_36.get(2, 2));
+        theta6[0] = atan2(R_36.get(2, 1), R_36.get(2, 0));
+        
+        theta4[1] = theta4[0] - sign(theta4[0])*2*M_PI;
+        theta6[1] = theta6[0] - sign(theta6[0])*2*M_PI;
+        
+        theta4[2] = atan2(R_36.get(1, 2), R_36.get(0, 2));
+        theta5[2] = atan2(-sqrt(1-pow(R_36.get(2, 2), 2)), -R_36.get(2, 2));
+        theta6[2] = atan2(-R_36.get(2, 1), -R_36.get(2, 0));
+        
+        theta4[3] = theta4[2] - sign(theta4[2])*2*M_PI;
+        theta6[3] = theta6[2] - sign(theta6[2])*2*M_PI;
+    }
     
-    theta4[0] = atan2(-R_36.get(1, 2), -R_36.get(0, 2));
-    theta5[0] = atan2(sqrt(1-pow(R_36.get(2, 2), 2)), -R_36.get(2, 2));
-    theta6[0] = atan2(R_36.get(2, 1), R_36.get(2, 0));
-    
-    theta4[1] = theta4[0] - sign(theta4[0])*2*M_PI;
-    theta6[1] = theta6[0] - sign(theta6[0])*2*M_PI;
-    
-    theta4[2] = atan2(R_36.get(1, 2), R_36.get(0, 2));
-    theta5[2] = atan2(-sqrt(1-pow(R_36.get(2, 2), 2)), -R_36.get(2, 2));
-    theta6[2] = atan2(-R_36.get(2, 1), -R_36.get(2, 0));
-    
-    theta4[3] = theta4[2] - sign(theta4[2])*2*M_PI;
-    theta6[3] = theta6[2] - sign(theta6[2])*2*M_PI;
     
     double Configs[8][3]=
     {
@@ -132,10 +143,10 @@ void InvKinematics::calcSolutions(TMatrix* R_06, array<double,3>* actPos, bool s
     {
         for (int j = 0; j < 8;j++)
         {
-            if ((j<4 && Configs[j][1] > singularityMargin && Configs[j][1] < JOINT_5_MAX) ||
-                (j>3 && Configs[j][1] < -singularityMargin && Configs[j][1] > -JOINT_5_MAX)){
-                if(std::abs(Configs[j][0]) < robot->limits[3].max
-                                   && std::abs(Configs[j][2]) < robot->limits[5].max){
+            if ((j<4 && Configs[j][1] > 0 && Configs[j][1] < JOINT_5_MAX) ||
+                (j>3 && Configs[j][1] < 0 && Configs[j][1] > -JOINT_5_MAX)){
+                if(std::abs(Configs[j][0]) < robot->limits[3].max &&
+                   std::abs(Configs[j][2]) < robot->limits[5].max){
                                     solutions->push_back(new Configuration({
                                         actPos->at(0),
                                         actPos->at(1),
@@ -145,31 +156,14 @@ void InvKinematics::calcSolutions(TMatrix* R_06, array<double,3>* actPos, bool s
                                         Configs[j][2]}));
                                 }
             }
-            else if(std::abs(Configs[j][1]) < singularityMargin)
-            {
-                //cout << "Wrist Singularity Detected!" << endl;
-                array<double, 3>* wristRotation = new array<double, 3>;
-                wristRotation = CalculateSingularity(R_36);
-                
-                if(wristRotation->at(0) < robot->limits[3].max
-                   && wristRotation->at(2) < robot->limits[5].max){
-                    solutions->push_back(new Configuration({
-                        actPos->at(0),
-                        actPos->at(1),
-                        actPos->at(2),
-                        Configs[j][0],
-                        Configs[j][1],
-                        Configs[j][2]}));
-                }
-            }
         }
     }
     else
     {
         for(int j=0; j<8; j++){
             setToLimits(&Configs[j][1], j);
-            if(std::abs(Configs[j][0]) < robot->limits[3].max
-                               && std::abs(Configs[j][2]) < robot->limits[5].max){
+            if(std::abs(Configs[j][0]) < robot->limits[3].max &&
+               std::abs(Configs[j][2]) < robot->limits[5].max){
                                 solutions->push_back(new Configuration({
                                     actPos->at(0),
                                     actPos->at(1),

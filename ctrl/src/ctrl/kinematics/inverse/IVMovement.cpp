@@ -23,6 +23,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     
     bool wSingularity = false;
     bool oSingularity = false;
+    bool lastPoint = false;
     int wsLength = 0;
     int osLength = 0;
     
@@ -31,7 +32,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
 
     for (int i = 1; i< _positions->size(); i++)
     {
-
+        if( i == _positions->size()-1) lastPoint=true;
         t = _positions->at(i);
 
         //check for elbow singularity.
@@ -59,17 +60,18 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
             }
             
             //point after overhead singularity.
-            if(!overheadSingularity(t)&& oSingularity){
-                osLength++;
+            if(oSingularity && (!overheadSingularity(t) || lastPoint)){
+                if(lastPoint) osLastConfig(correctConfig, osLength);
                 //if end_cfg available the configuration after the singularity
                 //should resemble the configuration at the end of the trajectory.
-                if(end_cfg){
+                else if(end_cfg){
+                    osLength++;
                     correctConfig = GetClosestConfiguration(configs, end_cfg);
                     trajectory->set_configuration(correctConfig, trajectory->get_length()-1);
-                    osInterpolation(trajectory, osLength, _positions);
                     prevConfig = correctConfig;
                 }
-                else osInterpolation(trajectory, osLength, _positions);
+                else osLength++;
+                osInterpolation(trajectory, osLength, _positions);
                 oSingularity = false;
                 osLength = 0;
             }
@@ -81,8 +83,9 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
             }
             
             //configuration after wrist singularity.
-            if(!wristSingularity(trajectory->get_last())&& wSingularity){
-                wsLength++;
+            if(wSingularity && (!wristSingularity(trajectory->get_last()) || lastPoint)){
+                if(lastPoint) wsLastConfig(correctConfig, wsLength);
+                else wsLength++;
                 wsInterpolation(trajectory, wsLength);
                 wSingularity = false;
                 wsLength = 0;
@@ -421,6 +424,27 @@ bool IVMovement::elbowSingularity(SixDPos* _pos)
         return true;
     else return false;
         
+}
+
+void IVMovement::wsLastConfig(Configuration* Config, int width)
+{
+    Configuration* lastConfig = trajectory->get_configuration(trajectory->get_length()-1-width);
+    double A = (*Config)[3] + (*Config)[5];
+    double B = (*lastConfig)[3] + (*lastConfig)[5];
+    double diff = A - B;
+    
+    (*Config)[3] = (*lastConfig)[3] + 0.5* diff;
+    (*Config)[5] = (*lastConfig)[3] + 0.5* diff;
+    
+    trajectory->set_configuration(Config, trajectory->get_length()-1);
+}
+
+void IVMovement::osLastConfig(Configuration* Config, int width)
+{
+    Configuration* lastConfig = trajectory->get_configuration(trajectory->get_length()-1-width);
+    (*Config)[0] = (*lastConfig)[0];
+    
+    trajectory->set_configuration(Config, trajectory->get_length()-1);
 }
 
 
