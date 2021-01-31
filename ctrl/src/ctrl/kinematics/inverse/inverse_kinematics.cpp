@@ -197,12 +197,16 @@ void InvKinematics::setToLimits(double* theta5, int j)
     if(j<4){
         if(*theta5 < 0)
             *theta5=0;
+        else if(std::abs(*theta5-M_PI) < singularityMargin)
+            *theta5 = M_PI; //needed to detect wrist singularity. 
         else if(*theta5 > JOINT_5_MAX)
             *theta5 = JOINT_5_MAX;
     }
     else
         if(*theta5 > 0)
             *theta5=0;
+        else if(std::abs(*theta5-M_PI) < singularityMargin)
+            *theta5 = M_PI;
         else if(*theta5 < -JOINT_5_MAX)
             *theta5 = -JOINT_5_MAX;
 }

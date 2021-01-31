@@ -10,13 +10,27 @@
 #include <cmath>
 
 #define SINGULARITY_MARGIN 0.05
+#define JOINT_5_MAX (49.0/72.0)*M_PI
 
 class IVMovement
 {
 public:
     IVMovement();
     ~IVMovement();
-    Trajectory* getMovement(vector<SixDPos *>* _positions, Configuration * start_cfg, std::vector<std::vector<SixDPos*>>* loopPoints);
+    /**
+     * Calculates trajectory from given SixDPos. Therefore the configuration for each SixDPos
+     * that is closest to the previous configuration is calculated and checked for singularities.
+     * The joint velocities of the trajectory are examined and if necessary adjusted.
+     * If the trajectory can not be calculated conitniously the adjustments still calculated and
+     * displayed.
+     *
+     * @param _positions  SixDPoses of path that is going to be calculated
+     * @param start_cfg    First configuration of trajectory
+     * @param loopPoints  Points where Configurations needed to be interpolated
+     * @param end_cfg         (optional) last configuration
+     * @return trajectory along the given SixDPoses
+     */
+    Trajectory* getMovement(vector<SixDPos*>* _positions, Configuration * start_cfg, std::vector<std::vector<SixDPos*>>* loopPoints, Configuration* end_cfg = nullptr);
     
     /**
      * Calculates if joint velocities are too high so that _positions can be changed accordingly.
@@ -76,6 +90,8 @@ private:
      * @param trajectory  trajectory containing configurations
      * @param length length of the singularity
      */
+    //void osInterpolation(Trajectory* trajectory, int lengths, vector<SixDPos*>* _positions);
+    
     void osInterpolation(Trajectory* trajectory, int lengths, vector<SixDPos*>* _positions);
     
     /**
@@ -87,7 +103,7 @@ private:
      *
      * @return a reference containing the interpolated configuration.
      */
-    Configuration* osInterpolation(Configuration* startConfig, Configuration* curConfig, Configuration* endConfig, SixDPos* pos);
+    Configuration* osInterpolation(Configuration* startConfig, Configuration* curConfig, Configuration* endConfig, SixDPos* posA, SixDPos* posB, SixDPos* posC);
     
     /**
      * Computes new sixDPos at elbow singularity.

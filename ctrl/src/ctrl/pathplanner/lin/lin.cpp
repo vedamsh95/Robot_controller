@@ -63,15 +63,15 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
     //convert SixDPoses along the trajectory to configurations.
     IVMovement ivm;
     Trajectory* trajectory = new Trajectory();
-    trajectory = ivm.getMovement(&points, _start_cfg, loopPoints);
+    trajectory = ivm.getMovement(&points, _start_cfg, loopPoints, _end_cfg);
     
-    //appends movement to achive the given orientation.
+    //optional: appends movement to achive the given orientation.
     if(AdjustOrientation == true)
     {
         Configuration * lastConfig;
         lastConfig = trajectory->get_configuration((trajectory->get_length())-1);
 
-        //Get configuration to achive orientation.
+        //get configuration to achive orientation.
         Configuration * TargetOrientationConfig;
         TargetOrientationConfig = GetConfigurations(end_pos, lastConfig);
 
