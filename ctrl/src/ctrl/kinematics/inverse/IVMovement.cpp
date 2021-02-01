@@ -15,6 +15,7 @@ IVMovement::~IVMovement()
 
 Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration * start_cfg, std::vector<std::vector<SixDPos*>>* loopPoints, Configuration* end_cfg)
 {
+    bool pathCancelled = false;
     loopVector = loopPoints;
     Configuration* prevConfig = start_cfg;
     Configuration* correctConfig;
@@ -94,7 +95,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
         }
         else{
             cout << "Trajectory can not be calculated!" << endl;
-            trajectory->add_configuration(new Configuration({0, 0, 0, 0, 0, 0}));
+            pathCancelled = true;
             break;
         }
     }
@@ -105,6 +106,10 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     //crop trajectory because first Configuration* is current configuration of robot.
     trajectory->startAt(1);
     
+    if(pathCancelled){
+    trajectory->add_configuration(new Configuration({0, 0, 0, 0, 0, 0}));
+    }
+   
     return trajectory;
 }
 
