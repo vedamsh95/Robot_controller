@@ -23,7 +23,7 @@ public:
      */
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
 
-    double angles_phi1(double xc,double yc, double d1);
+    double angles_phi1(double xc,double yc, double d1,std::vector<double>& vec_phi1);
     double angles_phi2_forward(double xc,double yc);
     double angles_phi2_backward(double xc,double yc);
     double angles_phi3();

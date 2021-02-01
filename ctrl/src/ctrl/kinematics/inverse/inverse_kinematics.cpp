@@ -54,13 +54,15 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
    cout << "d1 " << d1 <<endl;
 
 
-    /*for(i=0 ; i<5;i++ ) {*/
-        angles_phi1(xc,yc,d1);
-        angles_phi2_forward(zc,d1);
-        angles_phi2_backward(zc,d1);
-        angles_phi3();
-        R36Matrix();
 
+    for(i=0 ; i<5;i++ ) {
+        angles_phi1(xc, yc, d1, vec_phi1);
+        angles_phi2_forward(zc, d1);
+        angles_phi2_backward(zc, d1);
+        angles_phi3();
+       // R36Matrix();
+
+    }
 
     for(i=0 ; i<vec_phi1.size();i++ ){
 
@@ -70,10 +72,10 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 
     for(i=0 ; i<vec_phi3.size();i++ ){
 
-      if(((vec_phi3[i]>-120) &&(vec_phi3[i]<168))) {
-          cout << "vec phi3 is - " << vec_phi3[i] << endl;
-      }
-    }
+            if(((vec_phi3[i]>-120) &&(vec_phi3[i]<168))) {
+                cout << "vec phi3 is - " << vec_phi3[i] << endl;
+            }
+        }
 
     }
     for(i=0 ; i<vec_phi2.size();i++ ){
@@ -83,15 +85,42 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         }
     }
 
-    vector<Configuration*>* solutions = new vector<Configuration*>();
-    for(i=0 ; i<vec_phi3.size();i++ ){
+    for(i=0 ; i<vec_phi4.size();i++ ){
 
-       if(((vec_phi1[i]>-185) &&(vec_phi1[i]<185))  && ((vec_phi3[i]>-120) &&(vec_phi3[i]<168)))  {
+            cout << "vec phi4 is - " << vec_phi4[i] << endl;
 
-           cout <<" phi1 "<< vec_phi1[i]<<" phi2 "<<vec_phi2[i]<< " phi3 " << vec_phi3[i] << " phi4 " << vec_phi4[i] << " phi5 "<<vec_phi5[i] << " phi6 " << vec_phi6[i]<<  endl;
-           solutions->push_back(new Configuration({vec_phi1[i],vec_phi2[i],vec_phi3[i],vec_phi4[i],vec_phi5[i],vec_phi6[i]}));
-       }
     }
+    for(i=0 ; i<vec_phi5.size();i++ ){
+
+        cout << "vec phi5 is - " << vec_phi5[i] << endl;
+
+    }
+    for(i=0 ; i<vec_phi6.size();i++ ){
+
+        cout << "vec phi6 is - " << vec_phi6[i] << endl;
+
+    }
+
+    vector<Configuration*>* solutions = new vector<Configuration*>();
+    for(i=0 ; i<vec_phi3.size();i++ ) {
+        if (((vec_phi1[i] > -185) && (vec_phi1[i] < 185)) && ((vec_phi2[i] > -140) && (vec_phi2[i] < -5)) &&
+            ((vec_phi3[i] > -120) && (vec_phi3[i] < 168))) {
+            R36Matrix();
+        }
+    }
+        for (i = 0; i < vec_phi4.size(); i++) {
+            if (((vec_phi1[i] > -185) && (vec_phi1[i] < 185)) && ((vec_phi2[i] > -140) && (vec_phi2[i] < -5)) &&
+                ((vec_phi3[i] > -120) && (vec_phi3[i] < 168)) && (-350 <= vec_phi4[i] && vec_phi4[i] < 350) &&
+                (-125 < vec_phi5[i] && vec_phi5[i] < 125) &&
+                (-350 <= vec_phi6[i] && vec_phi6[i] < 350)) {
+                cout << " phi1 " << vec_phi1[i] << " phi2 " << vec_phi2[i] << " phi3 " << vec_phi3[i] << " phi4 "
+                     << vec_phi4[i] << " phi5 " << vec_phi5[i] << " phi6 " << vec_phi6[i] << endl;
+                solutions->push_back(new Configuration(
+                        {vec_phi1[i], vec_phi2[i], vec_phi3[i], vec_phi4[i], vec_phi5[i], vec_phi6[i]}));
+            }
+        }
+
+
 
 
 
@@ -108,7 +137,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     return solutions;
 }
 //calculating  phi1 angle
- double InvKinematics::  angles_phi1(double xc,double yc,double d1) {
+ double InvKinematics::  angles_phi1(double xc,double yc,double d1,std::vector<double>& vec_phi1) {
 
      if (xc < 0 && yc > 0) {
          phi1=(180 - phi1) ;
@@ -123,11 +152,11 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
          cout << "phi1 " << phi1 <<endl;
          vec_phi1.push_back(phi1);
      }
-     /*else if (d1 > m) {
+     else if (d1 > m) {
          phi1 = -phi1;
          cout << "phi1 " << phi1 <<endl;
          vec_phi1.push_back(phi1);
-     }*/
+     }
  }
 
  //calculating phi2 angles
@@ -189,7 +218,6 @@ double InvKinematics::  angles_phi2_backward(double zc,double d1) {
     }
 }
 
-
 //calculating phi3
 double InvKinematics:: angles_phi3(){
 
@@ -212,10 +240,10 @@ double d2 = sqrt((o * o) + (b * b));
 }
 
 TMatrix InvKinematics::R36Matrix() {
-    TMatrix T01(0,180,0,645);
-    TMatrix T12(0+phi1,90,330,0);
-    TMatrix T23(0+vec_phi2[i],0,1150,0);
-    TMatrix T34(-90+vec_phi3[i],90,115,0);
+    TMatrix T01(0,180,0,0.645);
+    TMatrix T12(0+phi1,90,0.330,0);
+    TMatrix T23(0+vec_phi2[i],0,1.150,0);
+    TMatrix T34(-90+vec_phi3[i],90,0.115,0);
 
     TMatrix* R03 = T01.multiply( &T12) ->multiply(&T23) -> multiply(&T34);
     R03->print();
