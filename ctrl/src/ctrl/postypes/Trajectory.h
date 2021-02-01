@@ -26,6 +26,10 @@ public:
 
     void set_trajectory(vector<Configuration*> _trajectory);
 
+    Configuration* get_last_configuration() {
+        return m_configs.back();
+    }
+
 };
 
 
