@@ -124,7 +124,8 @@ function returnSignal()
         if err then
             sim.addStatusbarMessage("Error:", err)
         elseif obj.data == nil then
-            simUI.show(ui_2)
+            error_set("No result possible for the entered values!")
+            error_show()
         else
             if (obj.op==0) then
                 if (simUI.getRadiobuttonValue(ui,2007)==1) then
@@ -146,6 +147,7 @@ function returnSignal()
                     cconf[i] = {obj.data[i].j0,obj.data[i].j1,obj.data[i].j2,obj.data[i].j3,obj.data[i].j4,obj.data[i].j5}
                     simUI.insertComboboxItem(ui,1013,i,i..". Configuration")
                 end
+                switchConfig(ui_1, 1013, 1)
             elseif (obj.op==1) then
                 simUI.setEditValue(ui,1000,tostring(obj.data[1].m_x))
                 simUI.setEditValue(ui,1001,tostring(obj.data[1].m_y))
@@ -155,7 +157,6 @@ function returnSignal()
                 simUI.setEditValue(ui,1005,tostring(math.deg(obj.data[1].m_c)))
             end
         end
-        switchConfig(ui_1, 1013, 1)
     else
         print("No Return-Signal. Try again or Restart the Programm!")
     end
@@ -928,25 +929,24 @@ function show_calculated_path()
         return {},{},{},''
     end
 
+    error_clear()
+
     -- There is no path possible
     if obj1.data == nil then
-        simUI.show(ui_2)
+        error_append("There is no result possible for the entered values!")
         return {},{},{},''
     end
 
     -- The path could not be completed
-    print(obj1.data)
-    print(#obj1.data)
     local last_config = obj1.data[#obj1.data]
     obj1.data[#obj1.data] = nil
-    print(last_config)
     if last_config.m_x == 0 and
             last_config.m_y == 0 and
             last_config.m_z == 0 and
             last_config.m_a == 0 and
             last_config.m_b == 0 and
             last_config.m_c == 0 then
-       simUI.show(ui_5)
+       error_append("There is no path available with a constant orientation. The Path got aborted!")
     end
 
     local tmp = {}
@@ -996,12 +996,63 @@ function show_calculated_path()
             end
             sim.insertPathCtrlPoints(loop_path_handles[i], 0, 0, point_count, final_points)
         end
-        simUI.show(ui_4)
+        error_append("No continuous motion possible. Problematic areas are marked in red!")
     end
+
+    if not error_is_empty() then
+        error_show()
+    end
+
     return {},{},{},''
 end
 
 ---------------------------------------------------------------
+
+--------------------Error UI functionality--------------------
+
+function error_init()
+    error_texts = {}
+end
+
+function ui_error_close(ui, id)
+    if id ~= UI_IDs.ERROR.OK then
+        return
+    end
+    error_clear()
+    simUI.hide(ui)
+end
+
+function error_clear()
+    for i=1,#error_texts do
+        error_texts[i] = nil
+    end
+end
+
+function error_append(text)
+    table.insert(error_texts, text)
+end
+
+function error_set(text)
+    error_clear()
+    error_append(text)
+end
+
+function error_show()
+    local final_text = ""
+    for i=1,#error_texts do
+        final_text = final_text .. error_texts[i] .. "<br><br>"
+
+    end
+    simUI.setText(ui_2, UI_IDs.ERROR.TEXT_BROWSER, final_text)
+    simUI.show(ui_2)
+end
+
+function error_is_empty()
+    return #error_texts == 0
+end
+
+--------------------------------------------------------------
+
 
 --Close the UI
 function closeEventHandler(h)
@@ -1048,7 +1099,6 @@ function get_orientation(handle, relative)
     local phi, theta, psi
     if (math.abs(mat[1]) < epsilon and math.abs(mat[5]) < epsilon) then
         if math.abs(mat[2]) > 1 then
-            print(math.abs(mat[2]))
            if mat[2] < 0 then
                mat[2] = -1
            else
@@ -1101,6 +1151,11 @@ if (sim_call_type==sim.syscb_init) then
             TYPE = 5005,
             ELONGATION = 5006,
             OK = 5004
+        },
+        -- The IDS of the error window
+        ERROR = {
+            TEXT_BROWSER = 6000,
+            OK = 6001
         }
     }
 
@@ -1251,21 +1306,12 @@ for the lin and spline movement:"></label>
     </group>
 </ui>]]
 
-    local error = [[<ui closeable="false" on-close="buttonok" layout="vbox" title="Error">
-	<label text="For the Values entered, is no result possible."></label>
-	<button text="OK" onclick="buttonok"></button>
+    local error = [[<ui closeable="false" on-close="ui_error_close" layout="vbox" title="Error">
+	<text-browser id="6000"></text-browser>
+	<button text="OK" on-click="ui_error_close" id="6001"></button>
 </ui>]]
 
-    local error2 = [[<ui closeable="false" on-close="closeEventHandler" layout="vbox" title="Error">
-	<label text="There is no continuous path. The best solution is shown.
-The problematic regions are marked in red."></label>
-	<button text="OK" onclick="closeEventHandler"></button>
-</ui>]]
 
-    local error3 = [[<ui closeable="false" on-close="closeEventHandler" layout="vbox" title="Error">
-	<label text="There is no path available with a constant orientation. The Path got aborted!"></label>
-	<button text="OK" onclick="closeEventHandler"></button>
-</ui>]]
 
     splineIO = [[<ui closeable="false" on-close="ui_advanced_ok" layout="vbox" title="CSV functionality">
     <group layout="vbox">
@@ -1308,8 +1354,6 @@ or export the current points to a file."></label>
     ui_1=simUI.create(coord_dialog)
     ui_2=simUI.create(error)
     ui_3=simUI.create(splineIO)
-    ui_4=simUI.create(error2)
-    ui_5=simUI.create(error3)
 
     local myuis = {ui_1,ui_2,ui_3,ui_4,ui_5}
     sim.setStringSignal("uisignal",sim.packTable(myuis))
@@ -1317,6 +1361,8 @@ or export the current points to a file."></label>
     ----------Added variables---------
     movement_allowed = false    -- Whether apply has been pressed once
     -- and the normal movement is allowed
+
+    error_init()
 
     spline_points_raw  = {}
     spline_path_handle = spline_init()
@@ -1351,8 +1397,6 @@ or export the current points to a file."></label>
     sim.setObjectOrientation(ik_target, robot, tip_ori)
     simUI.hide(ui_2)
     simUI.hide(ui_3)
-    simUI.hide(ui_4)
-    simUI.hide(ui_5)
     simUI.setRadiobuttonValue(ui_1,2008,1)
 
     for i=1,6 do
@@ -1376,7 +1420,4 @@ if (sim_call_type==sim.syscb_cleanup) then
     simUI.destroy(ui_1)
     simUI.destroy(ui_2)
     simUI.destroy(ui_3)
-    simUI.destroy(ui_4)
-    simUI.destroy(ui_5)
-    --sim.removeObjectFromSelection(sim.handle_single, ik_test)
 end
