@@ -60,13 +60,13 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
     vector<double> euler_angles = get_euler_angles(A);
 
     // Print the results
-    //cout << A << endl;
-    //cout << "X: " << A.get(0, 3) << endl;
-    //cout << "Y: " << A.get(1, 3) << endl;
-    //cout << "Z: " << A.get(2, 3) << endl;
-    //cout << "Roll  : " << euler_angles[0] << endl;
-    //cout << "Pitch : " << euler_angles[1] << endl;
-    //cout << "Yaw   : " << euler_angles[2] << endl;
+    cout << A << endl;
+    cout << "X: " << A.get(0, 3) << endl;
+    cout << "Y: " << A.get(1, 3) << endl;
+    cout << "Z: " << A.get(2, 3) << endl;
+    cout << "Roll  : " << euler_angles[0] << endl;
+    cout << "Pitch : " << euler_angles[1] << endl;
+    cout << "Yaw   : " << euler_angles[2] << endl;
 
     return new SixDPos(
             A.get(0, 3) / 1000.0,
@@ -115,7 +115,7 @@ vector<double> FwKinematics::get_euler_angles(TMatrix &tMatrix) {
     double epsilon = 0.00174532925;    // 0.1 degrees
 
     if (abs(T(1, 1)) < epsilon && abs(T(2, 1)) < epsilon) {
-        phi = asin(-T(1, 2));
+        phi = atan2(-T(1,2), T(2,2));
         theta = -T(3, 1) * M_PI * 0.5;
         psi = 0;
     } else {

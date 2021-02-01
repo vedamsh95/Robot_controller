@@ -147,7 +147,7 @@ function returnSignal()
                     cconf[i] = {obj.data[i].j0,obj.data[i].j1,obj.data[i].j2,obj.data[i].j3,obj.data[i].j4,obj.data[i].j5}
                     simUI.insertComboboxItem(ui,1013,i,i..". Configuration")
                 end
-                switchConfig(ui_1, 1013, 1)
+                --switchConfig(ui_1, 1013, 1)
             elseif (obj.op==1) then
                 simUI.setEditValue(ui,1000,tostring(obj.data[1].m_x))
                 simUI.setEditValue(ui,1001,tostring(obj.data[1].m_y))
@@ -187,6 +187,7 @@ Input:
     c = configuration
 --]]
 function setConfigEndPoint(ui,c)
+    print(c)
     local sc = {}
     for i=1,#joints do
         sc[i] = sim.getJointPosition(jh[i])
@@ -199,6 +200,7 @@ function setConfigEndPoint(ui,c)
         end
     end
     local tip_pos = sim.getObjectPosition(tip,-1)
+    print(tip_pos)
     local tip_ori = sim.getObjectOrientation(tip, -1)
     sim.setObjectPosition(ik_dummy,-1,tip_pos)
     sim.setObjectOrientation(ik_dummy,-1,tip_ori)
@@ -206,12 +208,12 @@ function setConfigEndPoint(ui,c)
     sim.setObjectOrientation(ik_target,-1,tip_ori)
     local new_pos = sim.getObjectPosition(tip,robot)
     --local new_ori = sim.getObjectOrientation(tip,robot)
-    local our_ori = get_orientation(tip, robot)
+    local new_ori = get_orientation(tip, robot)
     for i=1,6 do
         if i <=3 then
             simUI.setEditValue(ui,999+i,tostring(math.round(new_pos[i],3)))
         else
-            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(our_ori[i-3]),3)))
+            simUI.setEditValue(ui,999+i,tostring(math.round(math.deg(new_ori[i-3]),3)))
         end
     end
     for i=1,#joints do
@@ -1098,14 +1100,21 @@ function get_orientation(handle, relative)
     local epsilon = 0.00174532925            -- 0.1 degrees
     local phi, theta, psi
     if (math.abs(mat[1]) < epsilon and math.abs(mat[5]) < epsilon) then
-        if math.abs(mat[2]) > 1 then
-           if mat[2] < 0 then
-               mat[2] = -1
+        if math.abs(mat[6]) > 1 then
+           if mat[6] < 0 then
+               mat[6] = -1
            else
-               mat[2] =  1
+               mat[6] =  1
            end
         end
-        phi = math.asin(-mat[2])
+        if math.abs(mat[2]) > 1 then
+            if mat[2] < 0 then
+                mat[2] = -1
+            else
+                mat[2] =  1
+            end
+        end
+        phi = math.atan2(-mat[2], mat[6])
         theta = -mat[9] * math.pi * 0.5
         psi = 0
     else
