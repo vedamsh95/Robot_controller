@@ -951,6 +951,11 @@ function show_calculated_path()
         sim.insertPathCtrlPoints(lin_path_handle, 0, 0, count, tmp)
     end
 
+    -- Delete all loop paths
+    for i=1,#loop_path_handles do
+        sim.cutPathCtrlPoints(loop_path_handles[i], -1, 0)
+    end
+
     -- Extract the loop values, create the paths and show them
     if obj2.data ~= nil then
         local pathIntParams = { 6, 0, 0 }
