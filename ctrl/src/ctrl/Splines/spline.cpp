@@ -38,9 +38,19 @@ Spline::Spline(Vector<double, 3> start_point, Vector<double, 3> start_orientatio
         this->start_config[5] = start_config_vec[5];
     }
 
+    if(speed > 4)
+        this->speed = 4;
+    else if(speed <= 0)
+        this->speed = 0.1;
+    else
+        this->speed = speed;
 
-    this->speed = speed;
-    this->acceleration = acceleration;
+    if(acceleration > 4)
+        this->acceleration = 4;
+    else if(acceleration <= 0)
+        this->acceleration = 0.1;
+    else
+        this->acceleration = acceleration;
 
     this->points = points;
     this->num_points = points->size();
