@@ -87,13 +87,13 @@ function applyDummy(ui,_)
                 new_jp[i] = jpeditvalues[jpedit_ids[i]]
             end
         end
-        setConfigEndPoint(ui,new_jp)
         -- We want to only send data in the radiant format!
         for i = 1,6 do
             if simUI.getRadiobuttonValue(ui, 2007)==1 then
                 new_jp[i] = math.rad(new_jp[i])
             end
         end
+        setConfigEndPoint(ui,new_jp)
         js = {
             op = 0,
             data = {{
@@ -147,7 +147,7 @@ function returnSignal()
                     cconf[i] = {obj.data[i].j0,obj.data[i].j1,obj.data[i].j2,obj.data[i].j3,obj.data[i].j4,obj.data[i].j5}
                     simUI.insertComboboxItem(ui,1013,i,i..". Configuration")
                 end
-                --switchConfig(ui_1, 1013, 1)
+                switchConfig(ui_1, 1013, 1)
             elseif (obj.op==1) then
                 simUI.setEditValue(ui,1000,tostring(obj.data[1].m_x))
                 simUI.setEditValue(ui,1001,tostring(obj.data[1].m_y))
@@ -187,20 +187,14 @@ Input:
     c = configuration
 --]]
 function setConfigEndPoint(ui,c)
-    print(c)
     local sc = {}
     for i=1,#joints do
         sc[i] = sim.getJointPosition(jh[i])
     end
     for i=1,#joints do
-        if (simUI.getRadiobuttonValue(ui,2007)==1) then
-            sim.setJointPosition(jh[i], math.rad(c[i]))
-        else
-            sim.setJointPosition(jh[i], c[i])
-        end
+        sim.setJointPosition(jh[i], c[i])
     end
     local tip_pos = sim.getObjectPosition(tip,-1)
-    print(tip_pos)
     local tip_ori = sim.getObjectOrientation(tip, -1)
     sim.setObjectPosition(ik_dummy,-1,tip_pos)
     sim.setObjectOrientation(ik_dummy,-1,tip_ori)

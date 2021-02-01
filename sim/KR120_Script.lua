@@ -25,7 +25,8 @@ edit_refresh=function()
     sim.setObjectPosition(target1,-1,tip_pos)
     sim.setObjectOrientation(target1,-1,tip_ori)
     local new_pos = sim.getObjectPosition(tip,-1)
-    local new_ori = sim.getObjectOrientation(tip,-1)
+    local new_ori = get_orientation(tip, -1)
+    --local new_ori = sim.getObjectOrientation(tip,-1)
     for i=1,6 do
         if i <=3 then
             simUI.setEditValue(ui[1],999+i,tostring(math.round(new_pos[i],3)))
