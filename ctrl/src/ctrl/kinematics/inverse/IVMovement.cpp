@@ -41,7 +41,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
         }
         
         //calculate inverse kinematic for the position t.
-        configs = invK->get_inv_kinematics(t, true);
+        configs = invK->get_inv_kinematics(t);
 
         if (configs->size() > 0){
             correctConfig =  GetClosestConfiguration(configs, prevConfig);
@@ -94,7 +94,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
         }
         else{
             cout << "Trajectory can not be calculated!" << endl;
-            trajectory->clear();
+            trajectory->add_configuration(new Configuration({0, 0, 0, 0, 0, 0}));
             break;
         }
     }
@@ -228,7 +228,7 @@ bool IVMovement::Interpolate(Trajectory *trajectory, vector<SixDPos*>* _position
         PosC = esCalculation(PosC);
     }
     
-    vector<Configuration*>* configs = invK->get_inv_kinematics(PosC, true );
+    vector<Configuration*>* configs = invK->get_inv_kinematics(PosC);
     
     if(configs->size()>0)
     {
