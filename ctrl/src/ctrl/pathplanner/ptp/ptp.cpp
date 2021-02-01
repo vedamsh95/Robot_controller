@@ -77,7 +77,7 @@ Trajectory *Ptp::get_ptp_trajectory(Configuration *_start_cfg, Configuration *_e
 
     // Sample the values
     auto tmp = static_cast<float>(t_max / robot->time_interval);
-    size_t cycles = roundf(tmp) + 3;    // Add some cycles to make sure that all
+    auto cycles = static_cast<size_t>(roundf(tmp) + 3);    // Add some cycles to make sure that all
     // trajectories reach their end. This needs
     // to be done for V-REP. The precision of
     // these methods are good enough.
@@ -143,7 +143,7 @@ void Ptp::plot_movement(vector<Configuration *> &configs) {
 
     // Scale the timeline according to the used refresh rate
     std::vector<double> x(configs.size());
-    for (int i = 0; i < x.size(); i++) {
+    for (std::vector<double>::size_type i = 0; i < x.size(); i++) {
         x.at(i) = i * Robot::getInstance().time_interval;
     }
 
@@ -157,7 +157,7 @@ void Ptp::plot_movement(vector<Configuration *> &configs) {
 
     // Create the individual velocities for each joint by calculating the differences
     std::array<std::vector<double>, NUM_JOINTS> velocities;
-    for (int i = 0; i < x.size(); i++) {
+    for (std::vector<double>::size_type i = 0; i < x.size(); i++) {
         for (int j = 0; j < NUM_JOINTS; j++) {
             if (i == 0) {
                 velocities.at(j).push_back(0);
