@@ -146,7 +146,6 @@ function returnSignal()
                     cconf[i] = {obj.data[i].j0,obj.data[i].j1,obj.data[i].j2,obj.data[i].j3,obj.data[i].j4,obj.data[i].j5}
                     simUI.insertComboboxItem(ui,1013,i,i..". Configuration")
                 end
-                switchConfig(ui_1, 1013, 1)
             elseif (obj.op==1) then
                 simUI.setEditValue(ui,1000,tostring(obj.data[1].m_x))
                 simUI.setEditValue(ui,1001,tostring(obj.data[1].m_y))
@@ -156,6 +155,7 @@ function returnSignal()
                 simUI.setEditValue(ui,1005,tostring(math.deg(obj.data[1].m_c)))
             end
         end
+        switchConfig(ui_1, 1013, 1)
     else
         print("No Return-Signal. Try again or Restart the Programm!")
     end
@@ -928,9 +928,25 @@ function show_calculated_path()
         return {},{},{},''
     end
 
+    -- There is no path possible
     if obj1.data == nil then
         simUI.show(ui_2)
         return {},{},{},''
+    end
+
+    -- The path could not be completed
+    print(obj1.data)
+    print(#obj1.data)
+    local last_config = obj1.data[#obj1.data]
+    obj1.data[#obj1.data] = nil
+    print(last_config)
+    if last_config.m_x == 0 and
+            last_config.m_y == 0 and
+            last_config.m_z == 0 and
+            last_config.m_a == 0 and
+            last_config.m_b == 0 and
+            last_config.m_c == 0 then
+       simUI.show(ui_5)
     end
 
     local tmp = {}
@@ -1235,14 +1251,19 @@ for the lin and spline movement:"></label>
     </group>
 </ui>]]
 
-    error = [[<ui closeable="false" on-close="buttonok" layout="vbox" title="Error">
+    local error = [[<ui closeable="false" on-close="buttonok" layout="vbox" title="Error">
 	<label text="For the Values entered, is no result possible."></label>
 	<button text="OK" onclick="buttonok"></button>
 </ui>]]
 
-    error2 = [[<ui closeable="false" on-close="closeEventHandler" layout="vbox" title="Error">
+    local error2 = [[<ui closeable="false" on-close="closeEventHandler" layout="vbox" title="Error">
 	<label text="There is no continuous path. The best solution is shown.
 The problematic regions are marked in red."></label>
+	<button text="OK" onclick="closeEventHandler"></button>
+</ui>]]
+
+    local error3 = [[<ui closeable="false" on-close="closeEventHandler" layout="vbox" title="Error">
+	<label text="There is no path available with a constant orientation. The Path got aborted!"></label>
 	<button text="OK" onclick="closeEventHandler"></button>
 </ui>]]
 
@@ -1288,8 +1309,9 @@ or export the current points to a file."></label>
     ui_2=simUI.create(error)
     ui_3=simUI.create(splineIO)
     ui_4=simUI.create(error2)
+    ui_5=simUI.create(error3)
 
-    local myuis = {ui_1,ui_2,ui_3,ui_4}
+    local myuis = {ui_1,ui_2,ui_3,ui_4,ui_5}
     sim.setStringSignal("uisignal",sim.packTable(myuis))
 
     ----------Added variables---------
@@ -1330,6 +1352,7 @@ or export the current points to a file."></label>
     simUI.hide(ui_2)
     simUI.hide(ui_3)
     simUI.hide(ui_4)
+    simUI.hide(ui_5)
     simUI.setRadiobuttonValue(ui_1,2008,1)
 
     for i=1,6 do
@@ -1354,5 +1377,6 @@ if (sim_call_type==sim.syscb_cleanup) then
     simUI.destroy(ui_2)
     simUI.destroy(ui_3)
     simUI.destroy(ui_4)
+    simUI.destroy(ui_5)
     --sim.removeObjectFromSelection(sim.handle_single, ik_test)
 end
