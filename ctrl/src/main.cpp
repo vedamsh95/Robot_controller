@@ -270,12 +270,23 @@ int main() {
 
                 // Create the data for the path plotting functionality in VREP and send it using a signal
                 string json_loop_string = jsonHandler.get_json_string(loopPoints);
-                std::vector<SixDPos *> spline_points;
+                std::vector<SixDPos *> path_points;
                 for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {
-                    SixDPos *return_pos = ctrl.get_pos_from_config(cur_cfg);
-                    spline_points.push_back(return_pos);
+                    bool all_zeros = true;
+                    for (double d : cur_cfg->get_configuration()) {
+                        if (d != 0.0) {
+                            all_zeros = false;
+                        }
+                    }
+                    if (all_zeros) {
+                        path_points.push_back(new SixDPos({0.0, 0.0, 0.0, 0.0, 0.0, 0.0}));
+                        trajectory->get_all_configuration()->pop_back();
+                    } else {
+                        SixDPos *return_pos = ctrl.get_pos_from_config(cur_cfg);
+                        path_points.push_back(return_pos);
+                    }
                 }
-                string json_string = jsonHandler.get_json_string(&spline_points);
+                string json_string = jsonHandler.get_json_string(&path_points);
                 simxSetStringSignal(ID, "path_loops",
                                     reinterpret_cast<const simxUChar *>(json_loop_string.c_str()),
                                     json_loop_string.length(), simx_opmode_oneshot);
