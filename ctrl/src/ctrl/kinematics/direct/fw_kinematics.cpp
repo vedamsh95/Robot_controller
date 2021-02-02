@@ -55,7 +55,7 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
     double yaw = ea[2]; // psi
 
     return new SixDPos(
-            x, y, z,
+            x / 1000, y / 1000, z / 1000, // SixDPos is in meters
             roll, pitch, yaw
     );
 }
