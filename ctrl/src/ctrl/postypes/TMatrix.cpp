@@ -274,11 +274,14 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
     double trans_0_0 = this->m_transformation[0][0];
     double trans_0_1 = this->m_transformation[0][1];
     double trans_1_0 = this->m_transformation[1][0];
+    double trans_1_1 = this->m_transformation[1][1];
+    double trans_1_2 = this->m_transformation[1][2];
     double trans_2_0 = this->m_transformation[2][0];
     double trans_2_1 = this->m_transformation[2][1];
     double trans_2_2 = this->m_transformation[2][2];
 
     bool trans_20_is_0 = false;
+    bool trans_12_is_0 = false;
 
     if(trans_0_0 <= 0.000001 && trans_0_0 >= -0.000001){
         trans_0_0 = 0;
@@ -290,6 +293,15 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
 
     else if(trans_1_0 <= 0.000001 && trans_1_0 >= -0.000001){
         trans_1_0 = 0;
+    }
+
+    else if(trans_1_1 <= 0.000001 && trans_1_1 >= -0.000001){
+        trans_1_1 = 0;
+    }
+
+    else if(trans_1_2 <= 0.000001 && trans_1_2 >= -0.000001){
+        trans_1_2 = 0;
+        trans_12_is_0 = true;
     }
 
     else if(trans_2_0 <= 0.000001 && trans_2_0 >= -0.000001){
@@ -304,6 +316,27 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
     else if(trans_2_2 <= 0.000001 && trans_2_2 >= -0.000001){
         trans_2_2 = 0;
     }
+    //Special cases
+    if((trans_2_0 <= 1 + u && trans_2_0 >= 1 - u)){
+        if(trans_12_is_0 == true){
+            phi = atan2(trans_1_2, trans_1_1);
+        } else{
+            phi = atan2((-1)*trans_1_2, trans_1_1);
+        }
+        theta = 90;
+        psi = 0;
+    }
+
+    if((trans_2_0 <= -1 + u && trans_2_0 >= -1 - u)){
+        if(trans_12_is_0 == true){
+            phi = (-1)*atan2(trans_1_2, trans_1_1);
+        } else{
+            phi = (-1)*atan2((-1)*trans_1_2, trans_1_1);
+        }
+        theta = (-1)*90;
+        psi = 0;
+    }
+
     // Error case
     if ((trans_0_0 <= 0 + u && trans_0_0 >= 0 - u) && (trans_1_0 <= 0 + u && trans_1_0 >= 0 - u)) {
         phi = asin( (-1)* trans_0_1);
@@ -311,6 +344,8 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
         psi = 0;
         std::cout << "Errorcase for Euler Angles." << std::endl;
     }
+
+
     else {  // normal case
         phi = atan2(trans_1_0, trans_0_0);
         if(trans_20_is_0 == true){
