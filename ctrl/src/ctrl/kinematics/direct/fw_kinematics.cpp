@@ -49,6 +49,18 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
     // Euler Angles: can be used to get the rotation of the end effector
     // extrinsic xyz is used here
 
+    array<double, 3> ea = calculate_euler_angles(transformationMatrix);
+    double roll = ea[0]; // phi
+    double pitch = ea[1]; // theta
+    double yaw = ea[2]; // psi
+
+    return new SixDPos(
+            x, y, z,
+            roll, pitch, yaw
+    );
+}
+
+array<double, 3> FwKinematics::calculate_euler_angles(TMatrix* transformationMatrix) {
     double roll = 0; // phi
     double pitch = 0; // theta
     double yaw = 0; // psi
@@ -71,9 +83,5 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
         yaw = atan2(transformationMatrix->get(2, 1),
                     transformationMatrix->get(2, 2));
     }
-
-    return new SixDPos(
-            x, y, z,
-            roll, pitch, yaw
-    );
+    return {roll, pitch, yaw};
 }

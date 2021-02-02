@@ -17,6 +17,8 @@ public:
      * @return computed {@ref SixDPos}
      */
     SixDPos* get_fw_kinematics(Configuration* _cfg);
+
+    array<double, 3> calculate_euler_angles(TMatrix *transformationMatrix);
 };
 
 

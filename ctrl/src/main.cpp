@@ -9,6 +9,7 @@
 #include <cmath>
 #include <iomanip>
 #include "ctrl/kinematics/direct/fw_kinematics.h"
+#include "ctrl/kinematics/inverse/inverse_kinematics.h"
 
 
 extern "C" {
@@ -81,12 +82,51 @@ int main() {
     SixDPos *fwkinSample = (new FwKinematics())->get_fw_kinematics(new Configuration(
             {0, -0.5 * M_PI, 0.5 * M_PI, 0, 0, 0}
     ));
-    cout << fixed << setprecision(2)
+    cout << "Forward Kinematics sample: " << endl
+         << fixed << setprecision(2)
          << "X=" << fwkinSample->get_X() << " Y=" << fwkinSample->get_Y() << " Z=" << fwkinSample->get_Z()
          << " A=" << fwkinSample->get_A() * 180 / M_PI
          << " B=" << fwkinSample->get_B() * 180 / M_PI
-         << " C=" << fwkinSample->get_C() * 180 / M_PI << endl;
+         << " C=" << fwkinSample->get_C() * 180 / M_PI << endl << endl;
 
+    // Example for inverse kinematics
+    InvKinematics invKinematics;
+    FwKinematics fwKinematics;
+    vector<TMatrix*> transformationMatrices;
+    transformationMatrices.push_back(new TMatrix(
+            -5.07791870e-01, 6.35025673e-01, -5.82142433e-01, -7.18376830e+02 / 1000,
+            2.62242221e-01, 7.57620537e-01, 5.97695691e-01, 1.89742719e+03 / 1000,
+            8.20595171e-01, 1.50842688e-01, -5.51244092e-01, 2.32490439e+02 / 1000,
+            0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 1.00000000e+00 / 1000
+            ));
+    for (int i = 0; i < transformationMatrices.size(); i++) {
+        TMatrix *transformationMatrix = transformationMatrices[i];
+        double x = transformationMatrix->get(0, 3);
+        double y = transformationMatrix->get(1, 3);
+        double z = transformationMatrix->get(2, 3);
+        array<double, 3> ea = fwKinematics.calculate_euler_angles(transformationMatrix);
+        double roll = ea[0];
+        double pitch = ea[1];
+        double yaw = ea[2];
+        auto configurations = invKinematics.get_inv_kinematics(new SixDPos(x, y, z, yaw, pitch, roll));
+        cout << "Inverse Kinematics sample: " << endl;
+        transformationMatrix->print();
+        cout << fixed << setprecision(2)
+             << "X=" << x << " Y=" << y << " Z=" << z
+             << " A=" << roll << " B=" << pitch << " C=" << yaw << endl;
+        cout << configurations->size() << " Solutions:" << endl;
+        for (int j = 0; j < configurations->size(); j++) {
+            cout << fixed << setprecision(2)
+                 << "R1=" << (*(*configurations)[j])[0]
+                    << " R2=" << (*(*configurations)[j])[0]
+                    << " R3=" << (*(*configurations)[j])[0]
+                    << " R4=" << (*(*configurations)[j])[0]
+                    << " R5=" << (*(*configurations)[j])[0]
+                    << " R6=" << (*(*configurations)[j])[0]
+                    << endl;
+        }
+        cout << endl;
+    }
 
     cout << "This is the entry point of the SDIR programming project" << endl;
     SdirCtrl ctrl;
