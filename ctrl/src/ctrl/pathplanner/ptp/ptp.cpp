@@ -28,13 +28,6 @@ Trajectory* Ptp::get_ptp_trajectory(Configuration* _start_cfg, Configuration* _e
         printf("  End: %f %f %f %f %f %f\n", end_cfg[0], end_cfg[1], end_cfg[2], end_cfg[3], end_cfg[4], start_cfg[5]);
     }
 
-    // NOTE: In the coord_dialog script, you need to convert degrees to radians,
-    //       as this controller has no way to determine which unit is used.
-    // -- Add after line 229:
-    // if (simUI.getRadiobuttonValue(ui,2007)==1) then
-    //     tar_c[i] = math.rad(tonumber(tar_c[i]))
-    // end
-
     // check MIN_JOINT_ANGLES and MAX_JOINT_ANGLES
     for (int i = 0; i < 6; i++) {
         if (start_cfg[i] < MIN_JOINT_ANGLES[i] * TO_RAD) start_cfg[i] = MIN_JOINT_ANGLES[i] * TO_RAD;
