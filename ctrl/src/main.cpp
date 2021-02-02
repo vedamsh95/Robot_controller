@@ -94,7 +94,7 @@ int main() {
         if (length > 0) {
             // cast vrep data to string
             string t = string(reinterpret_cast<const char *>(value), length);
-            cout << t << endl;
+            //cout << t << endl;
             // deserialize the json input
             JsonHandler jsonHandler(t);
 

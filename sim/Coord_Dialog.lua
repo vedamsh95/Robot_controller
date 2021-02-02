@@ -1094,21 +1094,11 @@ function get_orientation(handle, relative)
     local epsilon = 0.00174532925            -- 0.1 degrees
     local phi, theta, psi
     if (math.abs(mat[1]) < epsilon and math.abs(mat[5]) < epsilon) then
-        if math.abs(mat[6]) > 1 then
-           if mat[6] < 0 then
-               mat[6] = -1
-           else
-               mat[6] =  1
-           end
+        if math.abs(mat[9]-(-1)) < epsilon then
+            phi = -math.atan2(-mat[7], mat[6])
+        else
+            phi = math.atan2(-mat[7], mat[6])
         end
-        if math.abs(mat[2]) > 1 then
-            if mat[2] < 0 then
-                mat[2] = -1
-            else
-                mat[2] =  1
-            end
-        end
-        phi = math.atan2(-mat[2], mat[6])
         theta = -mat[9] * math.pi * 0.5
         psi = 0
     else
