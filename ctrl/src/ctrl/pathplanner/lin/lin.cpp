@@ -17,6 +17,8 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
 {
     //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
     Trajectory* traj = new Trajectory();
+    vector<Configuration *> config;
+
     //Call FwKinematics
     FwKinematics fwKinematics;
     InvKinematics invKinematics;
@@ -104,7 +106,7 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
         for (int i = 1; i < new_cfg_possibilities->size(); i++) {
             // is (*new_cfg_possibilities)[i] better than new_cfg?!
         }
-        traj->add_configuration(new_cfg);
+        config.push_back(new_cfg);
     } while (
             abs(new_pos->get_X() - start_pos->get_X()) < abs(end_pos->get_X() - start_pos->get_X()) ||
                     abs(new_pos->get_Y() - start_pos->get_Y()) < abs(end_pos->get_Y() - start_pos->get_Y()) ||
@@ -114,5 +116,6 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
                     abs(new_pos->get_C() - start_pos->get_C()) < abs(end_pos->get_C() - start_pos->get_C())
             );
 
+    traj->set_trajectory(config);
     return traj;
 }
