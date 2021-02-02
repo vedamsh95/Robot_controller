@@ -52,10 +52,15 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
     double roll = 0; // phi
     double pitch = 0; // theta
     double yaw = 0; // psi
-    if (transformationMatrix->get(0, 0) == 0 && transformationMatrix->get(1, 0) == 0) {
-        // Error case
-        roll = asin(-transformationMatrix->get(0, 1));
-        pitch = -transformationMatrix->get(2, 0) * M_PI / 2;
+    if (transformationMatrix->get(2, 0) == -1) {
+        // Special case 1
+        roll = -atan2(-transformationMatrix->get(1, 2), transformationMatrix->get(1, 1));
+        pitch = M_PI / 2;
+        yaw = 0;
+    } else if (transformationMatrix->get(2, 0) == 1) {
+        // Special case 1
+        roll = atan2(-transformationMatrix->get(1, 2), transformationMatrix->get(1, 1));
+        pitch = -M_PI / 2;
         yaw = 0;
     } else {
         // Normal case
