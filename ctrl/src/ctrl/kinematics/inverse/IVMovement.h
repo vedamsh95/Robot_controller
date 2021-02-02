@@ -42,13 +42,37 @@ public:
     void CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _positions);
 
 private:
-	Configuration* GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig);
-    
-	InvKinematics *invK;
+    InvKinematics *invK;
     FwKinematics* fwK;
-	Trajectory *trajectory;
+    Trajectory *trajectory;
     Robot *robot;
     std::vector<std::vector<SixDPos*>>* loopVector;
+    
+    /**
+     * Calculates closest configuration from a vector containig configuration to a given configuration.
+     * Weights can be added if the resemblance of the first three joints is more important than the resemblance
+     * of the wrist joints.
+     *
+     * @param _configs  vector containing possible configurations.
+     * @param _prevConfig  reference configuration
+     * @param weight (optional) true if arm joints are more important
+     *
+     * @return the closest configuration
+     */
+	Configuration* GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig, bool weight = false);
+    
+    /**
+     * Calculates closest configuration from a vector containig configuration to a given configuration.
+     * The first three joints of the reference configuration are extracted from _prevConfig, the wrist
+     * joints are taken from _wristConfig. The resemblance of the arm joints is prioritized.
+     *
+     * @param _configs  vector containing possible configurations.
+     * @param _prevConfig  reference configuration first three joints
+     * @param _wristConfig reference configuration wrist joints
+     *
+     * @return the closest configuration
+     */
+    Configuration* GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig, Configuration* _wristConfig );
     
     /**
      * Computes the configuration of a new SixDPos C that is interpolated from the SixDPos _position->at(index) and _position->at(index-1).
@@ -67,9 +91,9 @@ private:
      * And changes corresponding values in trajectory.
      *
      * @param trajectory  trajectory containing configurations
-     * @param length length of the singularity
+     * @param width length of the singularity
      */
-    void wsInterpolation(Trajectory* trajectory, int length);
+    void wsInterpolation(Trajectory* trajectory, int width);
 
     /**
      * Computes one single configuration at wrist singularities (theta5  == 0) by interpolating theta4 and theta6 from two given values (startConfig & endConfig).
@@ -97,11 +121,10 @@ private:
      * And changes corresponding values in trajectory.
      *
      * @param trajectory  trajectory containing configurations
-     * @param length length of the singularity
+     * @param width length of the singularity
      */
-    //void osInterpolation(Trajectory* trajectory, int lengths, vector<SixDPos*>* _positions);
     
-    void osInterpolation(Trajectory* trajectory, int lengths, vector<SixDPos*>* _positions);
+    void osInterpolation(Trajectory* trajectory, int width, vector<SixDPos*>* _positions);
     
     /**
      * Computes configurations at overhead singularities ( x & y ==0) by interpolating theta1  from two given values (startConfig & endConfig).

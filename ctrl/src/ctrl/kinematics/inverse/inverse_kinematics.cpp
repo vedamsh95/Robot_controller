@@ -100,7 +100,7 @@ void InvKinematics::calcSolutions(TMatrix* R_06, array<double,3>* actPos, bool s
     TMatrix R_36 = (R_03.transpose()).multiply(*R_06);
 
     double theta4[4], theta5[4], theta6[4];
-    if( -acos(R_36.get(2, 2))==0){
+    if( std::abs(acos(R_36.get(2, 2)))<singularityMargin){
         cout << "wrist singularity " << endl;
         array<double, 3>* wristRotation = CalculateSingularity(R_36);
         for(int i= 0; i < 4; i++){
@@ -180,7 +180,7 @@ array<double, 3>* InvKinematics::CalculateSingularity(TMatrix R36)
 {
     array<double, 3>* wristRotation = new array<double, 3>;
     wristRotation->at(0)= 0.5*acos(R36.get(1, 1));
-    wristRotation->at(1)= 0;
+    wristRotation->at(1)= -acos(R36.get(2, 2));
     wristRotation->at(2)= 0.5*acos(R36.get(1, 1));
     
     return wristRotation;

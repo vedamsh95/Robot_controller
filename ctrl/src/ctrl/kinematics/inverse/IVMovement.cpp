@@ -15,13 +15,13 @@ IVMovement::~IVMovement()
 
 Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration * start_cfg, std::vector<std::vector<SixDPos*>>* loopPoints, Configuration* end_cfg)
 {
-    bool pathCancelled = false;
     loopVector = loopPoints;
     Configuration* prevConfig = start_cfg;
     Configuration* correctConfig;
     vector<Configuration*>* configs;
     SixDPos* t;
     
+    bool pathCancelled = false;
     bool wSingularity = false;
     bool oSingularity = false;
     bool lastPoint = false;
@@ -32,7 +32,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     trajectory->add_configuration(start_cfg);
 
     for (int i = 1; i< _positions->size(); i++)
-    {
+    { 
         if( i == _positions->size()-1) lastPoint=true;
         t = _positions->at(i);
 
@@ -67,7 +67,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
                 //should resemble the configuration at the end of the trajectory.
                 else if(end_cfg){
                     osLength++;
-                    correctConfig = GetClosestConfiguration(configs, end_cfg);
+                    correctConfig = GetClosestConfiguration(configs, end_cfg, correctConfig);
                     trajectory->set_configuration(correctConfig, trajectory->get_length()-1);
                     prevConfig = correctConfig;
                 }
@@ -91,7 +91,6 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
                 wSingularity = false;
                 wsLength = 0;
             }
-
         }
         else{
             cout << "Trajectory can not be calculated!" << endl;
@@ -100,20 +99,20 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
         }
     }
     
-    //check if joint velocitys are in range and adjust them by adding points if necessary.
+    //check if joint velocitys are in range and if necessary adjust them by adding points.
     CheckVelocities(trajectory, _positions);
     
     //crop trajectory because first Configuration* is current configuration of robot.
     trajectory->startAt(1);
     
-    if(pathCancelled){
-    trajectory->add_configuration(new Configuration({0, 0, 0, 0, 0, 0}));
-    }
+    //add impossible configuration as help for detection of aborted path.
+    if(pathCancelled)
+        trajectory->add_configuration(new Configuration({0, 0, 0, 0, 0, 0}));
    
     return trajectory;
 }
 
-Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig)
+Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig, bool weight)
 {
     int NbConfigs = _configs->size();
     double minDist = 1000;
@@ -123,16 +122,37 @@ Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _conf
         Configuration* ActConfig = _configs->at(i);
         double actDist = 0;
         for (int j = 0; j < NUM_JOINTS; j++) {
-            actDist += pow((*ActConfig)[j] - (*_prevConfig)[j], 2);
+            if(weight && j < 3){
+                actDist += 2*pow((*ActConfig)[j] - (*_prevConfig)[j], 2);
+            }
+            else actDist += pow((*ActConfig)[j] - (*_prevConfig)[j], 2);
         }
         actDist = sqrt(actDist);
 
-        if (actDist < minDist) {
+        if (actDist < minDist){
             minDist = actDist;
             minConfig = i;
         }
     }
     return _configs->at(minConfig);
+}
+
+Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _endConfig, Configuration* _wristConfig)
+{
+    //merge _prevConfig(arm) and _wrist Config(wrist)
+    std::array<double, NUM_JOINTS> merged;
+    for(int i= 0; i < 3; i++)
+    {
+        merged[i]= (*_endConfig)[i];
+        merged[i+3]=(*_wristConfig)[i+3];
+    }
+    Configuration* newConfig = new Configuration(merged);
+    Configuration* closest = GetClosestConfiguration(_configs, newConfig, true);
+
+    if(std::abs((*_wristConfig)[0]-(*closest)[0]) < 6){
+        return closest;
+    }
+    else return _wristConfig;
 }
 
 void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _positions)
@@ -149,11 +169,12 @@ void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _pos
         exception = false;
         for(int j = 0; j < 6; j++)
         {
-            if(std::abs(((*_trajectory->get_configuration(i-NbEx))[j] -
-                 ((*_trajectory->get_configuration(i-1-NbEx))[j]))
-                        /robot->time_interval) > robot->velocities[j]){
-                if (getMaxDiff(_trajectory->get_configuration(i-NbEx),
-                               _trajectory->get_configuration(i-1-NbEx)) < 0.5*M_PI){
+            Configuration* current = _trajectory->get_configuration(i-NbEx);
+            Configuration* previous = _trajectory->get_configuration(i-1-NbEx);
+            
+            if(std::abs(((*current)[j] - (*previous)[j]) /robot->time_interval)
+               > robot->velocities[j]){
+                if (getMaxDiff(current,previous) < 0.5*M_PI){
                     exception = true;
                 }
             }
@@ -303,26 +324,26 @@ Configuration* IVMovement::wsInterpolation(Configuration *startConfig, Configura
     return A->get_configuration(1);
 }
 
-void IVMovement::wsInterpolation(Trajectory* trajectory, int length)
+void IVMovement::wsInterpolation(Trajectory* trajectory, int width)
 {
-    int traSize = trajectory->get_length();
-    Configuration* startConfig = trajectory->get_configuration(traSize-length-1);
-    Configuration* endConfig = trajectory->get_configuration(traSize-1);
+    int size = trajectory->get_length();
+    Configuration* startConfig = trajectory->get_configuration(size-width-1);
+    Configuration* endConfig = trajectory->get_configuration(size-1);
     std::array<double, NUM_JOINTS> newConfig {};
 
-    for(int i = 0; i < length; i++){
-        Configuration* actConfig = trajectory->get_configuration(traSize-length+i);
+    for(int i = 0; i < width; i++){
+        Configuration* actConfig = trajectory->get_configuration(size-width+i);
         for(int j= 0; j < 3; j++){
             newConfig[j] = (*actConfig)[j];
         }
-        newConfig[3] = (*startConfig)[3] + (i+1)/(double)(length)*((*endConfig)[3]-(*startConfig)[3]);
+        newConfig[3] = (*startConfig)[3] + (i+1)/(double)(width)*((*endConfig)[3]-(*startConfig)[3]);
         newConfig[4] = (*actConfig)[4];
-        newConfig[5] = (*startConfig)[5] + (i+1)/(double)(length)*((*endConfig)[5]-(*startConfig)[5]);
+        newConfig[5] = (*startConfig)[5] + (i+1)/(double)(width)*((*endConfig)[5]-(*startConfig)[5]);
 
         if(newConfig[4] > JOINT_5_MAX) newConfig[4] = JOINT_5_MAX;
         else if(newConfig[4] < -JOINT_5_MAX) newConfig[4] = -JOINT_5_MAX;
         
-        trajectory->set_configuration(new Configuration(newConfig), traSize-length+i);
+        trajectory->set_configuration(new Configuration(newConfig), size-width+i);
     }
 }
 
@@ -439,7 +460,7 @@ void IVMovement::wsLastConfig(Configuration* Config, int width)
     double diff = A - B;
     
     (*Config)[3] = (*lastConfig)[3] + 0.5* diff;
-    (*Config)[5] = (*lastConfig)[3] + 0.5* diff;
+    (*Config)[5] = (*lastConfig)[5] + 0.5* diff;
     
     trajectory->set_configuration(Config, trajectory->get_length()-1);
 }
