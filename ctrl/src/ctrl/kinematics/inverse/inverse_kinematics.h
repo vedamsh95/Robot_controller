@@ -28,5 +28,7 @@ public:
     double angles_phi2_backward(double xc,double yc);
     double angles_phi3();
     TMatrix R36Matrix();
+
+    void checksingularities();
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H

@@ -21,7 +21,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
  n= 0.645;
  a = 1.150;
  b = 1.220;
- o = 0.115 ;
+ o = 0.115;
  d =0.215;
 
 
@@ -117,6 +117,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
                      << vec_phi4[i] << " phi5 " << vec_phi5[i] << " phi6 " << vec_phi6[i] << endl;
                 solutions->push_back(new Configuration(
                         {vec_phi1[i], vec_phi2[i], vec_phi3[i], vec_phi4[i], vec_phi5[i], vec_phi6[i]}));
+
             }
         }
 
@@ -240,6 +241,7 @@ double d2 = sqrt((o * o) + (b * b));
 }
 
 TMatrix InvKinematics::R36Matrix() {
+
     TMatrix T01(0,180,0,0.645);
     TMatrix T12(0+phi1,90,0.330,0);
     TMatrix T23(0+vec_phi2[i],0,1.150,0);
@@ -302,4 +304,11 @@ TMatrix InvKinematics::R36Matrix() {
             }
         }
     }
+}
+
+void InvKinematics::checksingularities(){
+
+
+
+
 }
