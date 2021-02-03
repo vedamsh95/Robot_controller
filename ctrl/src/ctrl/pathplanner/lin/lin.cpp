@@ -100,13 +100,22 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
             }
         }
         new_pos->set_position(*new_p);
+
         vector<Configuration *> *new_cfg_possibilities = invKinematics.get_inv_kinematics(new_pos);
         // TODO: get new configuration that's closest to "traj->get_last_configuration()"
-        Configuration* new_cfg = (*new_cfg_possibilities)[0];
-        for (int i = 1; i < new_cfg_possibilities->size(); i++) {
-            // is (*new_cfg_possibilities)[i] better than new_cfg?!
+        Configuration* bestConfiguration = nullptr;
+        double bestDistance = DBL_MAX;
+        for (int i = 0; i < new_cfg_possibilities->size(); i++) {
+            double distance = 0;
+            for (int j = 0; j < 6; j++) {
+                distance += abs((*(*new_cfg_possibilities)[i])[j] - (*traj->get_last_configuration())[j]) * MAX_VELOCITY[j];
+            }
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestConfiguration = (*new_cfg_possibilities)[i];
+            }
         }
-        config.push_back(new_cfg);
+        config.push_back(bestConfiguration);
     } while (
             abs(new_pos->get_X() - start_pos->get_X()) < abs(end_pos->get_X() - start_pos->get_X()) ||
                     abs(new_pos->get_Y() - start_pos->get_Y()) < abs(end_pos->get_Y() - start_pos->get_Y()) ||
