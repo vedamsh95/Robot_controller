@@ -14,6 +14,8 @@ double zc ;
 double m,n,a,b,o,d;
 double alpha1,alpha2,beta;
 
+const double TO_RAD = M_PI / 180;
+
 vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 {
     //TODO: IMPLEMENT Compute the inverse kinematics for a given position
@@ -113,7 +115,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
                     cout << " phi1 " << vec_phi1[i] << " phi2 " << vec_phi2[i] << " phi3 " << vec_phi3[i] << " phi4 "
                          << vec_phi4[j] << " phi5 " << vec_phi5[j] << " phi6 " << vec_phi6[j] << endl;
                     solutions->push_back(new Configuration(
-                            {vec_phi1[i], vec_phi2[i], vec_phi3[i], vec_phi4[j], vec_phi5[j], vec_phi6[j]}));
+                            {vec_phi1[i]*TO_RAD, vec_phi2[i]*TO_RAD, vec_phi3[i]*TO_RAD, vec_phi4[j]*TO_RAD, vec_phi5[j]*TO_RAD, vec_phi6[j]*TO_RAD}));
 
                 }
             }

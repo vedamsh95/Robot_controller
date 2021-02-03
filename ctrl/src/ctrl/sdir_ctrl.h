@@ -33,7 +33,7 @@ public:
      * @param end
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_ptp(SixDPos* start, SixDPos* end);
+    Trajectory* move_robot_ptp(Configuration* start, SixDPos* end, bool sync);
 
     /**
      * Computes a trajectory for a ptp movement from a start and target configuration
@@ -51,7 +51,7 @@ public:
      * @param end   target {@ref SixDPos}
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_lin(SixDPos* start, SixDPos* end);
+    Trajectory* move_robot_lin(Configuration* start, SixDPos* end);
 
     /**
      * Computes a trajectory for a lin movement from a start and target configuration
@@ -70,6 +70,8 @@ public:
      * @return reference of a {@ref Trajectory} for the movement
      */
     Trajectory* move_robot_spline(vector<SixDPos*> path);
+
+    Configuration * get_next_config_from_pos(Configuration *previous, SixDPos *pos);
 };
 
 

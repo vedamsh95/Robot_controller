@@ -7,6 +7,8 @@
 #include "pathplanner/lin/lin.h"
 #include "pathplanner/spline/spline.h"
 #include <Trajectory.h>
+#include <cfloat>
+#include <iostream>
 
 SixDPos* SdirCtrl::get_pos_from_config(Configuration* _cfg)
 {
@@ -19,18 +21,41 @@ SixDPos* SdirCtrl::get_pos_from_config(Configuration* _cfg)
 
 vector<Configuration*>* SdirCtrl::get_config_from_pos(SixDPos* pos)
 {
+    // TODO: we need the current configuration - it might be in line 70 of the script
     //ToDo: IMPLEMENT!
     InvKinematics invKinematics;
     vector<Configuration*>* new_cfg = invKinematics.get_inv_kinematics(pos);
     return new_cfg;
 }
 
-
-Trajectory* SdirCtrl::move_robot_ptp(SixDPos* start, SixDPos* end)
+const double MAX_VELOCITY[6] = {120, 115, 120, 190, 180, 260}; // in °/s
+Configuration* SdirCtrl::get_next_config_from_pos(Configuration* previous, SixDPos* pos)
 {
-    //ToDo: IMPLEMENT!
+    cout << "Old config: " << (*previous)[0] << " " << (*previous)[1] << " " << (*previous)[2] << " " << (*previous)[3] << " " << (*previous)[4] << " " << (*previous)[5] << endl;
+    InvKinematics invKinematics;
+    vector<Configuration*>* new_cfg = invKinematics.get_inv_kinematics(pos);
+    Configuration* bestConfiguration = nullptr;
+    double bestDistance = DBL_MAX;
+    for (int i = 0; i < new_cfg->size(); i++) {
+        double distance = 0;
+        for (int j = 0; j < 6; j++) {
+            distance += abs((*(*new_cfg)[i])[j] - (*previous)[j]) * MAX_VELOCITY[j];
+        }
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            bestConfiguration = (*new_cfg)[i];
+        }
+    }
+    cout << "New config: " << (*bestConfiguration)[0] << " " << (*bestConfiguration)[1] << " " << (*bestConfiguration)[2] << " " << (*bestConfiguration)[3] << " " << (*bestConfiguration)[4] << " " << (*bestConfiguration)[5] << endl;
 
-    return NULL;
+    return bestConfiguration;
+}
+
+
+Trajectory* SdirCtrl::move_robot_ptp(Configuration* start, SixDPos* end, bool sync)
+{
+    // not used by the UI
+    return move_robot_ptp(start, get_next_config_from_pos(start, end), sync);
 }
 
 Trajectory* SdirCtrl::move_robot_ptp(Configuration* start, Configuration* end, bool sync)
@@ -40,10 +65,10 @@ Trajectory* SdirCtrl::move_robot_ptp(Configuration* start, Configuration* end, b
 }
 
 
-Trajectory* SdirCtrl::move_robot_lin(SixDPos* start, SixDPos* end)
+Trajectory* SdirCtrl::move_robot_lin(Configuration* start, SixDPos* end)
 {
-    //ToDo: IMPLEMENT!
-    return NULL;
+    // not used by the UI
+    return move_robot_lin(start, get_next_config_from_pos(start, end));
 }
 
 

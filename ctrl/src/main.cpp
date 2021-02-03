@@ -159,8 +159,9 @@ int main() {
              */
             if (jsonHandler.get_op_mode() == OpMode::POS_2_CFG) {
                 SixDPos pos(jsonHandler.get_data()[0]);
+                Configuration cfg0(jsonHandler.get_data()[1]);
 //                cout << jsonHandler.get_json_string(&pos) << endl;
-                vector<Configuration *> *result_cfg = ctrl.get_config_from_pos(&pos);
+                vector<Configuration *> *result_cfg = new vector<Configuration *>({ctrl.get_next_config_from_pos(&cfg0, &pos)});
                 string json_return_string = jsonHandler.get_json_string(result_cfg);
 //                cout << json_return_string << endl;
                 simxSetStringSignal(ID, "returnsignal",
