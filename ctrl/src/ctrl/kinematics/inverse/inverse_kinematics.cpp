@@ -106,20 +106,19 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         if (((vec_phi1[i] > -185) && (vec_phi1[i] < 185)) && ((vec_phi2[i] > -140) && (vec_phi2[i] < -5)) &&
             ((vec_phi3[i] > -120) && (vec_phi3[i] < 168))) {
             R36Matrix();
-        }
-    }
-        for (i = 0; i < vec_phi4.size(); i++) {
-            if (((vec_phi1[i] > -185) && (vec_phi1[i] < 185)) && ((vec_phi2[i] > -140) && (vec_phi2[i] < -5)) &&
-                ((vec_phi3[i] > -120) && (vec_phi3[i] < 168)) && (-350 <= vec_phi4[i] && vec_phi4[i] < 350) &&
-                (-125 < vec_phi5[i] && vec_phi5[i] < 125) &&
-                (-350 <= vec_phi6[i] && vec_phi6[i] < 350)) {
-                cout << " phi1 " << vec_phi1[i] << " phi2 " << vec_phi2[i] << " phi3 " << vec_phi3[i] << " phi4 "
-                     << vec_phi4[i] << " phi5 " << vec_phi5[i] << " phi6 " << vec_phi6[i] << endl;
-                solutions->push_back(new Configuration(
-                        {vec_phi1[i], vec_phi2[i], vec_phi3[i], vec_phi4[i], vec_phi5[i], vec_phi6[i]}));
+            for (int j = 0; j < vec_phi4.size(); j++) {
+                if ((-350 <= vec_phi4[j] && vec_phi4[j] < 350) &&
+                    (-125 < vec_phi5[j] && vec_phi5[j] < 125) &&
+                    (-350 <= vec_phi6[j] && vec_phi6[j] < 350)) {
+                    cout << " phi1 " << vec_phi1[i] << " phi2 " << vec_phi2[i] << " phi3 " << vec_phi3[i] << " phi4 "
+                         << vec_phi4[j] << " phi5 " << vec_phi5[j] << " phi6 " << vec_phi6[j] << endl;
+                    solutions->push_back(new Configuration(
+                            {vec_phi1[i], vec_phi2[i], vec_phi3[i], vec_phi4[j], vec_phi5[j], vec_phi6[j]}));
 
+                }
             }
         }
+    }
 
 
 

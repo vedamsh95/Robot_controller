@@ -118,11 +118,11 @@ int main() {
         for (int j = 0; j < configurations->size(); j++) {
             cout << fixed << setprecision(2)
                  << "R1=" << (*(*configurations)[j])[0]
-                    << " R2=" << (*(*configurations)[j])[0]
-                    << " R3=" << (*(*configurations)[j])[0]
-                    << " R4=" << (*(*configurations)[j])[0]
-                    << " R5=" << (*(*configurations)[j])[0]
-                    << " R6=" << (*(*configurations)[j])[0]
+                    << " R2=" << (*(*configurations)[j])[1]
+                    << " R3=" << (*(*configurations)[j])[2]
+                    << " R4=" << (*(*configurations)[j])[3]
+                    << " R5=" << (*(*configurations)[j])[4]
+                    << " R6=" << (*(*configurations)[j])[5]
                     << endl;
         }
         cout << endl;
