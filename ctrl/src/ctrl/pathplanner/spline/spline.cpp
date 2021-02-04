@@ -30,7 +30,7 @@ Trajectory* Spline::get_spline_trajectoy(Configuration* _start_cfg, std::vector<
 {
 
     //function that receives a vector of Six D positions and the current configuration of the robot
-
+    
     Trajectory* spline_trajectory = new Trajectory();
     SdirCtrl ctrl;
     SixDPos* start;
@@ -50,14 +50,15 @@ Trajectory* Spline::get_spline_trajectoy(Configuration* _start_cfg, std::vector<
 
     //starting is the current position
     SixDPos P0 = start;
-
+   // this will cause an error, you are initializing the same points over and over again, not sure what the goal here is
+   // is P0_x.... supposed to be an array? 
     for(int i = 0; i < coordinates_list.size(); i++)
     {
 
         SixDPos P1, P2, P3, P4;
 
         SixDPos P5 = coordinates_list[i]->get_position();
-
+        
         //find coordinates x,y,z of first control point
         double P0_x = P0[0];
         double P0_y = P0[1];
@@ -105,7 +106,7 @@ Trajectory* Spline::get_spline_trajectoy(Configuration* _start_cfg, std::vector<
 
 void Spline::interpolate(double p0, double p5, vector<double> &path, double ts, double te, double as, double ae)
 {
-
+        //pass as pointer and pushback path*, no need to use vector here, double* would work fine 
         vector<double>* temp = &path;
         //intermediate control points
         double p1, p2, p3, p4, s;
@@ -143,6 +144,7 @@ void Spline::interpolate(double p0, double p5, vector<double> &path, double ts, 
         }
         return sum;
  }
+ //not sure why you need all this ptp code if you just need max_velo
  std::tuple<double, double> Spline::get_velocity(Configuration *_start_cfg, Configuration *_end_cfg)
 {
 
