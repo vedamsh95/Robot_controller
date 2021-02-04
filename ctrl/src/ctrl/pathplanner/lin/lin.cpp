@@ -130,6 +130,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         //double distance = config_2[0] - config_1[0] + config_2[1] - config_1[1] + config_2[2] - config_1[2] + config_2[3] - config_1[3] + config_2[4] - config_1[4] + config_2[5] - config_1[5];
         if (inversekinematics.get_inv_kinematics(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5])) == nullptr)
         {
+        //Where do you check for singularities?? overhead needs to be handled by you, discuss with sreenath what value to excpect for singularities
          std::cout << "'No solution returned from Inverse Kinematics";
         }
         else
