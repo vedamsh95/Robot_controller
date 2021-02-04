@@ -96,6 +96,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     vector<double> x_array;
     vector<double> y_array;
     vector<double> z_array;
+    vector<Configuration*> config_2;
 
     //i = time cycles
     for (double i = 0; i <= t_fin; i = i + 0.5) {
@@ -108,72 +109,74 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         //configuration_x.push_back(new Configuration({ compute(max_vel ,max_acc ,in[0] ,fin[0] ,i,t_c, t_fin) }));
         //configuration_y.push_back(new Configuration({ compute(max_vel ,max_acc ,in[1] ,fin[1] ,i,t_c, t_fin) }));
         //configuration_z.push_back(new Configuration({ compute(max_vel ,max_acc ,in[2] ,fin[2] ,i,t_c, t_fin) }));
-   }
+   
     //configuration_x = compute(max_vel, max_acc, in_phi1, fin_phi1, i, t_c, t_fin)
 
-    SixDPos* position_and_orientation;
+        SixDPos* position_and_orientation;
     //position_and_orientation = x_array[0], y_array[0], z_array[0], in[3], in[4], in[5];
     //position_and_orientation = InvKinematics.inversekinematics.get_inv_kinematics(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5]);
-    vector<SixDPos*> SixDPos_first;
-    vector<SixDPos*> SixDPos_second;
-    vector<Configuration*>* config_1 = new vector<Configuration*>();
-    vector<Configuration*>* config_1_2 = new vector<Configuration*>();
-    vector<Configuration*> config_2;
-    //vector<SixDPos*> SixDPos_first;
-    SixDPos_first.push_back(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5]));
-    SixDPos_second.push_back(new SixDPos(x_array[1], y_array[1], z_array[1], in[3], in[4], in[5]));
-    //position_and_orientation = SixDPos_first;
-    //config_1 = inversekinematics->get_inv_kinematics(SixDPos_first);  
-    //config_1 = inversekinematics.get_inv_kinematics(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5]));
-    //config_2 = inversekinematics.get_inv_kinematics(new SixDPos(x_array[1], y_array[1], z_array[1], in[3], in[4], in[5]));
-    //double distance = config_2[0] - config_1[0] + config_2[1] - config_1[1] + config_2[2] - config_1[2] + config_2[3] - config_1[3] + config_2[4] - config_1[4] + config_2[5] - config_1[5];
-    if (inversekinematics.get_inv_kinematics(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5])) == nullptr)
-    {
-        std::cout << "'No solution returned from Inverse Kinematics";
-    }
-    else
-    {
-        config_1 = inversekinematics.get_inv_kinematics(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5]));
-        int max_distance = 2701;
-        int temporary_distance_start;
-        int temporary_distance;
-        int temporary_difference;
-        vector<double> distance;
-        int solution_number = 0;
-        int best_solution_number = 0;
-        int number_of_solutions = config_1->size();
+        vector<SixDPos*> SixDPos_first;
+        vector<SixDPos*> SixDPos_second;
+        vector<Configuration*>* config_1 = new vector<Configuration*>();
+        vector<Configuration*>* config_1_2 = new vector<Configuration*>();
         
-        for (int i=0; i< number_of_solutions; i++)
+    //vector<SixDPos*> SixDPos_first;
+        SixDPos_first.push_back(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5]));
+        SixDPos_second.push_back(new SixDPos(x_array[1], y_array[1], z_array[1], in[3], in[4], in[5]));
+        //position_and_orientation = SixDPos_first;
+        //config_1 = inversekinematics->get_inv_kinematics(SixDPos_first);  
+        //config_1 = inversekinematics.get_inv_kinematics(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5]));
+        //config_2 = inversekinematics.get_inv_kinematics(new SixDPos(x_array[1], y_array[1], z_array[1], in[3], in[4], in[5]));
+        //double distance = config_2[0] - config_1[0] + config_2[1] - config_1[1] + config_2[2] - config_1[2] + config_2[3] - config_1[3] + config_2[4] - config_1[4] + config_2[5] - config_1[5];
+        if (inversekinematics.get_inv_kinematics(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5])) == nullptr)
         {
-            temporary_distance_start = _start_cfg->get_configuration().at(0) + _start_cfg->get_configuration().at(1) + _start_cfg->get_configuration().at(2) + _start_cfg->get_configuration().at(3) + _start_cfg->get_configuration().at(4) + _start_cfg->get_configuration().at(5);
-            temporary_distance = config_1->at(solution_number)->operator[](0)+ config_1->at(solution_number)->operator[](1) + config_1->at(solution_number)->operator[](2) + config_1->at(solution_number)->operator[](3) + config_1->at(solution_number)->operator[](4) + config_1->at(solution_number)->operator[](5)  ;
-            temporary_difference = temporary_distance_start - temporary_distance;
-            //solution_number++;
-            if (temporary_difference < max_distance)
+         std::cout << "'No solution returned from Inverse Kinematics";
+        }
+        else
+        {
+            config_1 = inversekinematics.get_inv_kinematics(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5]));
+            int max_distance = 2701;
+            int temporary_distance_start;
+            int temporary_distance;
+            int temporary_difference;
+            vector<double> distance;
+            int solution_number = 0;
+            int best_solution_number = 0;
+            int number_of_solutions = config_1->size();
+
+            for (int j = 0 & i == 0; j < number_of_solutions; j++)
             {
-                max_distance = temporary_difference;
-                best_solution_number = solution_number;
+                temporary_distance_start = _start_cfg->get_configuration().at(0) + _start_cfg->get_configuration().at(1) + _start_cfg->get_configuration().at(2) + _start_cfg->get_configuration().at(3) + _start_cfg->get_configuration().at(4) + _start_cfg->get_configuration().at(5);
+                temporary_distance = config_1->at(solution_number)->operator[](0) + config_1->at(solution_number)->operator[](1) + config_1->at(solution_number)->operator[](2) + config_1->at(solution_number)->operator[](3) + config_1->at(solution_number)->operator[](4) + config_1->at(solution_number)->operator[](5);
+                temporary_difference = temporary_distance_start - temporary_distance;
+                //solution_number++;
+                if (temporary_difference < max_distance)
+                {
+                    max_distance = temporary_difference;
+                    best_solution_number = solution_number;
+                }
+                solution_number++;
+
             }
-            solution_number++;
+            config_2.push_back(config_1->at(best_solution_number));
+            config_1_2->push_back(config_1->at(best_solution_number));
+            for (int j = 0& i != 0; j < number_of_solutions; j++)
+            {
+                temporary_distance_start = config_1_2->at(solution_number)->operator[](0) + config_1_2->at(solution_number)->operator[](1) + config_1_2->at(solution_number)->operator[](2) + config_1_2->at(solution_number)->operator[](3) + config_1_2->at(solution_number)->operator[](4) + config_1_2->at(solution_number)->operator[](5);
+                temporary_distance = config_1->at(solution_number)->operator[](0) + config_1->at(solution_number)->operator[](1) + config_1->at(solution_number)->operator[](2) + config_1->at(solution_number)->operator[](3) + config_1->at(solution_number)->operator[](4) + config_1->at(solution_number)->operator[](5);
+                temporary_difference = temporary_distance_start - temporary_distance;
+                //solution_number++;
+                if (temporary_difference < max_distance)
+                {
+                    max_distance = temporary_difference;
+                    best_solution_number = solution_number;
+                }
+                solution_number++;
+
+            }
+            config_2.push_back(config_1->at(best_solution_number));
 
         }
-        config_2.push_back(config_1->at(best_solution_number));
-        config_1_2->push_back(config_1->at(best_solution_number));
-        for (int i = 0; i < number_of_solutions; i++)
-        {
-            temporary_distance_start = config_1_2->at(solution_number)->operator[](0) + config_1_2->at(solution_number)->operator[](1) + config_1_2->at(solution_number)->operator[](2) + config_1_2->at(solution_number)->operator[](3) + config_1_2->at(solution_number)->operator[](4) + config_1_2->at(solution_number)->operator[](5);
-            temporary_distance = config_1->at(solution_number)->operator[](0) + config_1->at(solution_number)->operator[](1) + config_1->at(solution_number)->operator[](2) + config_1->at(solution_number)->operator[](3) + config_1->at(solution_number)->operator[](4) + config_1->at(solution_number)->operator[](5);
-            temporary_difference = temporary_distance_start - temporary_distance;
-            //solution_number++;
-            if (temporary_difference < max_distance)
-            {
-                max_distance = temporary_difference;
-                best_solution_number = solution_number;
-            }
-            solution_number++;
-
-        }
-        config_2.push_back(config_1->at(best_solution_number));
         
     }
     trajectory->set_trajectory(config_2);
