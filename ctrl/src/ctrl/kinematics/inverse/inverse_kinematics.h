@@ -17,12 +17,12 @@ class InvKinematics {
 private:
 
 //define the Robot constants
-    const double d = .215; //215 mm  in-line wrist length
-    const double m = .330; //330 mm  offset length from Zo axis
-    const double n = .645;  //645 mm  offset height from base
-    const double o = .115;  // 115 mm  offset of arm on linkarm
-    const double a = 1.150;  // 1150 mm  linkarm 
-    const double b = 1.220;  //1220 mm    arm
+    const double d = 215; //215 mm  in-line wrist length
+    const double m = 330; //330 mm  offset length from Zo axis
+    const double n = 645;  //645 mm  offset height from base
+    const double o = 115;  // 115 mm  offset of arm on linkarm
+    const double a = 1150;  // 1150 mm  linkarm 
+    const double b = 1220;  //1220 mm    arm
 
 
 public:
@@ -37,11 +37,14 @@ public:
 
     std::vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
     void find_phi_123(double Xc, double Yc, double Zc, double phi1, std::vector<double> (&point1), std::vector<double> (&point2), std::vector<double> (&point3));
-    void findphi4phi5phi6(double phi1, double phi2, double phi3, std::vector<double> &phi4, std::vector<double> &phi5, std::vector<double> &phi6, double transformationmatrix[16]);
+    void findphi4phi5phi6(double phi1, double phi2, double phi3, std::vector<double> &phi4, std::vector<double> &phi5, std::vector<double> &phi6, double transformationmatrix[16], double Xc, double Yc, double Zc);
     std::tuple<double, double> ForwardsElbowdown(double d1, double Zc);
     std::tuple<double, double> ForwardsElbowup(double d1, double Zc);
     std::tuple<double, double> BackwardsElbowdown(double d1, double Zc);
     std::tuple<double, double> BackwardsElbowup(double d1, double Zc);
+    
+    
+    //non-essentials
     void multiplymatrix(double M1[4][4], double M2[4][4], double(&(Result)));
     void multiplymatrix(double M1[3][3], double M2[3][3], double(&(Result)));
     void printmatrix(double matrix[4][4]);
