@@ -179,6 +179,8 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         }
         
     }
+    //push back end point if point isnt reach within the for loop. NOTE!!! Code needs to work without it too!!
+    config_2.push_back(_end_cfg);
     trajectory->set_trajectory(config_2);
     
    
@@ -204,15 +206,16 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
 //positions
 
 double Lin::compute(double max_velo, double max_acc, double in_angle, double fin_angle, double time, double t_c, double t_fin) {
-
-    if (time < t_c) {
+    // you forgot the time = t_c, time = t_fin-t_c and time = t_fin cases, so in those cases the function wouldnt return anything which causes an error.
+    // NOTE!!! check my implementation of ptp, you need to check if you are moving in a positiv or negativ direction, otherwise you might end up going in the other direction
+    if (time <= t_c) {
         return (in_angle + 0.5 * max_acc * time * time);
         //call inversekinematics
     }
-    if (t_c < time < t_fin - t_c) {
+    if (t_c < time <= t_fin - t_c) {
         return (in_angle + max_acc * t_c * (time - t_c / 2));
     }
-    if (t_fin - t_c < time < t_fin) {
+    if (t_fin - t_c < time <= t_fin) {
         return (fin_angle - 0.5 * max_acc * (t_fin - time) * (t_fin - time));
     }
 }
