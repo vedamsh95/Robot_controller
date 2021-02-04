@@ -33,6 +33,11 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     e1 = (e1 * 180) / M_PI;
     e2 = (e2 * 180) / M_PI;
     e3 = (e3 * 180) / M_PI;
+    
+//converting meters to millimeters
+    Xp = Xp * 1000;
+    Yp = Yp * 1000;
+    Zp = Zp * 1000;
 
 //transformation matrix (in th form of an array)
     double tansformationmatrix[16];
