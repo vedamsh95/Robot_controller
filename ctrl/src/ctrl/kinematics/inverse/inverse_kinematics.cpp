@@ -50,8 +50,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     cout<<"value of yc "<<yc << endl;
         zc = z - d * (cos(r_b)*cos(r_a));
 
-        phi1=atan(yc / (-xc))*180/M_PI;
-
    double d1 = sqrt(xc*xc + yc*yc);
    cout << "d1 " << d1 <<endl;
 
@@ -140,25 +138,24 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
 }
 //calculating  phi1 angle
  double InvKinematics::  angles_phi1(double xc,double yc,double d1,std::vector<double>& vec_phi1) {
-
      if (xc < 0 && yc > 0) {
-         phi1=(180 - phi1) ;
+         phi1=(atan(yc / (-xc))*180/M_PI) - 180; // is slide 10 wrong?
          cout << "phi1 " << phi1 <<endl;
          vec_phi1.push_back(phi1);
      } else if (xc < 0 && yc < 0) {
-         phi1 = 180 - phi1;
+         phi1 = 180 - atan(yc / (xc))*180/M_PI;
          cout << "phi1 " << phi1 <<endl;
          vec_phi1.push_back(phi1);
-     } else if (xc < 0 && yc < 0) {
-         phi1 = phi1;
+     } else if (xc > 0 && yc < 0) {
+         phi1 = atan(yc / (xc))*180/M_PI;
+         cout << "phi1 " << phi1 <<endl;
+         vec_phi1.push_back(phi1);
+     } else {
+         phi1 = -atan(yc / (xc))*180/M_PI;
          cout << "phi1 " << phi1 <<endl;
          vec_phi1.push_back(phi1);
      }
-     else if (d1 > m) {
-         phi1 = -phi1;
-         cout << "phi1 " << phi1 <<endl;
-         vec_phi1.push_back(phi1);
-     }
+     // TODO: cases 5 & 6?!?!
  }
 
  //calculating phi2 angles
