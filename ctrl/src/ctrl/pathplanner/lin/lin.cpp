@@ -17,6 +17,8 @@ void traj_gen_pos(double start_pos, double end_pos,  vector<double>& arr1);
 Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg)
 {
     //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
+    //hello world
+    //hello man
 
     Trajectory* trajectory = new Trajectory();
     FwKinematics fwKinematics_start;
