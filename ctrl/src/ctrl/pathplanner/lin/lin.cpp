@@ -1,14 +1,24 @@
 #include "lin.h"
+#include <math.h>
+#include <iostream>
+#include <vector>
+#include <SixDPos.h>
+#include "../../sdir_ctrl.h"
+#include "../../kinematics/direct/fw_kinematics.h"
+#include "../../kinematics/inverse/inverse_kinematics.h"
 
+#define PI 3.14159265
+#define max_acc 300.0
+#define max_vel 115.0
+using namespace std;
+void traj_gen_pos(double start_pos, double end_pos,  vector<double>& arr1);
 Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg)
 {
     //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
-<<<<<<< HEAD
-    //hello world
-    //hello man
 
-=======
->>>>>>> parent of d9de86b (Lin Movement update)
+    
+
+
     Trajectory* trajectory = new Trajectory();
     //Dummy trajectory
     trajectory->set_trajectory({
