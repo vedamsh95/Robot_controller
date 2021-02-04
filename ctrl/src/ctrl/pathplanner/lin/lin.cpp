@@ -107,3 +107,80 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
 
     return trajectory;
 }
+
+
+//This function is generating trapezoindal profile of the position
+void traj_gen_pos(double start_pos, double end_pos, vector<double>& arr1)
+{
+    
+    double q_c, q_fc, q_f;
+    //finding timing law
+    double t_c, t_f, t_fc;
+
+    if (abs(end_pos - start_pos) > 100)
+    {
+        t_c = max_vel / max_acc;
+        t_f = t_c + (abs(end_pos - start_pos) / max_vel);
+        t_fc = t_f - t_c;
+
+        for (double t = 0.001; t < t_c; t += t_c / 5)
+        {
+            q_c = start_pos + (0.5 * max_acc * t * t);
+            // Here we are pushbacking of new position
+
+            arr1.push_back(q_c/1000);
+        }
+
+        for (double t = t_c + 0.001; t < t_fc; t += t_fc / 5)
+        {
+            q_fc = start_pos + (max_acc * t_c * (t - (t_c / 2)));
+            // Here we are pushbacking of new position
+
+            arr1.push_back(q_fc/1000);
+        }
+
+        for (double t = t_fc + 0.001; t < t_f; t += t_c / 5)
+        {
+            q_f = end_pos - (0.5 * max_acc * (t_f - t) * (t_f - t));
+            // Here we are pushbacking of new position
+
+            arr1.push_back(q_f/1000);
+        }
+    }
+    else
+    {
+        // When distance are very less then we should reduce our velocity
+        t_c = 20 / max_acc;
+        t_f = t_c + (abs(end_pos - start_pos) / 20);
+        t_fc = t_f - t_c;
+        for (double t = 0.001; t < t_c; t += t_c / 5)
+        {
+            q_c = start_pos + (0.5 * max_acc * t * t);
+            // Here we are pushbacking of new position
+
+            arr1.push_back(q_c/1000);
+        }
+
+        for (double t = t_c + 0.001; t < t_fc; t += t_fc / 10)
+        {
+            q_fc = start_pos + (max_acc * t_c * (t - (t_c / 2)));
+            // Here we are pushbacking of new position
+
+            arr1.push_back(q_fc/1000);
+        }
+
+        for (double t = t_fc + 0.001; t < t_f; t += t_c / 5)
+        {
+            q_f = end_pos - (0.5 * max_acc * (t_f - t) * (t_f - t));
+            // Here we are pushbacking of new position
+
+            arr1.push_back(q_f/1000);
+        }
+    }
+
+    //cout << t_c << ", " << t_f << ", " << t_fc << endl;
+
+    
+
+
+}
