@@ -32,6 +32,10 @@ private:
     Robot* robot;
     bool plot; 
     Trajectory* trajectory;
+    InvKinematics* invK;
+    FwKinematics* fwK;
+    IVMovement* ivM;
+    Ptp* ptp;
     
 public:
     /**
@@ -79,16 +83,13 @@ public:
     Configuration* GetConfigurations(SixDPos* SixDPos, Configuration* StartConfig);
     
     /**
-     *Returns closest configuration out of a vector of configurations to a given configuration
-     *Difference to IVMovement::GetClosestConfiguration: the first 3 joints have a higher weight. 
+     * Plots a 3D plot of given SixDPoses and the corresponding velocities
+     * calculated by the distance inbetween the SixDPos.
      *
-     * @param Configurations
-     * @param PrevConfig  Configuration that others need to be close to
-     *
+     * @param SixDPoses  vector of SixDPos to plot
      */
-    Configuration* GetClosestConfiguration(vector<Configuration*>* Configurations, Configuration* PrevConfig);
     
-    static void PlotVelocity(vector<SixDPos*> SixDPoses);
+    static void Plot(vector<SixDPos*> SixDPoses);
     
 };
 

@@ -32,21 +32,6 @@ public:
      */
     Trajectory* getMovement(vector<SixDPos*>* _positions, Configuration * start_cfg, std::vector<std::vector<SixDPos*>>* loopPoints, Configuration* end_cfg = nullptr);
     
-    /**
-     * Calculates if joint velocities are too high so that _positions can be changed accordingly.
-     * If veocities are too high SixDPos are added to _positions and belonging Configurations are inserted in trajectory.
-     *
-     * @param trajectory  trajectory to adjust if velocities to high.
-     * @param _positions  SixDPoses to interpolate to reduce velocity.
-     */
-    void CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _positions);
-
-private:
-    InvKinematics *invK;
-    FwKinematics* fwK;
-    Trajectory *trajectory;
-    Robot *robot;
-    std::vector<std::vector<SixDPos*>>* loopVector;
     
     /**
      * Calculates closest configuration from a vector containig configuration to a given configuration.
@@ -59,7 +44,24 @@ private:
      *
      * @return the closest configuration
      */
-	Configuration* GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig, bool weight = false);
+    Configuration* GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig, bool weight = false);
+
+private:
+    InvKinematics *invK;
+    FwKinematics* fwK;
+    Trajectory *trajectory;
+    Robot *robot;
+    std::vector<std::vector<SixDPos*>>* loopVector;
+    
+    
+    /**
+     * Calculates if joint velocities are too high so that _positions can be changed accordingly.
+     * If veocities are too high SixDPos are added to _positions and belonging Configurations are inserted in trajectory.
+     *
+     * @param trajectory  trajectory to adjust if velocities to high.
+     * @param _positions  SixDPoses to interpolate to reduce velocity.
+     */
+    void CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _positions);
     
     /**
      * Calculates closest configuration from a vector containig configuration to a given configuration.

@@ -3,6 +3,10 @@
 Lin::Lin() :plot(false){
     robot = &Robot::getInstance();
     trajectory = new Trajectory();
+    invK = new InvKinematics();
+    fwK = new FwKinematics();
+    ivM = new IVMovement();
+    ptp = new Ptp();
 }
 
 Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration,std::vector<std::vector<SixDPos*>>* loopPoints)
@@ -18,9 +22,8 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
     makeFeasible(_end_cfg);
         
     //Calculate start and endposition in cartesian space.
-    FwKinematics fw;
-    SixDPos* start_pos = fw.get_fw_kinematics(_start_cfg);
-    SixDPos* end_pos = fw.get_fw_kinematics(_end_cfg);
+    SixDPos* start_pos = fwK->get_fw_kinematics(_start_cfg);
+    SixDPos* end_pos = fwK->get_fw_kinematics(_end_cfg);
     
     //Get distance between start and endposition.
     double distance = sqrt(pow(end_pos->get_X()-  start_pos->get_X(), 2)
@@ -47,7 +50,7 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
     size_t cycles = roundf(tmp)+3;
     
     
-    //calculate SixDPoses for the Trajectory
+    //calculate SixDPoses for trajectory
     double value, factor;
     double t = 0;
     vector<SixDPos*> points;
@@ -61,7 +64,7 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
         t += Robot::getInstance().time_interval;
     }
     
-    //store points for plotting before they are adjusted for reduction
+    //store points for plotting before they are adjusted due to reduction
     //of joint velocities.
     vector<SixDPos*> unchangedPoints = points;
     
@@ -71,8 +74,7 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
     Configuration * bestEnd_cfg = GetConfigurations(points.back(), _start_cfg);
     
     //convert SixDPoses along the trajectory to configurations.
-    IVMovement ivm;
-    Trajectory* trajectory = ivm.getMovement(&points, _start_cfg, loopPoints, bestEnd_cfg);
+    Trajectory* trajectory = ivM->getMovement(&points, _start_cfg, loopPoints, bestEnd_cfg);
     
     //optional: appends movement to achive the given orientation.
     if(AdjustOrientation)
@@ -85,26 +87,26 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
         TargetOrientationConfig = GetConfigurations(end_pos, lastConfig);
 
         //append ptp movement to adjust the orientation
-        Ptp ptp;
-        trajectory->append(ptp.get_ptp_trajectory(lastConfig, TargetOrientationConfig, false));
+        trajectory->append(ptp->get_ptp_trajectory(lastConfig, TargetOrientationConfig, false));
     }
     
     
     if(plot){
-        Ptp PlotPtp;
-        vector<Configuration*>* allConfigs = trajectory->get_all_configuration();
+        vector<Configuration*>* allConfigs = trajectory->get_all_configuration();        
+        //detect if path got aborted.
         bool allzero = true;
         for(double x : allConfigs->back()->get_configuration()){
             if(x != 0) allzero = false;
         }
         if(allzero) allConfigs->pop_back();
-        PlotVelocity(unchangedPoints);
+        
+        //plot 3D path and total velocity.
+        Plot(unchangedPoints);
         
         //Plot joint positions and velocity.
-        PlotPtp.plot_movement(*allConfigs);
+        ptp->plot_movement(*allConfigs);
     }
 
-    
     return trajectory;
 }
 
@@ -123,56 +125,51 @@ void Lin::makeFeasible(Configuration *cfg){
 
 
 SixDPos* Lin::NextPos(SixDPos *PosA, SixDPos *PosB, double factor){
-    SixDPos* Sum = new SixDPos(
-                               PosA->get_X()+ factor*(PosB->get_X()-PosA->get_X()),
-                               PosA->get_Y()+ factor*(PosB->get_Y()-PosA->get_Y()),
-                               PosA->get_Z()+ factor*(PosB->get_Z()-PosA->get_Z()),
-                               PosA->get_A(),
-                               PosA->get_B(),
-                               PosA->get_C());
-    return Sum;
+    return new SixDPos(PosA->get_X()+ factor*(PosB->get_X()-PosA->get_X()),
+                       PosA->get_Y()+ factor*(PosB->get_Y()-PosA->get_Y()),
+                       PosA->get_Z()+ factor*(PosB->get_Z()-PosA->get_Z()),
+                       PosA->get_A(),
+                       PosA->get_B(),
+                       PosA->get_C());
 }
 
 Configuration* Lin::GetConfigurations(SixDPos *SixDPos, Configuration *StartConfig)
 {
-    InvKinematics Inv;
-    vector<Configuration*>* ActConfigurations = Inv.get_inv_kinematics(SixDPos);
+    vector<Configuration*>* ActConfigurations = invK->get_inv_kinematics(SixDPos);
     if (ActConfigurations->size()>0){
-        return GetClosestConfiguration(ActConfigurations, StartConfig);
+        return ivM->GetClosestConfiguration(ActConfigurations, StartConfig, true);
     }
     else return nullptr;
 }
 
-Configuration* Lin::GetClosestConfiguration(vector<Configuration*>* Configs, Configuration* PrevConfig){
-    vector<Configuration*>::size_type NbConfigs = Configs->size();
-    double minDist = 1000;
-    int minConfig = 0;
-    for (int i = 0; i<NbConfigs; i++){
-        Configuration* ActConfig = Configs->at(i);
-        double actDist = 0;
-        for (int j = 0; j >6; j++){
-            if(j<3){
-                actDist += pow((*ActConfig)[j] - (*PrevConfig)[j], 2)*10;
-            }
-            else{
-                actDist += pow((*ActConfig)[j] - (*PrevConfig)[j], 2);
-            }
-        }
-        actDist = sqrt(actDist);
 
-        if(actDist < minDist){
-            minDist = actDist;
-            minConfig = i;
-        }
-    }
-    return Configs->at(minConfig);
-
-}
-
-void Lin::PlotVelocity(vector<SixDPos *> SixDPoses){
+void Lin::Plot(vector<SixDPos *> SixDPoses){
 #ifdef PLOT
+    
+    //3D plot of trajectory from calculated points.
+    std::vector<double> x, y, z;
+    
+    for (int i = 0; i < SixDPoses.size(); i++) {
+        x.push_back(SixDPoses[i]->get_X());
+        y.push_back(SixDPoses[i]->get_Y());
+        z.push_back(SixDPoses[i]->get_Z());
+    }
+    
+
+    matplotlibcpp::plot3(x, y, z);
+    
+    matplotlibcpp::title("Path of LIN movement");
+    matplotlibcpp::xlabel("x");
+    matplotlibcpp::ylabel("y");
+    matplotlibcpp::set_zlabel("z");
+    matplotlibcpp::xlim(-3, 3);
+    matplotlibcpp::ylim(-3, 3);
+    
+    matplotlibcpp::legend();
+    matplotlibcpp::show();
+    
+    //plot of velcities derived from point distances. 
     vector<double> velocities;
-    vector<double> distances;
     for(int i = 1; i < SixDPoses.size(); i++)
     {
         SixDPos *end_pos = SixDPoses.at(i);
@@ -180,26 +177,17 @@ void Lin::PlotVelocity(vector<SixDPos *> SixDPoses){
         double distance = sqrt(pow(end_pos->get_X()-  start_pos->get_X(), 2)
                                +pow(end_pos->get_Y()-  start_pos->get_Y(), 2)
                                +pow(end_pos->get_Z()-  start_pos->get_Z(), 2));
-        distances.push_back(distance);
         velocities.push_back(distance/Robot::getInstance().time_interval);        
     }
     
-    std::vector<double> x(SixDPoses.size()-1);
-    for (int i = 0; i < x.size(); i++) {
-        x.at(i) = i * Robot::getInstance().time_interval;
+    std::vector<double> t(SixDPoses.size()-1);
+    for (int i = 0; i < t.size(); i++) {
+        t.at(i) = i * Robot::getInstance().time_interval;
     }
     
-    matplotlibcpp::suptitle("Trajectories lin Movement:");
-    matplotlibcpp::subplot(2, 1, 1);
-    matplotlibcpp::title("Distance betweet Points:");
-    matplotlibcpp::plot(x, distances);
+    matplotlibcpp::title("Total velocity");
+    matplotlibcpp::plot(t, velocities);
     
-    matplotlibcpp::subplot(2, 1, 2);
-    matplotlibcpp::title("Velocity:");
-    matplotlibcpp::plot(x, velocities);
-    
-    matplotlibcpp::subplots_adjust({{"hspace", 0.35},
-                                    {"right",  0.75}});
     matplotlibcpp::show();
 
     

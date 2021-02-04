@@ -114,11 +114,10 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
 
 Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig, bool weight)
 {
-    int NbConfigs = _configs->size();
     double minDist = 1000;
     int minConfig = 0;
     
-    for (int i = 0; i < NbConfigs; i++) {
+    for (int i = 0; i < _configs->size(); i++) {
         Configuration* ActConfig = _configs->at(i);
         double actDist = 0;
         for (int j = 0; j < NUM_JOINTS; j++) {
@@ -355,6 +354,7 @@ Configuration* IVMovement::osInterpolation(Configuration *startConfig, Configura
     A->add_configuration(startConfig);
     A->add_configuration(curConfig);
     A->add_configuration(endConfig);
+    
     positions->push_back(posA);
     positions->push_back(posB);
     positions->push_back(posC);
