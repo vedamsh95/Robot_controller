@@ -120,13 +120,8 @@ vector<Configuration *> *InvKinematics::get_inv_kinematics(SixDPos *_pos) {
 
 
 
-
-
-
-
-
-    solutions->push_back(new Configuration({phi1, standardsol_1.at(1), standardsol_1.at(3), 0, 0, 0}));
-    solutions->push_back(new Configuration({phi1, standardsol_1.at(0), standardsol_1.at(2), 0, 0, 0}));
+    solutions->push_back(new Configuration({phi1 / 180 * M_PI, standardsol_1.at(1) / 180 * M_PI, standardsol_1.at(3) / 180 * M_PI, 0, 0, 0}));
+    solutions->push_back(new Configuration({phi1 / 180 * M_PI, standardsol_1.at(0) / 180 * M_PI, standardsol_1.at(2) / 180 * M_PI, 0, 0, 0}));
 /*    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));

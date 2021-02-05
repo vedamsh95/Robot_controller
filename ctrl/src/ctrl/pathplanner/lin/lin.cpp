@@ -17,7 +17,7 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
 {
     //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
     Trajectory* traj = new Trajectory();
-    vector<Configuration *> config;
+    vector<Configuration *> config{_start_cfg};
 
     //Call FwKinematics
     FwKinematics fwKinematics;
@@ -79,22 +79,22 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
     do {
         vector<double> *new_p = new vector<double>();
         t += SECONDS_PER_STEP;
-        for (int i; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
             // calculate next point
 
-            double t_c[i];
-            t_c[i] = MAX_VELOCITY[i] / MAX_ACCELERATION[i];
-            double t_final[i];
-            t_final[i] = t_c[i] + ((*end_pos)[i] - (*start_pos)[i]) / MAX_VELOCITY[i];
+            double t_c;
+            t_c = MAX_VELOCITY[j] / MAX_ACCELERATION[j];
+            double t_final;
+            t_final = t_c + ((*end_pos)[j] - (*start_pos)[j]) / MAX_VELOCITY[j];
 
-            if (t >= 0 && t < t_c[i]) { // end position not reached yet
-                //new_pos[i] = new SixDPos(start_pos[i] + 0.5 * MAX_ACCELERATION[i] * t[i] * t[i]);
-                /*new_pos[i]*/
-                new_p->push_back((*start_pos)[i] + 0.5 * MAX_ACCELERATION[i] * t * t);
-            } else if (t > t_c[i] && t < (t_final[i] - t_c[i])) {
-                new_p->push_back((*start_pos)[i] + MAX_ACCELERATION[i] * t_c[i] * (t - t_final[i] / 2));
-            } else if (t > (t_final[i] - t_c[i]) && t <= t_final[i]) {
-                new_p->push_back((*start_pos)[i] - 0.5 * MAX_ACCELERATION[i] * pow(t_final[i] - t, 2));
+            if (t >= 0 && t < t_c) { // end position not reached yet
+                //new_pos[j] = new SixDPos(start_pos[j] + 0.5 * MAX_ACCELERATION[j] * t[j] * t[j]);
+                /*new_pos[j]*/
+                new_p->push_back((*start_pos)[j] + 0.5 * MAX_ACCELERATION[j] * t * t);
+            } else if (t > t_c && t < (t_final - t_c)) {
+                new_p->push_back((*start_pos)[j] + MAX_ACCELERATION[j] * t_c * (t - t_final / 2));
+            } else if (t > (t_final - t_c) && t <= t_final) {
+                new_p->push_back((*start_pos)[j] - 0.5 * MAX_ACCELERATION[j] * pow(t_final - t, 2));
             } else {
                 // We're there!
             }
@@ -108,7 +108,7 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
         for (int i = 0; i < new_cfg_possibilities->size(); i++) {
             double distance = 0;
             for (int j = 0; j < 6; j++) {
-                distance += abs((*(*new_cfg_possibilities)[i])[j] - (*traj->get_last_configuration())[j]) * MAX_VELOCITY[j];
+                distance += abs((*(*new_cfg_possibilities)[i])[j] - (*config[config.size() - 1])[j]) * MAX_VELOCITY[j];
             }
             if (distance < bestDistance) {
                 bestDistance = distance;
