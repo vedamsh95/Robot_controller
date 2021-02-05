@@ -262,19 +262,45 @@ int main() {
             }
 
             if (jsonHandler.get_op_mode() == OpMode::SPLINE_RESET) {
+
+                cout << "SPLINE_RESET" << endl;
                 spline_path.clear();
                 // Keep first element free in case the robot moves while adding points.
                 // In SPLINE_MOVE, it gets set to the current start point.
                 spline_path.push_back(nullptr);
+                // TODO: return signal
+                /*simxSetStringSignal(ID, "returnsignal2",
+                                    reinterpret_cast<const simxUChar *>("0"),
+                                    1, simx_opmode_oneshot);*/
             }
             if (jsonHandler.get_op_mode() == OpMode::SPLINE_ADD) {
+                cout << "SPLINE_ADD" << endl;
                 SixDPos* next_pos = new SixDPos((jsonHandler.get_data())[0]);
                 spline_path.push_back(next_pos);
+                // TODO: return signal
+                /*string size = to_string(spline_path.size() - 1);
+                simxSetStringSignal(ID, "returnsignal2",
+                                    reinterpret_cast<const simxUChar *>(size.c_str()),
+                                    size.length(), simx_opmode_oneshot);*/
             }
             if (jsonHandler.get_op_mode() == OpMode::SPLINE_MOVE) {
+                cout << "SPLINE_MOVE" << endl;
                 SixDPos* start_pos = new SixDPos((jsonHandler.get_data())[0]);
                 spline_path[0] = start_pos;
                 Trajectory *trajectory = ctrl.move_robot_spline(spline_path);
+                for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {
+                    c[0] = (*cur_cfg)[0];
+                    c[1] = (*cur_cfg)[1];
+                    c[2] = (*cur_cfg)[2];
+                    c[3] = (*cur_cfg)[3];
+                    c[4] = (*cur_cfg)[4];
+                    c[5] = (*cur_cfg)[5];
+                    simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL, 6, c,
+                                           0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                           simx_opmode_oneshot_wait);
+                    // synchronize with vrep simulation environment
+                    this_thread::sleep_for(std::chrono::milliseconds(50));
+                }
             }
 
             simxClearStringSignal(ID, "callsignal", simx_opmode_blocking);

@@ -18,6 +18,8 @@ Trajectory* Spline::get_spline_trajectory(vector<SixDPos*> path)
     Trajectory* trajectory = new Trajectory();
     vector<Configuration *> config;
 
+    // TODO:
+
     trajectory->set_trajectory(config);
     return trajectory;
 }
