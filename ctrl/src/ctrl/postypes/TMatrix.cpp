@@ -77,7 +77,32 @@ TMatrix::TMatrix(double _rot_theta, double _rot_alpha, double _trans_rx, double 
     m_transformation[2][3] = 0;
     m_transformation[3][3] = 1;
 }
+/*
+TMatrix::TMatrix(double theta, double alpha, double rx, double dz){
+    double m_transformation[4][4]{};
+    m_transformation[0][0] = cos(theta);
+    m_transformation[1][0] = sin(theta);
+    m_transformation[2][0] = 0;
 
+    m_transformation[0][1] = -sin(theta) * cos(alpha);
+    m_transformation[1][1] = cos(theta) * cos(alpha);
+    m_transformation[2][1] = sin(alpha);
+
+    m_transformation[0][2] = sin(theta) * sin(alpha);
+    m_transformation[1][2] = -cos(theta) * sin(alpha);
+    m_transformation[2][2] = cos(alpha);
+
+    m_transformation[0][3] = rx * cos(theta);
+    m_transformation[1][3] = rx * sin(theta);
+    m_transformation[2][3] = dz;
+
+    m_transformation[3][0] = 0;
+    m_transformation[3][1] = 0;
+    m_transformation[3][2] = 0;
+    m_transformation[3][3] = 1;
+
+}
+*/
 void TMatrix::print() {
     for (int i = 0; i < 4; i++) {
         printf(
@@ -101,6 +126,8 @@ TMatrix* TMatrix::multiply(TMatrix* b) {
     }
     return result;
 }
+
+
 
 TMatrix * TMatrix::transpose() {
 

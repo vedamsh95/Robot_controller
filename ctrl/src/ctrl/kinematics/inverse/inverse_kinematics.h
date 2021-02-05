@@ -24,11 +24,32 @@ public:
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
 
     double angles_phi1(double xc,double yc, double d1,std::vector<double>& vec_phi1);
-    double angles_phi2_forward(double xc,double yc);
-    double angles_phi2_backward(double xc,double yc);
-    double angles_phi3();
+    double angles_phi2_forward(double zc,double d1);
+    double angles_phi2_backward(double zc,double d1);
+    double angles_phi3_forward(double zc,double d1);
+    double angles_phi3_backward(double zc, double d1);
+    double angles_phi3(double d1);
     TMatrix R36Matrix();
+    vector<double> othercase_1(double phi1, double d1, double m, double n, double zc);
 
-    void checksingularities();
+    void checkSingularities();
+
+
+    vector<double> angles_backward(double phi1, double px_dash, double py_dash);
+    vector<double> angles_forward(double phi1, double px_dash, double py_dash);
+
+    vector<double> othercase_2(double phi1, double d1, double m, double n, double zc);
+
+    vector<double> standardCase(double phi1, double d1,double m);
+
+    vector<double> specialCase1( double xc, double yc, double zc, double m, double d1);
+
+    vector<double> specialCase2( double xc, double yc, double zc, double m, double d1);
+
+    vector<double> phi_case1(double phi1, double xc, double yc, double zc);
+
+    vector<double> phi_case2(double phi1, double xc, double yc, double zc);
+
+    vector<double> standardCase(double phi1, double d1, double m, double xc, double yc, double zc);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H

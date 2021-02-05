@@ -90,6 +90,9 @@ public:
     void print();
 
     TMatrix * transpose();
+
+
+
 };
 
 
