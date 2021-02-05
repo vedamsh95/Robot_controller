@@ -435,47 +435,62 @@ vector<vector<double>> InvKinematics::phi_case2(double phi1, double xc, double y
 TMatrix InvKinematics::R36Matrix() {
 
 
-    TMatrix T01(0, 180, 0, 0.645);
+    TMatrix T01(0, 180 * (M_PI / 180), 0, 0.645);
+    cout << "matrix of t01 " << endl;
+    T01.print();
 
-    TMatrix T12(0 - 108.53, 90, 0.330, 0);
-
-    TMatrix T23(0 - 40.11, 0, 1.150, 0);
-
-    TMatrix T34(-90 + 103.11, 90, 0.115, 0);
-
+    TMatrix T12(0 - 108.53 * (M_PI / 180), 90 * (M_PI / 180), 0.330, 0);
+    cout << "matrix of t12 " << endl;
+    T12.print();
+    TMatrix T23(0 - 40.11 * (M_PI / 180), 0, 1.150, 0);
+    cout << "matrix of t23" << endl;
+    T23.print();
+    TMatrix T34((-90 + 103.11) * (M_PI / 180), 90 * (M_PI / 180), 0.115, 0);
+    cout << "matrix of t34 " << endl;
+    T34.print();
 
     TMatrix *R03 = T01.multiply((&T12))->multiply((&T23))->multiply((&T34));
+    cout << "r03" << endl;
     R03->print();
     TMatrix *R03_T = R03->transpose();
     cout << "Transpose of R03" << endl;
     R03_T->print();
     double bb = R03_T->get(3, 3);
+    TMatrix R06_1(r_a,r_b,r_c,x,y,z);
+    cout<<"R06_1"<<endl;
+R06_1.print();
 
-
-    TMatrix R06(x, y, z, 0, 0, 0);
+    TMatrix *R06 = (new TMatrix(
+            -5.07791870e-01, 6.35025673e-01, -5.82142433e-01, -7.18376830e+02 / 1000,
+            2.62242221e-01, 7.57620537e-01, 5.97695691e-01, 1.89742719e+03 / 1000,
+            8.20595171e-01, 1.50842688e-01, -5.51244092e-01, 2.32490439e+02 / 1000,
+            0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 1.00000000e+00
+    ));
     cout << "matrix of R06 " << endl;
-    R06.print();
+    R06->print();
 
-    TMatrix *R36 = R03_T->multiply(&R06);
+    TMatrix *R36 = R03_T->multiply(R06);
     cout << "R36 matrix " << endl;
     R36->print();
 
     //set-1
     double phi4_1 = atan2((-1) * R36->get(1, 2), (-1) * R36->get(0, 2)) * 180 / M_PI;
-
+    cout << "phi4_1 " << phi4_1 << endl;
     double phi5_1 = atan2(sqrt(1 - (R36->get(2, 2) * R36->get(2, 2))), (-1) * R36->get(2, 2)) * 180 / M_PI;
-
+    cout << "phi5_1 " << phi5_1 << endl;
     double phi6_1 = atan2(R36->get(2, 1), R36->get(2, 0)) * 180 / M_PI;
-
+    cout << "phi6_1 " << phi6_1 << endl;
     //set -2
     double phi4_2 = atan2(R36->get(1, 2), R36->get(0, 2)) * 180 / M_PI;
-
+    cout << "phi4_2 " << phi4_2 << endl;
     //double phi5_2 = atan2( (-1)*sqrt(1-(R36->get(3,3)*R36->get(3,3))),(-1)*R36->get(3,3))* 180 /M_PI;
     double phi5_2 = atan2((-1) * sqrt(1 - pow(R36->get(2, 2), 2)), (-1) * R36->get(2, 2)) * 180 / M_PI;
-
+    cout << "phi5_2 " << phi5_2 << endl;
     double phi6_2 = atan2((-1) * R36->get(2, 1), (-1) * R36->get(2, 0)) * 180 / M_PI;
+    cout << "phi6_2 " << phi6_2 << endl;
 
-    if (-125 <= phi5_1 < 0) {
+
+    if (-125 < phi5_1 && phi5_1 < 0) {
         if (-350 <= phi4_1 && phi4_1 < 350) {
             if (-350 <= phi6_1 && phi6_1 < 350) {
 
@@ -489,7 +504,7 @@ TMatrix InvKinematics::R36Matrix() {
             }
         }
     }
-    if (0 < phi5_2 < 125) {
+    if (0 < phi5_2 && phi5_2 < 125) {
         if (-350 <= phi4_2 && phi4_2 < 350) {
             if (-350 <= phi6_2 && phi6_2 < 350) {
                 cout << "phi4_2 " << phi4_2 << endl;
