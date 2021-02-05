@@ -97,6 +97,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         
     }
     cout << "Size of the final Configuration: " << lin_sol->size() << endl;
+//setting up a Trajectory here
     trajectory->set_trajectory({ lin_sol->at(0),lin_sol->at(1),lin_sol->at(2),lin_sol->at(3),lin_sol->at(4),lin_sol->at(5),lin_sol->at(6),lin_sol->at(7),lin_sol->at(8),lin_sol->at(9),lin_sol->at(10),lin_sol->at(11),lin_sol->at(12),lin_sol->at(13),lin_sol->at(14),lin_sol->at(15) });
 
 /*
