@@ -33,7 +33,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
 
     for (int i = 1; i< _positions->size(); i++)
     { 
-        if( i == _positions->size()-1) lastPoint=true;
+        if(i == _positions->size()-1) lastPoint=true;
         t = _positions->at(i);
 
         //check for elbow singularity.
@@ -45,6 +45,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
         configs = invK->get_inv_kinematics(t);
 
         if (configs->size() > 0){
+            //find configuration that is closest to previous configuration.
             correctConfig =  GetClosestConfiguration(configs, prevConfig);
             trajectory->add_configuration(correctConfig);
             
@@ -108,7 +109,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     //add impossible configuration as help for detection of aborted path.
     if(pathCancelled)
         trajectory->add_configuration(new Configuration({0, 0, 0, 0, 0, 0}));
-   
+    
     return trajectory;
 }
 
@@ -148,7 +149,7 @@ Configuration* IVMovement::GetClosestConfiguration(vector<Configuration*>* _conf
     Configuration* newConfig = new Configuration(merged);
     Configuration* closest = GetClosestConfiguration(_configs, newConfig, true);
 
-    if(std::abs((*_wristConfig)[0]-(*closest)[0]) < 6){
+    if(std::abs((*_wristConfig)[0]-(*closest)[0]) < 5){
         return closest;
     }
     else return _wristConfig;
@@ -227,7 +228,9 @@ void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _pos
     }
     
     LoopSize.push_back(actSize+1);
-    getLoopPoints(LoopStart, LoopSize);
+    
+    if(loopVector) getLoopPoints(LoopStart, LoopSize);
+    
     
     if(NbEx > 0){
         cout << "Flipping of joints detected, configurations interpolated" << endl;

@@ -26,7 +26,7 @@ public:
      *
      * @param _positions  SixDPoses of path that is going to be calculated
      * @param start_cfg    First configuration of trajectory
-     * @param loopPoints  Points where Configurations needed to be interpolated
+     * @param loopPoints  Points where Configurations needed to be interpolated (can also be a nullptr)
      * @param end_cfg         (optional) last configuration
      * @return trajectory along the given SixDPoses
      */
