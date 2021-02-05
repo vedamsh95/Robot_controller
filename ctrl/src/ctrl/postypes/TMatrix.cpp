@@ -274,51 +274,90 @@ std::array<double, 3> TMatrix::convertToEulerAngles() {
     double trans_0_0 = this->m_transformation[0][0];
     double trans_0_1 = this->m_transformation[0][1];
     double trans_1_0 = this->m_transformation[1][0];
+    double trans_1_1 = this->m_transformation[1][1];
+    double trans_1_2 = this->m_transformation[1][2];
     double trans_2_0 = this->m_transformation[2][0];
     double trans_2_1 = this->m_transformation[2][1];
     double trans_2_2 = this->m_transformation[2][2];
 
     bool trans_20_is_0 = false;
+    bool trans_12_is_0 = false;
 
     if(trans_0_0 <= 0.000001 && trans_0_0 >= -0.000001){
         trans_0_0 = 0;
     }
 
-    else if(trans_0_1 <= 0.000001 && trans_0_1 >= -0.000001){
+    if(trans_0_1 <= 0.000001 && trans_0_1 >= -0.000001){
         trans_0_1 = 0;
     }
 
-    else if(trans_1_0 <= 0.000001 && trans_1_0 >= -0.000001){
+    if(trans_1_0 <= 0.000001 && trans_1_0 >= -0.000001){
         trans_1_0 = 0;
     }
 
-    else if(trans_2_0 <= 0.000001 && trans_2_0 >= -0.000001){
+    if(trans_1_1 <= 0.000001 && trans_1_1 >= -0.000001){
+        trans_1_1 = 0;
+    }
+
+    if(trans_1_2 <= 0.000001 && trans_1_2 >= -0.000001){
+        trans_1_2 = 0;
+        trans_12_is_0 = true;
+    }
+
+    if(trans_2_0 <= 0.000001 && trans_2_0 >= -0.000001){
         trans_2_0 = 0;
         trans_20_is_0 = true;
     }
 
-    else if(trans_2_1 <= 0.000001 && trans_2_1 >= -0.000001){
+    if(trans_2_1 <= 0.000001 && trans_2_1 >= -0.000001){
         trans_2_1 = 0;
     }
 
-    else if(trans_2_2 <= 0.000001 && trans_2_2 >= -0.000001){
+    if(trans_2_2 <= 0.000001 && trans_2_2 >= -0.000001){
         trans_2_2 = 0;
     }
+
     // Error case
     if ((trans_0_0 <= 0 + u && trans_0_0 >= 0 - u) && (trans_1_0 <= 0 + u && trans_1_0 >= 0 - u)) {
         phi = asin( (-1)* trans_0_1);
-        theta = - trans_2_0 * M_PI/2;
+        theta = (-1)* trans_2_0 * M_PI/2;
         psi = 0;
         std::cout << "Errorcase for Euler Angles." << std::endl;
     }
+
+    //Special cases
+    if((trans_2_0 <= 1 + u && trans_2_0 >= 1 - u)){
+        std::cout << "special for euler angles trans_2_0 == 1." << std::endl;
+        if(trans_12_is_0 == true){
+            phi = atan2(trans_1_2, trans_1_1);
+        } else{
+            phi = atan2((-1)*trans_1_2, trans_1_1);
+        }
+        theta = (-1)*90*M_PI/180;
+        psi = 0;
+    }
+
+    if((trans_2_0 <= -1 + u && trans_2_0 >= -1 - u)){
+        std::cout << "special for euler angles trans_2_0 == -1." << std::endl;
+        if(trans_12_is_0 == true){
+            phi = (-1)*atan2(trans_1_2, trans_1_1);
+        } else{
+            phi = (-1)*atan2((-1)*trans_1_2, trans_1_1);
+        }
+        theta = 90*M_PI/180;
+        psi = 0;
+    }
+
+
     else {  // normal case
+        std::cout << "normal case for euler angles." << std::endl;
         phi = atan2(trans_1_0, trans_0_0);
         if(trans_20_is_0 == true){
             theta = atan2(trans_2_0, sqrt( trans_2_1*trans_2_1 + trans_2_2*trans_2_2 ));
         }
         else{
             theta = atan2((-1)*trans_2_0, sqrt( trans_2_1*trans_2_1 + trans_2_2*trans_2_2 ));
-            theta = theta * (-1);
+           // theta = theta * (-1);
         }
         //theta = atan2((-1)* trans_2_0, sqrt( trans_2_1*trans_2_1 + trans_2_2*trans_2_2 ));
         psi = atan2(trans_2_1, trans_2_2);
