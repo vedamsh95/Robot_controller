@@ -20,7 +20,7 @@
 
 
 /**
- * This class implementes the lin movement from to given {@ref Configuration}, one for the start configuration and one
+ * This class implements the lin movement from to given {@ref Configuration}, one for the start configuration and one
  * for the target configuration.
  *
  * TODO: ensure that you always stay within the physical limits of the robot, i.e., accelaration, verlocity, and rotation
@@ -42,16 +42,19 @@ public:
          * Default constructor
          */
     Lin();
-    
+
     /**
-     * Example function computing the trajectory for a given path (defined by two configurations) as lin movement.
+     * Computes a trajectory for a lin movement from a start and target configuration with a trapezoidal
+     * velocity profile.
      *
-     * @param _start_cfg {@ref Configuration} of the starting point of the path
-     * @param _end_cfg {@ref Configuration} of the target point of the path
-     * @param velocity The velocity for the lin movement used in the corresponding trajectory
-     * @param acceleration The acceleration for lin movement used in the corresponding trajectory
-     * @param Vector of loop points that cannot be traversed correctly - Will be filled
-     * @return {@ref Trajectory} for the movement of the robot
+     * @param _start_cfg start {@ref Configuration}
+     * @param _end_cfg   target {@ref Configuration}
+     * @param velocity The velocity at which the robot should move along the spline
+     * @param acceleration The acceleration at the start and at the end of the movement
+     * @param loopPoints  An empty vector that will be filled with the loop points for plotting purposes.
+     *                    Use a nullptr if you do not need that functionality.
+     * @return reference of a {@ref Trajectory} for the movement
+     *         NOTE: In case the movement could not be finished, a zero configuration got added to the trajectory!
      */
     Trajectory* get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration, std::vector<std::vector<SixDPos*>>* loopPoints);
     

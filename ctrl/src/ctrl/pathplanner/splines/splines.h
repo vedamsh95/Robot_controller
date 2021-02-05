@@ -37,12 +37,14 @@ public:
 	 * @param  {@ref Configuration} start Configuration of the robot at the first point
 	 * @param  maximal velocity of the robot
 	 * @param  maximal acceleration of the robot
-	 * @out	   loop Points that are not part of the spline but have to be visited by the robot because of limits of the joints
+	 * @out	   loop Points that are not part of the spline but have to be visited by the robot because of limits of the joints.
+	 *              Use a nullptr in case this functionality is not needed.
 	 * @param  elongation Factor determines length of tangents of quintic splines (default: half of distance between adjacent points)
 	 * @param  spline type 
 	 *		   0 : cubic bezier spline (default)
 	 *		   1 : quintic bezier spline
      * @return geometrical spline trajectory in consideration of velocity and acceleration of the robot (distance between adjacent points points)
+     *         In case the spline got aborted, the trajectory contains a zero configuration at the end!
 	 */
 	Trajectory *getSpline(vector<SixDPos*> &_points, Configuration * start, double _velocity, double _acceleration, std::vector<std::vector<SixDPos*>>* loopPoints, double _elong = 0.5, int spline_type = 0);
 	
