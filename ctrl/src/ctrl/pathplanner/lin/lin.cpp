@@ -20,8 +20,6 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     double t_fin_z = 0;
     double t_fin = 0;
     double t_c = 0;
-    // since when is m/s acceleration and m/s^2 velocity? Is this an logic error or did you just swap the comment lines? 
-    // btw how did you even get those numbers?
     double max_acc = 1;//(m/s)
     double max_vel = 2;//(m/s^2)
 
@@ -66,25 +64,28 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     t_c = max_vel / max_acc;
     //to get t_fin we need fin-in,t_fin =t_c+(fin-in)/max_vel
     //common distance
-    t_fin_x = t_c + (fin[0] - in[0]) / max_vel;
-    t_fin_y = t_c + (fin[1] - in[1]) / max_vel;
-    t_fin_z = t_c + (fin[2] - in[2]) / max_vel;
-    if (t_fin_x > t_fin_y) {
-        if (t_fin_x > t_fin_z) {
-            t_fin = t_fin_x;
-        }
-        else {
-            t_fin = t_fin_z;
-        }
-    }
-    else {
-        if (t_fin_y > t_fin_z) {
-            t_fin = t_fin_y;
-        }
-        else {
-            t_fin = t_fin_z;
-        }
-    }
+    double d = (fin[0] - in[0]) * (fin[0] - in[0]) + (fin[1] - in[1]) * (fin[1] - in[1]) + (fin[2] - in[2]) * (fin[2] - in[2]);
+    double dist = sqrt(d);
+    t_fin = t_c + dist / max_vel;
+    //t_fin_x = t_c + (fin[0] - in[0]) / max_vel;
+    //t_fin_y = t_c + (fin[1] - in[1]) / max_vel;
+   // t_fin_z = t_c + (fin[2] - in[2]) / max_vel;
+   // if (t_fin_x > t_fin_y) {
+     //   if (t_fin_x > t_fin_z) {
+           // t_fin = t_fin_x;
+        //}
+       // else {
+           // t_fin = t_fin_z;
+      //  }
+  //  }
+    //else {
+        //if (t_fin_y > t_fin_z) {
+           // t_fin = t_fin_y;
+        //}
+        //else {
+            //t_fin = t_fin_z;
+        //}
+    //}
 
     //Step-4:
 
@@ -146,41 +147,48 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             int solution_number = 0;
             int best_solution_number = 0;
             int number_of_solutions = config_1->size();
-            
-    //WHAT THE FUCK DOES THE I DO HERE??? why not just for(int j=0;...... this entire loop is nonsensical
-            for (int j = 0 & i == 0; j < number_of_solutions; j++)
-            {
-                temporary_distance_start = _start_cfg->get_configuration().at(0) + _start_cfg->get_configuration().at(1) + _start_cfg->get_configuration().at(2) + _start_cfg->get_configuration().at(3) + _start_cfg->get_configuration().at(4) + _start_cfg->get_configuration().at(5);
-                temporary_distance = config_1->at(solution_number)->operator[](0) + config_1->at(solution_number)->operator[](1) + config_1->at(solution_number)->operator[](2) + config_1->at(solution_number)->operator[](3) + config_1->at(solution_number)->operator[](4) + config_1->at(solution_number)->operator[](5);
-                temporary_difference = temporary_distance_start - temporary_distance;
-                //solution_number++;
-                if (temporary_difference < max_distance)
+            if(i==0)
+            { 
+                for (int j = 0; j < number_of_solutions; j++)
                 {
-                    max_distance = temporary_difference;
-                    best_solution_number = solution_number;
-                }
-                solution_number++;
+                    solution_number = j;
+                    temporary_distance_start = _start_cfg->get_configuration().at(0) + _start_cfg->get_configuration().at(1) + _start_cfg->get_configuration().at(2) + _start_cfg->get_configuration().at(3) + _start_cfg->get_configuration().at(4) + _start_cfg->get_configuration().at(5);
+                    temporary_distance = config_1->at(solution_number)->operator[](0) + config_1->at(solution_number)->operator[](1) + config_1->at(solution_number)->operator[](2) + config_1->at(solution_number)->operator[](3) + config_1->at(solution_number)->operator[](4) + config_1->at(solution_number)->operator[](5);
+                    temporary_difference = temporary_distance_start - temporary_distance;
+                    //solution_number++;
+                    if (temporary_difference < max_distance)
+                    {
+                        max_distance = temporary_difference;
+                        best_solution_number = solution_number;
+                    }
+                }    
 
             }
+            
             config_2.push_back(config_1->at(best_solution_number));
             config_1_2->push_back(config_1->at(best_solution_number));
-    // agian, do you know how for loops work?
-            for (int j = 0 & i != 0; j < number_of_solutions; j++)
+            if (i > 0)
             {
-                temporary_distance_start = config_1_2->at(solution_number)->operator[](0) + config_1_2->at(solution_number)->operator[](1) + config_1_2->at(solution_number)->operator[](2) + config_1_2->at(solution_number)->operator[](3) + config_1_2->at(solution_number)->operator[](4) + config_1_2->at(solution_number)->operator[](5);
-                temporary_distance = config_1->at(solution_number)->operator[](0) + config_1->at(solution_number)->operator[](1) + config_1->at(solution_number)->operator[](2) + config_1->at(solution_number)->operator[](3) + config_1->at(solution_number)->operator[](4) + config_1->at(solution_number)->operator[](5);
-                temporary_difference = temporary_distance_start - temporary_distance;
-                //solution_number++;
-                if (temporary_difference < max_distance)
+                solution_number = 0;
+                for (int j = 0 ; j < number_of_solutions; j++)
                 {
-                    max_distance = temporary_difference;
-                    best_solution_number = solution_number;
-                }
-                solution_number++;
+                    solution_number = j;
+                    temporary_distance_start = config_1_2->at(solution_number)->operator[](0) + config_1_2->at(solution_number)->operator[](1) + config_1_2->at(solution_number)->operator[](2) + config_1_2->at(solution_number)->operator[](3) + config_1_2->at(solution_number)->operator[](4) + config_1_2->at(solution_number)->operator[](5);
+                    temporary_distance = config_1->at(solution_number)->operator[](0) + config_1->at(solution_number)->operator[](1) + config_1->at(solution_number)->operator[](2) + config_1->at(solution_number)->operator[](3) + config_1->at(solution_number)->operator[](4) + config_1->at(solution_number)->operator[](5);
+                    temporary_difference = temporary_distance_start - temporary_distance;
+                    //solution_number++;
+                    if (temporary_difference < max_distance)
+                    {
+                        max_distance = temporary_difference;
+                        best_solution_number = solution_number;
+                    }
+                    solution_number++;
+                }   
+                
+                config_2.push_back(config_1->at(best_solution_number));
 
+              
             }
-            config_2.push_back(config_1->at(best_solution_number));
-
         }
 
     }
