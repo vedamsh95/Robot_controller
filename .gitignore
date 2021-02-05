@@ -36,4 +36,4 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
-
+ctrl/.vs/*

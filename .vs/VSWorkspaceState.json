@@ -1,0 +1,15 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\ctrl",
+    "\\ctrl\\src",
+    "\\ctrl\\src\\ctrl",
+    "\\ctrl\\src\\ctrl\\kinematics",
+    "\\ctrl\\src\\ctrl\\kinematics\\inverse",
+    "\\ctrl\\src\\ctrl\\pathplanner",
+    "\\ctrl\\src\\ctrl\\pathplanner\\lin",
+    "\\sim"
+  ],
+  "SelectedNode": "\\ctrl\\src\\ctrl\\pathplanner\\lin\\lin.cpp",
+  "PreviewInSolutionExplorer": false
+}
