@@ -20,6 +20,8 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     double t_fin_z = 0;
     double t_fin = 0;
     double t_c = 0;
+    // since when is m/s acceleration and m/s^2 velocity? Is this an logic error or did you just swap the comment lines? 
+    // btw how did you even get those numbers?
     double max_acc = 1;//(m/s)
     double max_vel = 2;//(m/s^2)
 
@@ -144,7 +146,8 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             int solution_number = 0;
             int best_solution_number = 0;
             int number_of_solutions = config_1->size();
-
+            
+    //WHAT THE FUCK DOES THE I DO HERE??? why not just for(int j=0;...... this entire loop is nonsensical
             for (int j = 0 & i == 0; j < number_of_solutions; j++)
             {
                 temporary_distance_start = _start_cfg->get_configuration().at(0) + _start_cfg->get_configuration().at(1) + _start_cfg->get_configuration().at(2) + _start_cfg->get_configuration().at(3) + _start_cfg->get_configuration().at(4) + _start_cfg->get_configuration().at(5);
@@ -161,6 +164,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             }
             config_2.push_back(config_1->at(best_solution_number));
             config_1_2->push_back(config_1->at(best_solution_number));
+    // agian, do you know how for loops work?
             for (int j = 0 & i != 0; j < number_of_solutions; j++)
             {
                 temporary_distance_start = config_1_2->at(solution_number)->operator[](0) + config_1_2->at(solution_number)->operator[](1) + config_1_2->at(solution_number)->operator[](2) + config_1_2->at(solution_number)->operator[](3) + config_1_2->at(solution_number)->operator[](4) + config_1_2->at(solution_number)->operator[](5);
