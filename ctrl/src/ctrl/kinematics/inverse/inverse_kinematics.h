@@ -50,6 +50,6 @@ public:
 
     vector<double> phi_case2(double phi1, double xc, double yc, double zc);
 
-    vector<double> standardCase(double phi1, double d1, double m, double xc, double yc, double zc);
+    vector<vector<double>>* standardCase(double phi1, double d1, double m, double xc, double yc, double zc);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H

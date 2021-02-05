@@ -59,31 +59,31 @@ vector<Configuration *> *InvKinematics::get_inv_kinematics(SixDPos *_pos) {
     cout<< "phi syndard " << phi1_standard<<endl;
 
 
-
+double phi1;
     if (xc < 0 && yc > 0) {
-       double  phi1 = (phi1_standard - 180) ;
+  phi1 = (phi1_standard - 180) ;
         cout << "phi1_1 " << phi1 << endl;
-      standardsol_1 = standardCase(phi1,d1,m,xc,yc,zc);
+        standardsol_1 = standardCase(phi1,d1,m,xc,yc,zc)->at(0);
         for(int i =0 ; i<standardsol_1.size();i++) {
             cout << " standard solution -> " << standardsol_1[i];
         }
 
     } else if (xc < 0 && yc < 0) {
-        double phi1 = 180 - (atan(yc / (xc))) * 180 / M_PI;
+         phi1 = 180 - (atan(yc / (xc))) * 180 / M_PI;
         cout << "phi1_2 " << phi1 << endl;
-        vector<double > standardsol_1 = standardCase(phi1,d1,m,xc,yc,zc);
+        standardsol_1 = standardCase(phi1,d1,m,xc,yc,zc)->at(0);
 
     } else if (xc < 0 && yc < 0) {
-       double phi1 = (atan(yc / (xc))) * 180 / M_PI;
+       phi1 = (atan(yc / (xc))) * 180 / M_PI;
         cout << "phi1_3 " << phi1 << endl;
-        vector<double > standardsol_1 = standardCase(phi1,d1,m,xc,yc,zc);
+        standardsol_1 = standardCase(phi1,d1,m,xc,yc,zc)->at(0);
         for(int i =0 ; i<standardsol_1.size();i++) {
             cout << "standard solution -> " << standardsol_1[i];
         }
     } else if (xc > 0 && yc > 0) {
-       double phi1 = -(atan(yc / (xc))) * 180 / M_PI;
+        phi1 = -(atan(yc / (xc))) * 180 / M_PI;
         cout << "phi1 " << phi1 << endl;
-        vector<double > standardsol_1 = standardCase(phi1,d1,m,xc,yc,zc);
+        standardsol_1 = standardCase(phi1,d1,m,xc,yc,zc)->at(0);
         for(int i =0 ; i<standardsol_1.size();i++) {
             cout << "standard solution -> " << standardsol_1[i];
         }
@@ -96,7 +96,7 @@ vector<Configuration *> *InvKinematics::get_inv_kinematics(SixDPos *_pos) {
     }
 
 
-
+R36Matrix();
 
    // for (int i = 0; i < 5; i++) {
        // angles_phi1(xc, yc, d1, vec_phi1);
@@ -115,9 +115,9 @@ vector<Configuration *> *InvKinematics::get_inv_kinematics(SixDPos *_pos) {
 
 
 
-/*
-    solutions->push_back(new Configuration({0,0,1,0,0,0}));
-    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
+
+    solutions->push_back(new Configuration({phi1,standardsol_1.at(1),standardsol_1.at(3),0,0,0}));
+/*    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({4/8 * M_PI,0,1,0,0,0}));
@@ -197,7 +197,7 @@ vector<double> InvKinematics::angles_backward(double phi1,double px_dash, double
     cout << "Phi3 elbowup backward " << phi3_elbowup_backward << endl;
     backward_vec.push_back(phi3_elbowup_backward);
     for(int i=0 ; i<forward_vec.size();i++){
-        cout<<"forward vector-> "<< forward_vec[i];
+        cout<<"backward vector-> "<< backward_vec[i];
     }
 
     return backward_vec;
@@ -227,11 +227,11 @@ vector<double> InvKinematics::othercase_2(double phi1,double d1,double m,double 
 
 }
 
-vector<double> InvKinematics:: standardCase(double phi1,double d1,double m,double xc,double yc,double zc ){
+vector<vector<double>>* InvKinematics:: standardCase(double phi1,double d1,double m,double xc,double yc,double zc ){
 
    //phi_case1(phi1,xc,yc,zc);
     //phi_case2(phi1,xc,yc,zc);
-
+    vector<vector<double>>* results = new vector<vector<double>>();
 if((d1>m)  && (-175<phi1<175) ){
 
     double px_dash = d1-m;
@@ -244,24 +244,31 @@ if((d1>m)  && (-175<phi1<175) ){
     cout<< "solutionstan1 "<< solution_stan_1.at(3);
    vector<double> solution_stan_other1= othercase_1(phi1,d1,m,n,zc);
    vector<double> solution_stan_other2= othercase_2(phi1,d1,m,n,zc);
-    return solution_stan_1,solution_stan_other1,solution_stan_other2;
+    results->push_back(solution_stan_1);
+    results->push_back(solution_stan_other1);
+    results->push_back(solution_stan_other2);
+
+    return results;//,solution_stan_other1,solution_stan_other2;
 
 
 }
 
-    if((d1<m) && (-175<phi1<175) ){
+    if((d1<m) && (-175<phi1<175) ) {
 
-        double px_dash = m-d1;
-        double py_dash = zc-n;
-        vector<double > solution_stan_1 = angles_forward(phi1,px_dash,py_dash);
-       vector<double> solution_stan_other1= othercase_1(phi1,d1,m,n,zc);
-       vector<double> solution_stan_other2= othercase_2(phi1,d1,m,n,zc);
-return solution_stan_1,solution_stan_other1,solution_stan_other2;
+        double px_dash = m - d1;
+        double py_dash = zc - n;
+        vector<double> solution_stan_1 = angles_forward(phi1, px_dash, py_dash);
+        vector<double> solution_stan_other1 = othercase_1(phi1, d1, m, n, zc);
+        vector<double> solution_stan_other2 = othercase_2(phi1, d1, m, n, zc);
+        results->push_back(solution_stan_1);
+        results->push_back(solution_stan_other1);
+        results->push_back(solution_stan_other2);
+
+        return results;//,solution_stan_other1,solution_stan_other2;    }
+
+
+
     }
-
-
-
-
 }
 
 vector<double> InvKinematics:: specialCase1(double xc,double yc,double zc,double m,double d1) {
@@ -398,16 +405,15 @@ TMatrix InvKinematics::R36Matrix() {
 
 
     TMatrix T01(0, 180, 0, 0.645);
-    TMatrix *T01_T = T01.transpose();
-    TMatrix T12(0 -108.53, 90, 0.330, 0);
-    TMatrix *T12_T = T12.transpose();
-    TMatrix T23(0 -40.11, 0, 1.150, 0);
-    TMatrix *T23_T = T23.transpose();
-    TMatrix T34(-90 + 103.11, 90, 0.115, 0);
-    TMatrix *T34_T = T34.transpose();
 
-    TMatrix *R03 = T01_T->multiply(reinterpret_cast<TMatrix *>(&T12_T))->multiply(
-            reinterpret_cast<TMatrix *>(&T23_T))->multiply(reinterpret_cast<TMatrix *>(&T34_T));
+    TMatrix T12(0 -108.53, 90, 0.330, 0);
+
+    TMatrix T23(0 -40.11, 0, 1.150, 0);
+
+    TMatrix T34(-90 + 103.11, 90, 0.115, 0);
+
+
+    TMatrix *R03 = T01.multiply((&T12))->multiply((&T23))->multiply((&T34));
     R03->print();
     TMatrix *R03_T = R03->transpose();
     cout << "Transpose of R03" << endl;
