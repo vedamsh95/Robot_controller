@@ -46,9 +46,9 @@ public:
 
     vector<double> specialCase2( double xc, double yc, double zc, double m, double d1);
 
-    vector<double> phi_case1(double phi1, double xc, double yc, double zc);
+    vector<vector<double>> phi_case1(double phi1, double xc, double yc, double zc);
 
-    vector<double> phi_case2(double phi1, double xc, double yc, double zc);
+    vector<vector<double>> phi_case2(double phi1, double xc, double yc, double zc);
 
     vector<vector<double>>* standardCase(double phi1, double d1, double m, double xc, double yc, double zc);
 };

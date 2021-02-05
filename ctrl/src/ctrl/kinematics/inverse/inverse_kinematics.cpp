@@ -14,8 +14,9 @@ double x, y, z, r_a, r_b, r_c;
 double zc;
 double m, n, a, b, o, d;
 double alpha1, alpha2, beta;
-vector<double> forward_vec, backward_vec;
-vector<double> standardsol_1, solution_phi1_1, solution_phi1_2, solution_phi1_3;
+vector<double> forward_vec, backward_vec, solution_phi1_1, solution_phi1_2, solution_phi1_3;
+vector<double> standardsol_1;
+
 
 const double TO_RAD = M_PI / 180;
 
@@ -27,8 +28,9 @@ vector<Configuration *> *InvKinematics::get_inv_kinematics(SixDPos *_pos) {
     b = 1.220;
     o = 0.115;
     d = 0.215;
-
-
+    forward_vec.clear(), backward_vec.clear(), solution_phi1_1.clear(), solution_phi1_2.clear(), solution_phi1_3.clear();
+    standardsol_1.clear();
+    vec_phi4.clear(), vec_phi5.clear(), vec_phi6.clear();
     //prepare the result vector for the configurations
     // you should call your inverse kinematics functions here!
 
@@ -124,6 +126,7 @@ vector<Configuration *> *InvKinematics::get_inv_kinematics(SixDPos *_pos) {
 
 
     solutions->push_back(new Configuration({phi1, standardsol_1.at(1), standardsol_1.at(3), 0, 0, 0}));
+    solutions->push_back(new Configuration({phi1, standardsol_1.at(0), standardsol_1.at(2), 0, 0, 0}));
 /*    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
     solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));
@@ -235,10 +238,17 @@ vector<double> InvKinematics::othercase_2(double phi1, double d1, double m, doub
 
 vector<vector<double>> *InvKinematics::standardCase(double phi1, double d1, double m, double xc, double yc, double zc) {
 
-    //phi_case1(phi1,xc,yc,zc);
-    //phi_case2(phi1,xc,yc,zc);
+
+    vector<vector<double>> *solution_phi1 = new vector<vector<double>>(phi_case1(phi1, xc, yc, zc));
+    if (solution_phi1->size() > 0) {
+        return solution_phi1;
+    }
+    vector<vector<double>> *solution_phi2 = new vector<vector<double>>(phi_case2(phi1, xc, yc, zc));
+    if (solution_phi2->size() > 0) {
+        return solution_phi2;
+    }
     vector<vector<double>> *results = new vector<vector<double>>();
-    if ((d1 > m) && (-175 < phi1 < 175)) {
+    if ((d1 > m) && (-175 < phi1 && phi1 < 175)) {
 
         double px_dash = d1 - m;
         double py_dash = zc - n;
@@ -259,7 +269,7 @@ vector<vector<double>> *InvKinematics::standardCase(double phi1, double d1, doub
 
     }
 
-    if ((d1 < m) && (-175 < phi1 < 175)) {
+    if ((d1 < m) && (-175 < phi1 && phi1 < 175)) {
 
         double px_dash = m - d1;
         double py_dash = zc - n;
@@ -336,11 +346,12 @@ vector<double> InvKinematics::specialCase2(double xc, double yc, double zc, doub
 }
 
 
-vector<double> InvKinematics::phi_case1(double phi1, double xc, double yc, double zc) {
+vector<vector<double>> InvKinematics::phi_case1(double phi1, double xc, double yc, double zc) {
     double m = 0.330;
     double n = 0.645;
     double d1 = sqrt(xc * xc + yc * yc);
-    if (-185 < phi1 < -175) {
+    vector<vector<double>> *results = new vector<vector<double>>();
+    if (-185 < phi1 && phi1 < -175) {
         double px_dash = d1 - m;
         double py_dash = yc - n;
 
@@ -353,8 +364,10 @@ vector<double> InvKinematics::phi_case1(double phi1, double xc, double yc, doubl
             double phi_3 = phi1 + 180;
             double px_dash1 = d1 + m;
             solution_phi1_3 = angles_backward(phi_3, px_dash1, py_dash);
+            results->push_back(solution_phi1_1);
+            results->push_back(solution_phi1_2);
+            results->push_back(solution_phi1_3);
 
-            return solution_phi1_1, solution_phi1_2, solution_phi1_3;
         }
         if (d1 < m) {
             double px_dash2 = m - d1;
@@ -365,19 +378,23 @@ vector<double> InvKinematics::phi_case1(double phi1, double xc, double yc, doubl
             double px_dash3 = d1 + m;
             solution_phi1_3 = angles_backward(phi1_3, px_dash3, py_dash);
 
-            return solution_phi1_1, solution_phi1_2, solution_phi1_3;
+            results->push_back(solution_phi1_1);
+            results->push_back(solution_phi1_2);
+            results->push_back(solution_phi1_3);
         }
     } else {}
 
-    return solution_phi1_1, solution_phi1_2, solution_phi1_3;
+    return *results;
 }
 
 
-vector<double> InvKinematics::phi_case2(double phi1, double xc, double yc, double zc) {
+vector<vector<double>> InvKinematics::phi_case2(double phi1, double xc, double yc, double zc) {
     double m = 0.330;
     double n = 0.645;
     double d1 = sqrt(xc * xc + yc * yc);
-    if (175 < phi1 < 185) {
+
+    vector<vector<double>> *results = new vector<vector<double>>();
+    if (175 < phi1 && phi1 < 185) {
         double px_dash = d1 - m;
         double py_dash = yc - n;
 
@@ -390,6 +407,10 @@ vector<double> InvKinematics::phi_case2(double phi1, double xc, double yc, doubl
             double phi_3 = phi1 - 180;
             double px_dash1 = d1 + m;
             solution_phi1_3 = angles_backward(phi_3, px_dash1, py_dash);
+
+            results->push_back(solution_phi1_1);
+            results->push_back(solution_phi1_2);
+            results->push_back(solution_phi1_3);
         }
         if (d1 < m) {
             double px_dash2 = m - d1;
@@ -401,11 +422,14 @@ vector<double> InvKinematics::phi_case2(double phi1, double xc, double yc, doubl
             double phi1_3 = phi1 - 180;
             double px_dash3 = d1 + m;
             solution_phi1_3 = angles_backward(phi1_3, px_dash3, py_dash);
+            results->push_back(solution_phi1_1);
+            results->push_back(solution_phi1_2);
+            results->push_back(solution_phi1_3);
 
         }
     } else {}
 
-    return solution_phi1_1, solution_phi1_2, solution_phi1_3;
+    return *results;
 }
 
 TMatrix InvKinematics::R36Matrix() {
