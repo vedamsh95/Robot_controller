@@ -109,7 +109,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     //add impossible configuration as help for detection of aborted path.
     if(pathCancelled)
         trajectory->add_configuration(new Configuration({0, 0, 0, 0, 0, 0}));
-    
+
     return trajectory;
 }
 
@@ -337,13 +337,8 @@ void IVMovement::wsInterpolation(Trajectory* trajectory, int width)
         Configuration* actConfig = trajectory->get_configuration(size-width+i);
         for(int j= 0; j < 3; j++){
             newConfig[j] = (*actConfig)[j];
+            newConfig[j+3] = (*startConfig)[j+3] + (i+1)/(double)(width)*((*endConfig)[j+3]-(*startConfig)[j+3]);
         }
-        newConfig[3] = (*startConfig)[3] + (i+1)/(double)(width)*((*endConfig)[3]-(*startConfig)[3]);
-        newConfig[4] = (*actConfig)[4];
-        newConfig[5] = (*startConfig)[5] + (i+1)/(double)(width)*((*endConfig)[5]-(*startConfig)[5]);
-
-        if(newConfig[4] > JOINT_5_MAX) newConfig[4] = JOINT_5_MAX;
-        else if(newConfig[4] < -JOINT_5_MAX) newConfig[4] = -JOINT_5_MAX;
         
         trajectory->set_configuration(new Configuration(newConfig), size-width+i);
     }

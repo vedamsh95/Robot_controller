@@ -9,7 +9,7 @@
 #include <math.h>
 #include <cmath>
 
-#define SINGULARITY_MARGIN 0.05
+#define SINGULARITY_MARGIN 0.075
 #define JOINT_5_MAX (49.0/72.0)*M_PI
 
 class IVMovement
