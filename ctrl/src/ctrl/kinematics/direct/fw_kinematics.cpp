@@ -7,19 +7,11 @@ using namespace std;
 
 SixDPos* FwKinematics::get_fw_kinematics(Configuration* _cfg)
 {
-    for (int i = 0; i < 6; i++) {
-        cout << i << "=i,    " << _cfg->get_configuration()[i] << "  ";
-        cout << endl;
-    }
-
-
+   
     
     double* M0 = new double[16];
     M0 = D_H_matrix(0, M_PI, 0, 0.645);
 
- 
-
-    
     double phi1 = _cfg->get_configuration()[0];
 
     double* M1 = new double[16];
@@ -28,9 +20,7 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration* _cfg)
 
     double* M0x1 = new double[16];
     M0x1 = matrix_mult(M0, M1);
-
-    //delete M0;
-    //delete M1;
+  
     
     double phi2 = _cfg->get_configuration()[1];
 
@@ -41,29 +31,15 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration* _cfg)
     double* M0x1x2 = new double[16];
     M0x1x2 = matrix_mult(M0x1, M2);
 
-    //delete M0x1;
-    //delete M2;
 
     double phi3 = _cfg->get_configuration()[2];
 
     double* M3 = new double[16];
     M3 = D_H_matrix((phi3 - M_PI*0.5), M_PI*0.5, 0.115, 0);
-
-    
-
-    cout << "M3:" << endl;
-    for (int i = 0; i < 16; i++) {
-        cout << i << "=i,    " << M3[i] << "  ";
-        cout << endl;
-    }
     
 
     double* M0x1x2x3 = new double[16];
     M0x1x2x3 = matrix_mult(M0x1x2, M3);
-
-
-
-    
 
 
     double phi4 = _cfg->get_configuration()[3];
@@ -107,19 +83,25 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration* _cfg)
     
 
 
-    cout << "M_fin:" << endl;
+    //cout << "M_fin:" << endl;
     for (int i = 0; i < 16; i++) {
-        cout << i << "=i,    " << M_fin[i] << "  ";
-        cout << endl;
+        //cout << i << "=i,    " << M_fin[i] << "  ";
+        //cout << endl;
     }
-    cout << "atan2(M_fin[4], M_fin[0])= " << atan2(M_fin[4], M_fin[0]) << "  " << atan2(M_fin[4], M_fin[0]) * 180 / M_PI;
+   // cout << "atan2(M_fin[4], M_fin[0])= " << atan2(M_fin[4], M_fin[0]) << "  " << atan2(M_fin[4], M_fin[0]) * 180 / M_PI;
 
     if (M_fin[0]== 0 && M_fin[4] == 0) {
         
         return new SixDPos(M_fin[3], M_fin[7], M_fin[11], asin(-M_fin[1]), -M_fin[8] * M_PI*0.5, 0);
     }
+    else if (M_fin[7] == -1) {
+        return new SixDPos(M_fin[3], M_fin[7], M_fin[11], -atan2(-M_fin[6],M_fin[5]), M_PI * 0.5, 0);
+    }
+    else if (M_fin[7] == 1) {
+        return new SixDPos(M_fin[3], M_fin[7], M_fin[11], atan2(-M_fin[6], M_fin[5]), -M_PI * 0.5, 0);
+    }
     else {
-        cout << "atan2(M_fin[4], M_fin[0])= " << atan2(M_fin[4], M_fin[0]) << "  " << atan2(M_fin[4], M_fin[0]) *180/M_PI;
+        //cout << "atan2(M_fin[4], M_fin[0])= " << atan2(M_fin[4], M_fin[0]) << "  " << atan2(M_fin[4], M_fin[0]) *180/M_PI;
         return new SixDPos(M_fin[3], M_fin[7], M_fin[11], atan2(M_fin[4], M_fin[0]), atan2(-M_fin[8], sqrt(M_fin[9] * M_fin[9] + M_fin[10] * M_fin[10])), atan2(M_fin[9], M_fin[10]));
     }
 
@@ -199,4 +181,3 @@ double* FwKinematics::matrix_mult(double* mat_a, double* mat_b) {
     
 
 }
-
