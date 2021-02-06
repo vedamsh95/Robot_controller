@@ -65,14 +65,14 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     in.push_back(start->get_C());
     fin.push_back(end->get_C());
 
-    std::cout<< "linear test: " <<endl<< in[0]<<endl << fin[0] << endl << in[1] << endl <<fin[1] << endl << in[2] << endl << fin[2] << endl << in[3] << endl << in[4] << endl << in[5] << endl << fin[3] << endl << fin[4] << endl << fin[5] << endl;
+    std::cout << "linear test: " << endl << in[0] << endl << fin[0] << endl << in[1] << endl << fin[1] << endl << in[2] << endl << fin[2] << endl << in[3] << endl << in[4] << endl << in[5] << endl << fin[3] << endl << fin[4] << endl << fin[5] << endl;
 
     //Step-3:
     t_c = max_vel / max_acc;
 
     //to get t_fin we need fin-in,t_fin =t_c+(fin-in)/max_vel
     //common distance
-    double d = ((fin[0] - in[0]) * (fin[0] - in[0]) )+ ((fin[1] - in[1]) * (fin[1] - in[1]) ) + ((fin[2] - in[2]) * (fin[2] - in[2]));
+    double d = ((fin[0] - in[0]) * (fin[0] - in[0])) + ((fin[1] - in[1]) * (fin[1] - in[1])) + ((fin[2] - in[2]) * (fin[2] - in[2]));
     cout << "\nd:" << d;
     double dist = sqrt(d);
     cout << "\ndist:" << dist;
@@ -113,9 +113,9 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         x = compute(max_vel, max_acc, in[0], fin[0], i, t_c, t_fin);
         y = compute(max_vel, max_acc, in[1], fin[1], i, t_c, t_fin);
         z = compute(max_vel, max_acc, in[2], fin[2], i, t_c, t_fin);
-        
+
         cout << "\n x : y : z \n" << x << " " << y << " " << z << endl;
-        
+
         x_array.push_back(x);
         y_array.push_back(y);
         z_array.push_back(z);
@@ -137,7 +137,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         //config_1 = inversekinematics.get_inv_kinematics(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5]));
         //config_2 = inversekinematics.get_inv_kinematics(new SixDPos(x_array[1], y_array[1], z_array[1], in[3], in[4], in[5]));
         //double distance = config_2[0] - config_1[0] + config_2[1] - config_1[1] + config_2[2] - config_1[2] + config_2[3] - config_1[3] + config_2[4] - config_1[4] + config_2[5] - config_1[5];
-        
+
         if (inversekinematics.get_inv_kinematics(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5])) == nullptr)
         {
             //Where do you check for singularities?? overhead needs to be handled by you, discuss with sreenath what value to excpect for singularities
@@ -145,7 +145,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         }
         else
         {
-            SixDPos* pos = new SixDPos({ x_array[0], y_array[0], z_array[0], in[3], in[4], in[5] });
+            SixDPos* pos = new SixDPos({ x_array[i], y_array[i], z_array[i], in[3], in[4], in[5] });
             config_1 = inversekinematics.get_inv_kinematics(pos);
             int max_distance = 2701;
             int temporary_distance_start;
@@ -179,17 +179,17 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
 
             config_2.push_back(config_1->at(best_solution_number));
             config_1_2->push_back(config_1->at(best_solution_number));
-            
-            cout << "\n Best Solution no:"<<best_solution_number;
-            
+
+            cout << "\n Best Solution no:" << best_solution_number;
+
             if (i > 0)
             {
-                solution_number = 0;
+                
                 number_of_solutions = config_1->size();
                 for (int j = 0; j < number_of_solutions; j++)
                 {
                     solution_number = j;
-                    temporary_distance_start = config_1_2->at(solution_number)->operator[](0) + config_1_2->at(solution_number)->operator[](1) + config_1_2->at(solution_number)->operator[](2) + config_1_2->at(solution_number)->operator[](3) + config_1_2->at(solution_number)->operator[](4) + config_1_2->at(solution_number)->operator[](5);
+                    temporary_distance_start = config_1_2->at(i-1)->operator[](0) + config_1_2->at(i-1)->operator[](1) + config_1_2->at(i-1)->operator[](2) + config_1_2->at(i-1)->operator[](3) + config_1_2->at(i-1)->operator[](4) + config_1_2->at(i-1)->operator[](5);
                     temporary_distance = config_1->at(solution_number)->operator[](0) + config_1->at(solution_number)->operator[](1) + config_1->at(solution_number)->operator[](2) + config_1->at(solution_number)->operator[](3) + config_1->at(solution_number)->operator[](4) + config_1->at(solution_number)->operator[](5);
                     temporary_difference = temporary_distance_start - temporary_distance;
                     //solution_number++;
@@ -266,4 +266,3 @@ double Lin::compute(double max_velo, double max_acc, double in_angle, double fin
         }
     }
 }
-
