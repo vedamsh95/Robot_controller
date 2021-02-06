@@ -5,6 +5,12 @@
 IVKinPos::IVKinPos()
 {
 	robot = &Robot::getInstance();
+	m = robot->m;
+	n = robot->n;
+	o = robot->o;
+	a = robot->a;
+	b = robot->b;
+
 }
 IVKinPos::~IVKinPos()
 {

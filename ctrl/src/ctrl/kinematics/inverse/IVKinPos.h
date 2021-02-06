@@ -44,11 +44,11 @@ private:
 			return { a.x + x,a.y + y, a.z + z };
 		}
 	};
-	static constexpr double m = 0.330;
-	static constexpr double n = 0.645;
-	static constexpr double a = 1.150;
-	static constexpr double o = 0.115;
-	static constexpr double b = 1.220;
+	double m;
+	double n;
+	double a;
+	double o;
+	double b;
 
 	//distance from wrist center point to tool center point in [m]
 	static constexpr double d_6 = 0.215;
