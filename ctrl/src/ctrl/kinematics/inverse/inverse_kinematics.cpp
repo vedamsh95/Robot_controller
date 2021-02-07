@@ -3,7 +3,6 @@
 #include "inverse_kinematics.h"
 #include <cmath>
 #include <iostream>
-#include "ConfigProvider.h"
 #include "Singularity.h"
 
 /* Calculating the transposed Matrix for R03
@@ -918,19 +917,19 @@ elbow_up_vec.clear();
 solution.clear();
 
     if (theta1_l <= theta1 && theta1 <= theta1_u) {
-        std::cout << "theta1: " << theta1 << std::endl;
+        std::cout << "theta1 in limits: " << theta1 << std::endl;
         if (theta2_l <= theta2_theta3[0] && theta2_theta3[0] < theta2_u) {
-            std::cout << "theta2: " << theta2_theta3[0] << std::endl;
+            std::cout << "theta2 in limits: " << theta2_theta3[0] << std::endl;
              if (theta3_l <= theta2_theta3[2] && theta2_theta3[2] < theta3_u) {
-                std::cout << "theta3: " << theta2_theta3[2] << std::endl;
+                std::cout << "theta3 in limits: " << theta2_theta3[2] << std::endl;
                 elbowup = true;
             }
 
         }
         if(theta2_l <= theta2_theta3[1] && theta2_theta3[1] <= theta2_u) {
-            std::cout << "theta2: " << theta2_theta3[1] << std::endl;
+            std::cout << "theta2 in limits: " << theta2_theta3[1] << std::endl;
             if (theta3_l <= theta2_theta3[3] && theta2_theta3[3] <= theta3_u) {
-                std::cout << "theta3: " << theta2_theta3[3] << std::endl;
+                std::cout << "theta3 in limits: " << theta2_theta3[3] << std::endl;
                 elbowdown = true;
             }
         }
@@ -1004,7 +1003,7 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
     id = solution_standard.at(0).at(0);
     std::cout << id << endl;
 
-
+    //Case of both elbow configurations are true (elbow and elbow down)
     if (id == 111 || id == 211) {
 
         //Starting calculation of theta 4,5,6 for upwards case
@@ -1076,7 +1075,7 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
 
         }
 
-
+    //Case of one elbow configurations are true (elbow and elbow down)
     else if (id == 102 || id == 103 || id == 202 || id == 203) {
 
         //Starting calculation of theta 4,5,6 for either upward or backward
@@ -1089,9 +1088,7 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
         TMatrix T03;
         TMatrix T03_invert;
         T03 = mat1*mat2*mat3*mat4;
-        std::cout << "T03_invert: " << std::endl;
         T03_invert = transposematrix(T03);
-        T03_invert.output();
 
         std::vector<std::vector<double>> sol_theta_4_5_6_T03 = inv_vec_sol_theta4_5_6(T03_invert, _pos);
         //get the number of configurations
@@ -1114,6 +1111,7 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
         }
 
     }
+    //Case of no possible elbow configuration
     else if (id == 104 || id == 204) {
         std::cout << id << " is Not a possible configuration!" << std::endl;
     }
@@ -1383,7 +1381,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
                 _pos->get_X()*1000,_pos->get_Y()*1000,_pos->get_Z()*1000);                                                            //Transformation Matrix for the TCP inside of the global coordinate system
                                                                                                                                                     //Calculation of wrist center point
     std::array<double, 3> wcp;
-    std::cout << "Rotationsmatrix: " << std::endl;
+    std::cout << "Translationsmatrix for the given point: " << std::endl;
     TCP.output();
     //Calculation of the Wrist Center Point (WCP)
     wcp[0] = _pos->get_X() * 1000 - (215 * TCP.get_element(0, 2));
@@ -1847,26 +1845,9 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             solution_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, solution_standard);
     }
 
-    //vector<Configuration*>* solutions = new vector<Configuration*>();
-/*  //solutions->push_back(new Configuration({solution_standard[0],solution_standard[1],solution_standard[2],0,0,0}));
-    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({2/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({3/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({4/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({5/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({6/8 * M_PI,0,1,0,0,0}));
-    solutions->push_back(new Configuration({7/8 * M_PI,0,1,0,0,0}));*/
 
-    //returning solution_vec
-    if(solution_vec != nullptr ) {//return solutions;
-        std::cout << "There are " << solution_vec->size() << " possible configurations." << std::endl;
-    }
+    std::cout << "There are " << solution_vec->size() << " possible configurations." << std::endl;
+
     return solution_vec;
 
-//    //returning null pointer
-//    else{
-//        Configuration *no_config;
-//        std::cout << "There are no possible configurations for this position." << std::endl;
-//        return nullptr;
-//    }
 }
