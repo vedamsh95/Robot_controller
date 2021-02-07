@@ -104,6 +104,8 @@ int main() {
             // deserialize the json input
             JsonHandler jsonHandler(t);
 
+            cout << jsonHandler.get_op_mode();
+
             /*
              * compute a configuration from a position
              * inverse kinematics implementation
@@ -202,6 +204,9 @@ int main() {
                     // synchronize with vrep simulation environment
                     this_thread::sleep_for(std::chrono::milliseconds(50));
                 }
+            }
+            if (jsonHandler.get_op_mode() == OpMode::SPLINE) {
+                cout << "spline op_mode not implemented yet";
             }
 
             simxClearStringSignal(ID, "callsignal", simx_opmode_blocking);
