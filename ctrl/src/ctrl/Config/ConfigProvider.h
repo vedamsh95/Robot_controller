@@ -31,7 +31,7 @@ private:
     double joint1_v_max = 120;     //max speed of joint 1 in °/s
 
     //Theta 2
-    double theta2_lower_border = (-1)*120;
+    double theta2_lower_border = (-1)*140;
     double theta2_upper_border = (-1)*5;
     double joint2_v_max = 115;     //max speed of joint 2 in °/s
 
