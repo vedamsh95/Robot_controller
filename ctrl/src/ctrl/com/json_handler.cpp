@@ -18,7 +18,9 @@ JsonHandler::JsonHandler(string _json_string) {
 		case 4: this->m_op_mode = LIN;
                 break;
         case 5: this->m_op_mode = SPLINE;
-            break;
+                break;
+        case 6: this->m_op_mode = ADD_SPLINE;
+                break;
     }
 
     this->m_data = (m_json_value["data"]);
