@@ -110,7 +110,7 @@ function sysCall_threadmain()
     tip=sim.getObjectHandle("KR120_2700_2_tip")
     ikTarget=sim.getObjectHandle('ik_target')
     target1=sim.getObjectHandle('testTarget1')
-    target2=sim.getObjectHandle('testTarget2')
+    --target2=sim.getObjectHandle('testTarget2')
 
     ui = sim.getStringSignal("uisignal")
     if ui then
