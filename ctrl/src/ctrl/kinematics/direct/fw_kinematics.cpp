@@ -5,6 +5,12 @@
 #include <iostream>
 #include <vector>
 
+/*
+* construct the transformation matrix from the DH-parameters
+* 
+* @param theta, alpha, r, d {@ref double} DH-parameters
+* @return {@ref vector<vector<double>>} homogeneous coordinates from the DH-parameters
+*/
 vector<vector<double>> construct_transformation(double theta, double alpha, double r, double d)
 {
     vector<vector<double>> result = {
@@ -37,7 +43,12 @@ vector<vector<double>> construct_transformation(double theta, double alpha, doub
     return result;
 }
 
-
+/*
+* multiplication of two 4x4 matirces
+* 
+* @param M1, M2 {@ref vector<vector<double>>} matrices of size 4x4
+* @return {@ref vector<vector<double>>} returns the multiplication of both matrices
+*/
 vector<vector<double>> mat_mul4x4(vector<vector<double>> M1, vector<vector<double>> M2)
 {
     vector<vector<double>> Result = {
@@ -57,6 +68,12 @@ vector<vector<double>> mat_mul4x4(vector<vector<double>> M1, vector<vector<doubl
     return Result;
 }
 
+/*
+* direct kinematics function
+* 
+* @param _cfg {@ref Configuration} configuration for which the position (SixDPos) shall be calculated
+* @return {@ref SixDPos} position corresponding to the given configuration
+*/
 SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
 {
     //TODO: IMPLEMENT the computation of the forward kinematics and derive position and euler angles. Keep in mind your
@@ -145,6 +162,7 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
 
         A = construct_transformation(theta, alpha, r, d);
         
+        // multiply transformation matricies to get transformation form start to end
         if (i == 0)
         {
             B = A;
@@ -156,7 +174,7 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
         }
     }
 
-    // Calculate X, Y and Z form Position Matrix
+    // calculate X, Y and Z form Position Matrix
     double x = Result[0][3]/1000;
     double y = Result[1][3]/1000;
     double z = Result[2][3]/1000;
@@ -165,6 +183,7 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     double pitch = NULL;
     double yaw = NULL;
 
+    // calculate the roll, pitch and yaw angles, considering the singularity for pitch = +- pi/2
     if (Result[2][0] == -1)
     {
         roll = - atan2(-Result[1][2], Result[1][1]);

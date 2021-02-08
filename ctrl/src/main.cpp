@@ -104,7 +104,7 @@ int main() {
             // deserialize the json input
             JsonHandler jsonHandler(t);
 
-            cout << jsonHandler.get_op_mode();
+            cout << jsonHandler.get_op_mode() << endl;
 
             /*
              * compute a configuration from a position
@@ -112,10 +112,11 @@ int main() {
              */
             if(jsonHandler.get_op_mode() == OpMode::POS_2_CFG){
                 SixDPos pos(jsonHandler.get_data()[0]);
-//                cout << jsonHandler.get_json_string(&pos) << endl;
+                cout << jsonHandler.get_json_string(&pos) << endl;
                 vector<Configuration*>* result_cfg = ctrl.get_config_from_pos(&pos);
+                cout << result_cfg << endl;
                 string json_return_string = jsonHandler.get_json_string(result_cfg);
-//                cout << json_return_string << endl;
+                cout << json_return_string << endl;
                 simxSetStringSignal(ID, "returnsignal",
                                     reinterpret_cast<const simxUChar *>(json_return_string.c_str()), json_return_string.length(), simx_opmode_oneshot);
             }
@@ -129,7 +130,7 @@ int main() {
 //                cout << jsonHandler.get_json_string(&cfg) << endl;
                 SixDPos* return_pos = ctrl.get_pos_from_config(&cfg);
                 string json_return_string = jsonHandler.get_json_string(return_pos);
-//                cout << json_return_string << endl;
+                cout << json_return_string << endl;
                 simxSetStringSignal(ID, "returnsignal",
                                     reinterpret_cast<const simxUChar *>(json_return_string.c_str()), json_return_string.length(), simx_opmode_oneshot);
             }
@@ -206,7 +207,16 @@ int main() {
                 }
             }
             if (jsonHandler.get_op_mode() == OpMode::SPLINE) {
-                cout << "spline op_mode not implemented yet";
+                /* This operation mode can't be reached for some reason. The simulation environment show, that a
+                * json string with operation mode 5 (SPLINE) is sent to the c++ environment. When said operation mode is
+                * printed, it is printed as a 0 (CFG_2_POS) followed by non related data with operation mode 1 (POS_2_CFG)
+                * leading to an error.
+                */
+                //cout << "spline op_mode not implemented yet";
+                Configuration start_cfg((jsonHandler.get_data())[0]);
+                //int size_json = size(jsonHandler.get_data());
+                SixDPos end_pos((jsonHandler.get_data())[0]);
+                //Trajectory* trajectory = ctrl.move_robot_spline
             }
 
             simxClearStringSignal(ID, "callsignal", simx_opmode_blocking);

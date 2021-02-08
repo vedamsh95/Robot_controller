@@ -61,6 +61,15 @@ public:
      * @return reference of a {@ref Trajectory} for the movement
      */
     Trajectory* move_robot_lin(Configuration* start, Configuration* end);
+
+    /**
+     * Computes a trajectory for a spline movement from a start and target values
+     *
+     * @param start start {@ref Configuration}
+     * @param end   target {@ref SixDPos}
+     * @return reference of a {@ref Trajectory} for the movement
+     */
+    Trajectory* move_robot_spline(Configuration* start, SixDPos* end);
 };
 
 

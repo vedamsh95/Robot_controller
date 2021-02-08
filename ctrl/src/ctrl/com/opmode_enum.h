@@ -7,6 +7,7 @@
  * - POS_2_CFG: computes a configuration from a given position
  * - PTP: initiate a ptp movement
  * - LIN: initiate a lin movement
+ * - SPLINE: initiate a spline movement
  */
 enum OpMode{ CFG_2_POS, POS_2_CFG, PTP, PTPSYNC, LIN, SPLINE };
 

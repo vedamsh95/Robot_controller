@@ -2,6 +2,7 @@
 #define SDRI_CTRL2019_SPLINE_H
 
 #include <Configuration.h>
+#include <SixDPos.h>
 #include <Trajectory.h>
 
 /**
@@ -19,7 +20,7 @@ public:
      * @param _end_cfg {@ref Configruation} of the target point of the path
      * @return {@ref Trajectoy} for the movement of the robot
      */
-    Trajectory* get_spline_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg);
+    Trajectory* get_spline_trajectoy(Configuration* _start_cfg, SixDPos* _end_pos);
 };
 
 
