@@ -79,7 +79,7 @@ Trajectory* SdirCtrl::move_robot_lin(Configuration* start, Configuration* end)
     return lin.get_lin_trajectory(start, end);
 }
 
-Trajectory *SdirCtrl::move_robot_spline(vector<SixDPos *> path) {
+Trajectory *SdirCtrl::move_robot_spline(Configuration* start, vector<SixDPos *> path) {
     Spline spline;
-    return spline.get_spline_trajectory(path);
+    return spline.get_spline_trajectory(start, path);
 }

@@ -21,7 +21,11 @@ public:
      * @param _end_cfg {@ref Configruation} of the target point of the path
      * @return {@ref Trajectoy} for the movement of the robot
      */
-    Trajectory* get_spline_trajectory(vector<SixDPos*> path);
+    Trajectory* get_spline_trajectory(Configuration* start, vector<SixDPos*> path);
+
+    SixDPos *get_spline_at(double progress);
+
+    bool pathOnly = false;
 };
 
 

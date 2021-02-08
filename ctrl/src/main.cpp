@@ -10,6 +10,7 @@
 #include <iomanip>
 #include "ctrl/kinematics/direct/fw_kinematics.h"
 #include "ctrl/kinematics/inverse/inverse_kinematics.h"
+#include "ctrl/pathplanner/spline/spline.h"
 
 
 extern "C" {
@@ -150,6 +151,25 @@ transformationMatrices.push_back(new TMatrix(
         }
         cout << endl;
     }
+
+    // Example for splines
+    cout << "Spline sample: " << endl;
+    vector<SixDPos*> splineSamplePath;
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({0, 0, 0, 0, 0, 0});
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({10, 5, 5, 0, 0, 5});
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({20, 15, 10, 0, 0, 10});
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({20, 15, 15, 0, 0, 15});
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({10, 5, 20, 0, 0, 20});
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({0, 0, 0, 0, 0, 25});
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({10, 10, 20, 0, 0, 23});
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({20, 15, 15, 0, 0, 21});
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({20, 15, 10, 0, 0, 4});
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({10, 10, 5, 0, 0, 2});
+    splineSamplePath.push_back(new SixDPos()); splineSamplePath.back()->set_position({0, 0, 0, 0, 0, 0});
+    Spline* s = (new Spline());
+    s->pathOnly = true;
+    Trajectory *splineSample = s->get_spline_trajectory(nullptr, splineSamplePath);
+    s->pathOnly = false;
 
     cout << "This is the entry point of the SDIR programming project" << endl;
     SdirCtrl ctrl;
@@ -309,9 +329,9 @@ transformationMatrices.push_back(new TMatrix(
             }
             if (jsonHandler.get_op_mode() == OpMode::SPLINE_MOVE) {
                 cout << "SPLINE_MOVE" << endl;
-                SixDPos *start_pos = new SixDPos((jsonHandler.get_data())[0]);
-                spline_path[0] = start_pos;
-                Trajectory *trajectory = ctrl.move_robot_spline(spline_path);
+                Configuration *start_cfg = new Configuration((jsonHandler.get_data())[0]);
+                spline_path[0] = fwKinematics.get_fw_kinematics(start_cfg);
+                Trajectory *trajectory = ctrl.move_robot_spline(start_cfg, spline_path);
                 for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {
                     c[0] = (*cur_cfg)[0];
                     c[1] = (*cur_cfg)[1];

@@ -69,7 +69,7 @@ public:
      * @param end   target {@ref SixDPos}
      * @return reference of a {@ref Trajectory} for the movement
      */
-    Trajectory* move_robot_spline(vector<SixDPos*> path);
+    Trajectory* move_robot_spline(Configuration* start, vector<SixDPos*> path);
 
     Configuration * get_next_config_from_pos(Configuration *previous, SixDPos *pos);
 };
