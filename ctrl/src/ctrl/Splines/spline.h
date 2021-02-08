@@ -49,11 +49,10 @@ public:
                            std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps2, bool add_v_to_vec);
     int add_middle_cfg(Configuration* config1, Configuration* config2,
                                          std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps, int num_iterations);
-    void add_middle_cfg2(Configuration* config1, Configuration* config2,
-                                 std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
+//    void add_middle_cfg2(Configuration* config1, Configuration* config2,
+//                                 std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
     std::vector<double> Spline::calc_config_difference_to_vec(Configuration* config1, Configuration* config2);
 
-    vector<Configuration*>* check_joint1_specialcase(vector<Configuration *> *pVector);
 };
 
 

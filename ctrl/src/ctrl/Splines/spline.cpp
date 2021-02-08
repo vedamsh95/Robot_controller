@@ -439,13 +439,14 @@ Trajectory* Spline::calculateSpline() {
             for (int l = 0; l <= (t*timesteps); ++l) {
                 if ( l == 0 && !spline_points.empty() ){
                     // We are at the beginning of the next segment. We want an additional point between each segment, but only for segments after the first one
-                    std::cout << "jafjoadjfoi" << std::endl;
+
                 }
 
                 stepsize += 1/(t*timesteps);
                 if (stepsize <= 1){
                     spline_points.push_back(quintic_bezier_function(total_point_vec.at(k), total_point_vec.at(k+1), total_point_vec.at(k+2),
-                                                                    total_point_vec.at(k+3),total_point_vec.at(k+4), total_point_vec.at(k+5), stepsize));
+                                                                    total_point_vec.at(k+3),total_point_vec.at(k+4),
+                                                                    total_point_vec.at(k+5), stepsize));
                 }
             }
 
@@ -505,9 +506,6 @@ Trajectory* Spline::calculateSpline() {
             temp_configs = temp_configs2;
         }
 
-        // catch special case that theta1 is between 175 and 180 or -175 and -180
-        // atan cannot give values above 180, therefore we need to add additional configurations to the vector
-        temp_configs = check_joint1_specialcase(temp_configs);
 
         if (i == 0){
             // for the beginning we have a special case, because the difference between start cfg and first calculated is too large
@@ -805,36 +803,6 @@ int Spline::add_middle_cfg(Configuration* config1, Configuration* config2,
     return num_iterations;
 }
 
-vector<Configuration*>* Spline::check_joint1_specialcase(vector<Configuration *> *temp_vec) {
-    vector<Configuration*>* result;
-    // add all input configs to output vector
-    result = temp_vec;
-
-    for (int i = 0; i < temp_vec->size(); ++i) {
-        double theta1 = temp_vec->at(i)->get_configuration().operator[](0) * 180/M_PII;
-        if (theta1 <= 180 && theta1 >= 175){
-            double new_theta1 = theta1 - 360;
-            Configuration* new_cfg = new Configuration({new_theta1 * M_PII/180,
-                                                        temp_vec->at(i)->get_configuration().operator[](1),
-                                                        temp_vec->at(i)->get_configuration().operator[](2),
-                                                        temp_vec->at(i)->get_configuration().operator[](3),
-                                                        temp_vec->at(i)->get_configuration().operator[](4),
-                                                        temp_vec->at(i)->get_configuration().operator[](5)});
-            result->push_back(new_cfg);
-
-        }else if (theta1 >= -180 && theta1 <= -175){
-            double new_theta1 = theta1 + 360;
-            Configuration* new_cfg = new Configuration({new_theta1 * M_PII/180,
-                                                        temp_vec->at(i)->get_configuration().operator[](1),
-                                                        temp_vec->at(i)->get_configuration().operator[](2),
-                                                        temp_vec->at(i)->get_configuration().operator[](3),
-                                                        temp_vec->at(i)->get_configuration().operator[](4),
-                                                        temp_vec->at(i)->get_configuration().operator[](5)});
-            result->push_back(new_cfg);
-        }
-    }
-    return result;
-}
 
 // Backup for not using recursive function
 //void Spline::add_middle_cfg2(Configuration* config1, Configuration* config2,

@@ -225,53 +225,59 @@ int main() {
                 }
                 else if(val["spMod"].asInt() == 2)
                 {
-                    val = jsonHandler.get_data()[1];
-                    Vector<double, 3> curr_pos, curr_ori;
-                    Vector<double, 6> curr_thetas;
-                    double speed, acceleration;
+                    if (points->size() > 1){
+                        val = jsonHandler.get_data()[1];
+                        Vector<double, 3> curr_pos, curr_ori;
+                        Vector<double, 6> curr_thetas;
+                        double speed, acceleration;
 
-                    curr_pos[0]= val["m_x"].asDouble();
-                    curr_pos[1]= val["m_y"].asDouble();
-                    curr_pos[2]= val["m_z"].asDouble();
-                    curr_ori[0]= val["m_a"].asDouble();
-                    curr_ori[1]= val["m_b"].asDouble();
-                    curr_ori[2]= val["m_c"].asDouble();
+                        curr_pos[0]= val["m_x"].asDouble();
+                        curr_pos[1]= val["m_y"].asDouble();
+                        curr_pos[2]= val["m_z"].asDouble();
+                        curr_ori[0]= val["m_a"].asDouble();
+                        curr_ori[1]= val["m_b"].asDouble();
+                        curr_ori[2]= val["m_c"].asDouble();
 
-                    curr_thetas[0] = val["j0"].asDouble();
-                    curr_thetas[1] = val["j1"].asDouble();
-                    curr_thetas[2] = val["j2"].asDouble();
-                    curr_thetas[3] = val["j3"].asDouble();
-                    curr_thetas[4] = val["j4"].asDouble();
-                    curr_thetas[5] = val["j5"].asDouble();
-
-
-                    speed = val["speed"].asDouble();
-                    acceleration = val["acceleration"].asDouble();
-
-                    curr_ori.output();
-                    curr_pos.output();
-                    std::cout << "current thetas!!!!!!!!!!!!!!" << std::endl;
-                    curr_thetas.output();
-                    std::cout << "Speed" << speed << std::endl;
-                    std::cout << "acceleration" << acceleration << std::endl;
+                        curr_thetas[0] = val["j0"].asDouble();
+                        curr_thetas[1] = val["j1"].asDouble();
+                        curr_thetas[2] = val["j2"].asDouble();
+                        curr_thetas[3] = val["j3"].asDouble();
+                        curr_thetas[4] = val["j4"].asDouble();
+                        curr_thetas[5] = val["j5"].asDouble();
 
 
+                        speed = val["speed"].asDouble();
+                        acceleration = val["acceleration"].asDouble();
 
-                    Spline spline(curr_pos, curr_ori, points, speed,acceleration, curr_thetas);
-                    //spline.out();
+                        curr_ori.output();
+                        curr_pos.output();
+                        std::cout << "current thetas!!!!!!!!!!!!!!" << std::endl;
+                        curr_thetas.output();
+                        std::cout << "Speed" << speed << std::endl;
+                        std::cout << "acceleration" << acceleration << std::endl;
 
-                    Trajectory* trajectory = spline.calculateSpline();
-                    for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
-                        c[0] = (*cur_cfg)[0];
-                        c[1] = (*cur_cfg)[1];
-                        c[2] = (*cur_cfg)[2];
-                        c[3] = (*cur_cfg)[3];
-                        c[4] = (*cur_cfg)[4];
-                        c[5] = (*cur_cfg)[5];
-                        simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL, 6, c, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, simx_opmode_oneshot_wait);
-                        // synchronize with vrep simulation environment
-                        this_thread::sleep_for(std::chrono::milliseconds(50));
-                    }
+
+
+                        Spline spline(curr_pos, curr_ori, points, speed,acceleration, curr_thetas);
+                        //spline.out();
+
+                        Trajectory* trajectory = spline.calculateSpline();
+                        for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
+                            c[0] = (*cur_cfg)[0];
+                            c[1] = (*cur_cfg)[1];
+                            c[2] = (*cur_cfg)[2];
+                            c[3] = (*cur_cfg)[3];
+                            c[4] = (*cur_cfg)[4];
+                            c[5] = (*cur_cfg)[5];
+                            simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL,
+                                                   6, c, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                                                   NULL, simx_opmode_oneshot_wait);
+                            // synchronize with vrep simulation environment
+                            this_thread::sleep_for(std::chrono::milliseconds(50));
+                        }
+                    } else {
+                           std::cout << "Spline: You entered only 1 Point. Minimum of 2 Points is required to run Spline!!!" << std::endl;
+                        }
                 }
                 else
                 {

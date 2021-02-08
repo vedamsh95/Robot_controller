@@ -211,11 +211,6 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             temp_configs = temp_configs2;
         }
 
-        // catch special case that theta1 is between 175 and 180 or -175 and -180
-        // atan cannot give values above 180, therefore we need to add additional configurations to the vector
-        temp_configs = check_joint1_specialcase(temp_configs);
-
-
         // Selecting the right configurations:
         // StartPoint is a special case
         if(i == 0 && temp_configs->size() != 0){
@@ -604,36 +599,6 @@ std::vector<double> Lin::calc_config_difference_to_vec(Configuration* config1, C
     return distances_joints_vec;
 }
 
-vector<Configuration*>* Lin::check_joint1_specialcase(vector<Configuration *> *temp_vec) {
-    vector<Configuration*>* result;
-    // add all input configs to output vector
-    result = temp_vec;
-
-    for (int i = 0; i < temp_vec->size(); ++i) {
-        double theta1 = temp_vec->at(i)->get_configuration().operator[](0) * 180/M_PII;
-        if (theta1 <= 180 && theta1 >= 175){
-            double new_theta1 = theta1 - 360;
-            Configuration* new_cfg = new Configuration({new_theta1 * M_PII/180,
-                                                        temp_vec->at(i)->get_configuration().operator[](1),
-                                                        temp_vec->at(i)->get_configuration().operator[](2),
-                                                        temp_vec->at(i)->get_configuration().operator[](3),
-                                                        temp_vec->at(i)->get_configuration().operator[](4),
-                                                        temp_vec->at(i)->get_configuration().operator[](5)});
-            result->push_back(new_cfg);
-
-        }else if (theta1 >= -180 && theta1 <= -175){
-            double new_theta1 = theta1 + 360;
-            Configuration* new_cfg = new Configuration({new_theta1 * M_PII/180,
-                                                        temp_vec->at(i)->get_configuration().operator[](1),
-                                                        temp_vec->at(i)->get_configuration().operator[](2),
-                                                        temp_vec->at(i)->get_configuration().operator[](3),
-                                                        temp_vec->at(i)->get_configuration().operator[](4),
-                                                        temp_vec->at(i)->get_configuration().operator[](5)});
-            result->push_back(new_cfg);
-        }
-    }
-    return result;
-}
 
 bool Lin::checkconfiglimits(Configuration* config1, Configuration* config2,
                             std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps, bool add_v_to_vec) {

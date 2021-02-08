@@ -65,8 +65,6 @@ public:
 
     std::vector<double> calc_config_difference_to_vec(Configuration* config1, Configuration* config2);
 
-    vector<Configuration*>* check_joint1_specialcase(vector<Configuration *> *temp_vec);
-
 };
 
 
