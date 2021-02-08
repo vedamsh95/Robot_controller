@@ -314,15 +314,15 @@ vector<vector<double>> *InvKinematics::standardCase(double phi1, double d1, doub
         double py_dash = zc - n;
         vector<double> solution_stan_1 = angles_forward(phi1, px_dash, py_dash);
         vector<double> solution_lim_stan_1 = limits_forward(phi1, forward_vec, backward_vec);
-        cout << "solutionstan1 " << solution_lim_stan_1.at(0);
-        cout << "solutionstan1 " << solution_lim_stan_1.at(1);
-        cout << "solutionstan1 " << solution_lim_stan_1.at(2);
+        //cout << "solutionstan1 " << solution_lim_stan_1.at(0);
+        //cout << "solutionstan1 " << solution_lim_stan_1.at(1);
+        //cout << "solutionstan1 " << solution_lim_stan_1.at(2);
         // cout << "solutionstan1 " << solution_lim_stan_1.at(3);
         vector<double> solution_stan_other1 = othercase_1(phi1, d1, m, n, zc);
         vector<double> solution_stan_other2 = othercase_2(phi1, d1, m, n, zc);
-        results->push_back(solution_lim_stan_1);
-        results->push_back(solution_stan_other1);
-        results->push_back(solution_stan_other2);
+        if (solution_lim_stan_1.size() >= 3) results->push_back(solution_lim_stan_1);
+        if (solution_stan_other1.size() >= 3) results->push_back(solution_stan_other1);
+        if (solution_stan_other2.size() >= 3) results->push_back(solution_stan_other2);
 
         return results;//,solution_stan_other1,solution_stan_other2;
 
