@@ -201,6 +201,36 @@ int main() {
                     this_thread::sleep_for(std::chrono::milliseconds(50));
                 }
             }
+            
+            if (jsonHandler.get_op_mode() == OpMode::SPLINE) {
+
+                Configuration start_cfg((jsonHandler.get_data())[0]);
+
+                vector<SixDPos> points;
+
+                for (int i = 1;  (jsonHandler.get_data())[i] != NULL; i++){
+
+                    points.push_back(jsonHandler.get_data()[i]);
+
+                 }
+
+                
+
+                Trajectory* trajectory = ctrl.move_robot_spline(&start_cfg, points);
+                for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
+                    c[0] = (*cur_cfg)[0];
+                    c[1] = (*cur_cfg)[1];
+                    c[2] = (*cur_cfg)[2];
+                    c[3] = (*cur_cfg)[3];
+                    c[4] = (*cur_cfg)[4];
+                    c[5] = (*cur_cfg)[5];
+                    simxCallScriptFunction(ID, "KR120_2700_2", sim_scripttype_childscript, "runConfig", 0, NULL, 6, c, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, simx_opmode_oneshot_wait);
+                    this_thread::sleep_for(std::chrono::milliseconds(50));
+                }
+
+
+                
+            }
 
             simxClearStringSignal(ID, "callsignal", simx_opmode_blocking);
             length = 0;
