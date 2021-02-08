@@ -19,9 +19,6 @@ public:
      * @return computed {@ref SixDPos}
      */
 
-
-
-
     SixDPos* get_fw_kinematics(Configuration* _cfg);
 };
 

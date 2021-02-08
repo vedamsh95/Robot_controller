@@ -5,6 +5,8 @@
 #ifndef SDIR_CTRL2020_CONFIGPROVIDER_H
 #define SDIR_CTRL2020_CONFIGPROVIDER_H
 
+//Here all parameters of the robot are determined and can be adjusted if necessary.
+
 class ConfigProvider{
 private:
     ConfigProvider(){}

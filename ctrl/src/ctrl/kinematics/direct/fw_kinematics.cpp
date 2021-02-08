@@ -46,6 +46,6 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     std::cout << "Theta " << a[1] << std::endl;
     std::cout << "Psi " << a[2] << std::endl;
 
-    // return new SixDPos(1.757, 0.0, 1.91, 0, M_PII, 0);
+
      return new SixDPos(res.get_element(0,3)/1000, res.get_element(1,3)/1000, res.get_element(2,3)/1000, a[0], a[1], a[2]);
 }
