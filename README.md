@@ -35,7 +35,8 @@ Others changes to the internal API that need to be considered:
 
 5. Trajectory* move_robot_lin(Configuration* start, Configuration* end, double velocity, double acceleration, std::vector<std::vector<SixDPos*>>* loopPoints);
 
-   -> Requires a velocity and an acceleration. Optionally one can pass a pointer to receive certain points, just use a nullptr
+   -> Requires a velocity and an acceleration. Optionally, one can pass a pointer to receive certain points, just use 
+   a nullptr in case this functionality is not needed.
    
 
 6. Trajectory* move_robot_lin(Configuration* start, Configuration* end, double velocity, double acceleration);
@@ -45,11 +46,12 @@ Others changes to the internal API that need to be considered:
 
 7. Trajectory* move_robot_spline(vector<SixDPos*> &points, Configuration * start, double velocity, double acceleration, std::vector<std::vector<SixDPos*>>* loopPoints, double elong = 0.5, int _spline_type = 0);
 
-    -> Requires a velocity and an acceleration. Optionally one can pass a pointer to receive certain points, just use a nullptr
-       The other two parameters specify the type ans scalar elongation factor, you can leave the default values.
+    -> Requires a velocity and an acceleration. Optionally, one can pass a pointer to receive certain points, just use
+   a nullptr, if this functionality is not needed. The other two parameters specify the type and scalar elongation
+   factor, you can leave the default values.
 
-
-In general, you can find the necessary information for every function in the corresponding header file.
+The functions in the lower levels for spline, lin, and ptp follow the same principle. In general, you can find the
+necessary information for every function in the corresponding header file.
 
 ## Build
 For building your code, please use the contained [cmake](https://cmake.org/) files.
