@@ -62,12 +62,14 @@ public:
 
     TMatrix R36Matrix_2();
 
-    TMatrix R36Matrix();
+
 
 
 
     vector<vector<double>> phi4_5_6(TMatrix *R36, TMatrix *R36_1);
 
     //vector<vector<double>> solutions_456(TMatrix *R36, TMatrix *R36_1);
+
+    TMatrix R36Matrix(int solNum, int solOffset);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H

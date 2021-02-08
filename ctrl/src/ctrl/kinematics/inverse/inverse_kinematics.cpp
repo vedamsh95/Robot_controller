@@ -106,14 +106,6 @@ vector<Configuration *> *InvKinematics::get_inv_kinematics(SixDPos *_pos) {
         specialCase2(xc, yc, zc, m, d1);
     }
 
-  auto  solset_1 =  R36Matrix();
-
-/*
-    if(standardsol_1->size()>3)
-    auto solset_2 = R36Matrix_2();
-
-*/
-
 
     vector<Configuration *> *solutions = new vector<Configuration *>();
 
@@ -121,12 +113,17 @@ vector<Configuration *> *InvKinematics::get_inv_kinematics(SixDPos *_pos) {
     for (int x = 0; x < standardsol_1->size(); x++) {
         vector<double> sol = standardsol_1->at(x);
         if (sol.size() < 3) continue;
+        vec_456.clear();
+        R36Matrix(x, 0);
         for (int y = 0; y < vec_456.size(); y++) {
             solutions->push_back(
                     new Configuration({sol.at(0), sol.at(1), sol.at(2), vec_456.at(y).at(0), vec_456.at(y).at(1),
                                        vec_456.at(y).at(2)}));
-
-            if(sol.size()>3){
+        }
+        if(sol.size()>3){
+            vec_456.clear();
+            R36Matrix(x, 3);
+            for (int y = 0; y < vec_456.size(); y++) {
                 solutions->push_back(
                         new Configuration({sol.at(3), sol.at(4), sol.at(5), vec_456.at(y).at(0), vec_456.at(y).at(1),
                                            vec_456.at(y).at(2)}));
@@ -496,7 +493,7 @@ vector<vector<double>> InvKinematics::phi_case2(double phi1, double xc, double y
     return *results;
 }
 
-TMatrix InvKinematics::R36Matrix() {
+TMatrix InvKinematics::R36Matrix(int solNum, int solOffset) {
 int h;
 
 
@@ -504,13 +501,13 @@ int h;
     TMatrix T01(0, 180 * (M_PI / 180), 0, 0.645);
     cout << "matrix of t01 " << endl;
     T01.print();
-    TMatrix T12(0 + standardsol_1->at(0).at(0) * (M_PI / 180), 90 * (M_PI / 180), 0.330, 0);
+    TMatrix T12(0 + standardsol_1->at(solNum).at(0 + solOffset) * (M_PI / 180), 90 * (M_PI / 180), 0.330, 0);
     cout << "matrix of t12 " << endl;
     T12.print();
-    TMatrix T23(0 + standardsol_1->at(0).at(1) * (M_PI / 180), 0, 1.150, 0);
+    TMatrix T23(0 + standardsol_1->at(solNum).at(1 + solOffset) * (M_PI / 180), 0, 1.150, 0);
     cout << "matrix of t23" << endl;
     T23.print();
-    TMatrix T34((-90 + standardsol_1->at(0).at(2)) * (M_PI / 180), 90 * (M_PI / 180), 0.115, 0);
+    TMatrix T34((-90 + standardsol_1->at(solNum).at(2 + solOffset)) * (M_PI / 180), 90 * (M_PI / 180), 0.115, 0);
     cout << "matrix of t34 " << endl;
     T34.print();
 
@@ -554,7 +551,7 @@ TMatrix InvKinematics::R36Matrix_2() {
     TMatrix T23_1(0 + standardsol_1->at(2).at(1) * (M_PI / 180), 0, 1.150, 0);
     cout << "matrix of t23" << endl;
     T23_1.print();
-    TMatrix T34_1((-90 + standardsol_1->at(2).at(3)) * (M_PI / 180), 90 * (M_PI / 180), 0.115, 0);
+    TMatrix T34_1((-90 + standardsol_1->at(2).at(2)) * (M_PI / 180), 90 * (M_PI / 180), 0.115, 0);
     cout << "matrix of t34 " << endl;
     T34_1.print();
 
@@ -641,6 +638,7 @@ return *R36_1;
                 cout << "set phi6_2_2 " << phi6_2_1 << endl;
             }
 
+            set1.clear(); set2.clear(); set3.clear(), set4.clear(), set5.clear(), set6.clear(), set7.clear(), set8.clear(),vec_456.clear();
             if (0 < phi5_1 && phi5_1 < 125) {
                 if (-350 <= phi4_1 && phi4_1 < 350) {
                     if (-350 <= phi6_1 && phi6_1 < 350) {

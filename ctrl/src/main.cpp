@@ -142,7 +142,7 @@ int main() {
         }
         cout << endl;
     }
-/*
+
     auto configurations = invKinematics.get_inv_kinematics(new SixDPos(2.2150217743250376, 0.44999663348281566, 2.359973741582353, -1.8268180825737412, 2.0207665616890536, -1.8268161754190866));
     cout << "Inverse Kinematics sample that breaks: " << endl;
     cout << configurations->size() << " Solutions:" << endl;
@@ -156,7 +156,7 @@ int main() {
              << " R6=" << (*(*configurations)[j])[5]
              << endl;
     }
-    cout << endl;*/
+    cout << endl;
 
     cout << "This is the entry point of the SDIR programming project" << endl;
     SdirCtrl ctrl;
