@@ -53,3 +53,10 @@ Trajectory* SdirCtrl::move_robot_lin(Configuration* start, Configuration* end)
     Lin lin;
     return lin.get_lin_trajectoy(start, end);
 }
+
+Trajectory* SdirCtrl::move_robot_spline(Configuration* _start_cfg, std::vector<SixDPos> coordinates_list)
+{
+    //ToDo: IMPLEMENT!
+    Spline splin;
+    return splin.get_spline_trajectoy(_start_cfg, coordinates_list);
+}
