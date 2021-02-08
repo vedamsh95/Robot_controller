@@ -6,20 +6,7 @@
 
 
 SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
-    // Euler angle test
-    //TMatrix mat(0.8212351, -0.353276, 0.5694953, 0, 0.1512832, 0.9758426, -0.1576219, 0, -0.5501693, 0.2155997, 0.8067406, 0, 0, 0, 0, 1);
-    //vector<double> angles = get_euler_angles(mat);
-    //cout << angles[0] << ", " << angles[1] << ", " << angles[2] << endl;
-
-    // Matrix multiplication test
-    //TMatrix A(1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 0, 0, 0, 1);
-    //TMatrix B(4, 3, 2, 1, 4, 3, 2, 1, 4, 3, 2, 1, 0, 0, 0, 1);
-    //TMatrix C = A.multiply(B);
-    //cout << C << endl;
-
-    // Output the cfg values:
-    //cout << (*_cfg)[0] << ", " << (*_cfg)[1] << ", " << (*_cfg)[2] << ", " << (*_cfg)[3] << ", " << (*_cfg)[4] << ", " << (*_cfg)[5] << ", " << endl;
-
+    
     // These are the Denavit-Hartenberg parameters for our robot
     double dh_table[7][4] = {
             {0,       M_PI,   0,    645},
@@ -58,15 +45,6 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
     // system of the flange.
 
     vector<double> euler_angles = get_euler_angles(A);
-
-    // Print the results
-    //cout << A << endl;
-    //cout << "X: " << A.get(0, 3) << endl;
-    //cout << "Y: " << A.get(1, 3) << endl;
-    //cout << "Z: " << A.get(2, 3) << endl;
-    //cout << "Roll  : " << euler_angles[0] << endl;
-    //cout << "Pitch : " << euler_angles[1] << endl;
-    //cout << "Yaw   : " << euler_angles[2] << endl;
 
     return new SixDPos(
             A.get(0, 3) / 1000.0,
