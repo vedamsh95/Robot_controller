@@ -42,7 +42,7 @@ Trajectory * Splines::getSpline(vector<SixDPos*> &_points, Configuration * start
 			//get afterwards approximately equal distance between sample points
 			P_i = Position(points.at(i).x, points.at(i).y, points.at(i).z);
 			P_i1 = Position(points.at(i -1).x, points.at(i - 1).y, points.at(i - 1).z);
-			dBtwP = sqrt(pow(P_i.x - P_i1.x, 2) + pow(P_i.y - P_i1.y, 2) + pow(P_i.y - P_i1.y, 2));
+			dBtwP = L2Norm(P_i - P_i1);
 			samples.push_back((dBtwP / sampleDistance));
 		}
 	}
