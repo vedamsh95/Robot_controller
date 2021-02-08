@@ -12,6 +12,10 @@
 #include "Trapezoidal_trajectory.h"
 #include "../../matplotlib-cpp-master/matplotlibcpp.h"
 
+/**
+ * This class implements the ptp movement from two given {@ref Configuration}, one for the start configuration and one
+ * for the target configuration.
+ */
 class Ptp {
 
 private:
