@@ -436,13 +436,23 @@ Trajectory* Spline::calculateSpline() {
             double stepsize = 0;
             // add number of points for this segment to a vector
             num_pts_segment.push_back(round(t*timesteps + 1));
+
             for (int l = 0; l <= (t*timesteps); ++l) {
+                stepsize += 1/(t*timesteps);
                 if ( l == 0 && !spline_points.empty() ){
                     // We are at the beginning of the next segment. We want an additional point between each segment, but only for segments after the first one
+                    Vector<double, 3> temp = quintic_bezier_function(total_point_vec.at(k), total_point_vec.at(k+1), total_point_vec.at(k+2),
+                                            total_point_vec.at(k+3),total_point_vec.at(k+4),
+                                            total_point_vec.at(k+5), stepsize);
+                    Vector<double, 3> new_point;
+                    for (int j = 0; j < 3; ++j) {
+                        new_point[j] = 0.5 * (temp[j] + spline_points.at(spline_points.size()-1)[j]);
+                    }
 
+                    spline_points.push_back(new_point);
                 }
 
-                stepsize += 1/(t*timesteps);
+
                 if (stepsize <= 1){
                     spline_points.push_back(quintic_bezier_function(total_point_vec.at(k), total_point_vec.at(k+1), total_point_vec.at(k+2),
                                                                     total_point_vec.at(k+3),total_point_vec.at(k+4),
