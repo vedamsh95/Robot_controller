@@ -55,7 +55,7 @@ private:
     
     
     /**
-     * Calculates if joint velocities are too high so that _positions can be changed accordingly.
+     * Calculates if joint velocities are too high so that _positions and trajectory can be changed accordingly.
      * If veocities are too high SixDPos are added to _positions and belonging Configurations are inserted in trajectory.
      *
      * @param trajectory  trajectory to adjust if velocities to high.
@@ -71,14 +71,13 @@ private:
      * @param _configs  vector containing possible configurations.
      * @param _prevConfig  reference configuration first three joints
      * @param _wristConfig reference configuration wrist joints
-     *
      * @return the closest configuration
      */
     Configuration* GetClosestConfiguration(vector<Configuration*>* _configs, Configuration* _prevConfig, Configuration* _wristConfig );
     
     /**
      * Computes the configuration of a new SixDPos C that is interpolated from the SixDPos _position->at(index) and _position->at(index-1).
-     * Only interpolatex the X, Y and Z values. The new SixDPos is inserted in _positions.
+     * Only interpolates the X, Y and Z values. The new SixDPos is inserted in _positions.
      * The returned configuration is the one closest to trajectory->at(index-1).
      *
      * @param trajectory  trajectory to get previous configurations from.
@@ -119,21 +118,25 @@ private:
     void wsLastConfig(Configuration* Config, int width);
     
     /**
-     * Computes configurations at overhead singularities ( x & y ==0) by interpolating theta1 from values outside of singularity trajectory(-length) and trajectory(-1)).
-     * And changes corresponding values in trajectory.
+     * Computes configurations at overhead singularities ( x & y ==0) by interpolating theta1 from values outside of singularity trajectory(-length) and trajectory(-1)). Recalculates the wrist joints for the new configuratin of the first 3 joints.
+     * Corresponding values are changed in trajectory.
      *
      * @param trajectory  trajectory containing configurations
      * @param width length of the singularity
+     * @param _positions positions corresponding to trajectory
      */
     
     void osInterpolation(Trajectory* trajectory, int width, vector<SixDPos*>* _positions);
     
     /**
-     * Computes configurations at overhead singularities ( x & y ==0) by interpolating theta1  from two given values (startConfig & endConfig).
+     * Computes configurations at overhead singularities ( x & y ==0) by interpolating theta1  from two given values (startConfig & endConfig). And recalculates the wrist joints accordingly.
      *
-     * @param startConfig  Configuration before singularity.
-     * @param curConfig  singularity configuration.
-     * @param endConfig  Configuration after singularity.
+     * @param startConfig Configuration before singularity.
+     * @param curConfig Configuration at singularity.
+     * @param endConfig Configuration after singularity.
+     * @param posA SixDPos before singularity.
+     * @param posB SixDPos at singularity.
+     * @param posC SixDPos after singularity.
      *
      * @return a reference containing the interpolated configuration.
      */
@@ -154,8 +157,7 @@ private:
     /**
      * Computes new sixDPos at elbow singularity.
      *
-     * @param _pos current positon
-     *
+     * @param _pos current positon     
      * @return reference containing the adjusted SixDPos
      */
     SixDPos* esCalculation(SixDPos* _pos);

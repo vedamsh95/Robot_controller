@@ -28,7 +28,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
     int wsLength = 0;
     int osLength = 0;
     
-    //add first configuration in case its needed for interpolation.
+    //add first configuration in case it is needed for interpolation.
     trajectory->add_configuration(start_cfg);
 
     for (int i = 1; i< _positions->size(); i++)
@@ -36,12 +36,12 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
         if(i == _positions->size()-1) lastPoint=true;
         t = _positions->at(i);
 
-        //check for elbow singularity.
+        //check for elbow singularity and adjust t if necessary.
         while(elbowSingularity(t)){
             t = esCalculation(t);
         }
         
-        //calculate inverse kinematic for the position t.
+        //calculate inverse kinematics for the position t.
         configs = invK->get_inv_kinematics(t);
 
         if (configs->size() > 0){
@@ -210,7 +210,7 @@ void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _pos
             }
         }
         if(exception){
-            //store values of start and size of each flipping loop.
+            //store start index and size of each flipping loop.
             if(JointInterpolate(trajectory, i-NbEx)){
                 if(LoopStart.size()==0){
                     LoopStart.push_back(i-NbEx);
@@ -230,7 +230,6 @@ void IVMovement::CheckVelocities(Trajectory* _trajectory, vector<SixDPos*>* _pos
     LoopSize.push_back(actSize+1);
     
     if(loopVector) getLoopPoints(LoopStart, LoopSize);
-    
     
     if(NbEx > 0){
         cout << "Flipping of joints detected, configurations interpolated" << endl;
@@ -329,8 +328,10 @@ Configuration* IVMovement::wsInterpolation(Configuration *startConfig, Configura
 void IVMovement::wsInterpolation(Trajectory* trajectory, int width)
 {
     int size = trajectory->get_length();
+    
     Configuration* startConfig = trajectory->get_configuration(size-width-1);
     Configuration* endConfig = trajectory->get_configuration(size-1);
+    
     std::array<double, NUM_JOINTS> newConfig {};
 
     for(int i = 0; i < width; i++){
@@ -379,7 +380,8 @@ void IVMovement::osInterpolation(Trajectory* trajectory, int width, vector<SixDP
             newConfig[1] = (*actConfig)[1];
             newConfig[2] = (*actConfig)[2];
 
-            vector<Configuration*>* configs = invK->get_inv_kinematics(_positions->at(size-width+i), &newConfig);
+            vector<Configuration*>* configs = invK->get_inv_kinematics(_positions->at(size-width+i),
+                                                                       &newConfig);
             Configuration* correctConfig =  GetClosestConfiguration(configs, trajectory->get_configuration(size-width+i-1));
 
             trajectory->set_configuration(correctConfig, size-width+i);
@@ -392,14 +394,14 @@ void IVMovement::osInterpolation(Trajectory* trajectory, int width, vector<SixDP
             newConfig[1] = (*actConfig)[1];
             newConfig[2] = (*actConfig)[2];
 
-            vector<Configuration*>* configs = invK->get_inv_kinematics(_positions->at(size-width+i), &newConfig);
+            vector<Configuration*>* configs = invK->get_inv_kinematics(_positions->at(size-width+i),
+                                                                       &newConfig);
             Configuration* correctConfig =  GetClosestConfiguration(configs, trajectory->get_configuration(size-width+i-1));
 
             trajectory->set_configuration(correctConfig, size-width+i);
         }
     }
 }
-
 
 SixDPos* IVMovement::esCalculation(SixDPos* _pos)
 {
@@ -417,10 +419,10 @@ SixDPos* IVMovement::esCalculation(SixDPos* _pos)
  */
 bool IVMovement::wristSingularity(Configuration* _config)
 {
-    //The singulartiy at joint 5 = pi has to be considered
+    //The singulartiy at joint5 == pi has to be considered
     //because of the boundary conditions. 
     if(std::abs((*_config)[4])< SINGULARITY_MARGIN) return true;
-    else if(std::abs((*_config)[4] -M_PI)< SINGULARITY_MARGIN) return true;
+    else if(std::abs(std::abs((*_config)[4]) -M_PI)< SINGULARITY_MARGIN) return true;
     else return false;
 }
 
