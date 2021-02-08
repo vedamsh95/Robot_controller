@@ -61,6 +61,8 @@ public:
      * @return reference of a {@ref Trajectory} for the movement
      */
     Trajectory* move_robot_lin(Configuration* start, Configuration* end);
+    
+    Trajectory* move_robot_spline(Configuration* _start_cfg, std::vector<SixDPos> coordinates_list);
 };
 
 
