@@ -17,7 +17,7 @@
 //stitch each sets of trajectory between each sets of points
 //return total trajectory
 
-Trajectory* Spline::get_spline_trajectoy(Configuration* _start_cfg, std::vector<SixDPos*> coordinates_list)
+Trajectory* Spline::get_spline_trajectoy(Configuration* _start_cfg, std::vector<SixDPos> coordinates_list)
 {
 
     //take the current position of robot and insert into the first position of coordinates list given by the user in GUI
