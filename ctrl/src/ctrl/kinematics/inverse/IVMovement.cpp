@@ -63,7 +63,7 @@ Trajectory * IVMovement::getMovement(vector<SixDPos*>* _positions, Configuration
             
             //point after overhead singularity.
             if(oSingularity && (!overheadSingularity(t) || lastPoint)){
-                if(lastPoint) osLastConfig(correctConfig, osLength);
+                if(lastPoint) osLastConfig(correctConfig, t, osLength);
                 //if end_cfg available the configuration after the singularity
                 //should resemble the configuration at the end of the trajectory.
                 else if(end_cfg){
@@ -463,12 +463,19 @@ void IVMovement::wsLastConfig(Configuration* Config, int width)
     trajectory->set_configuration(Config, trajectory->get_length()-1);
 }
 
-void IVMovement::osLastConfig(Configuration* Config, int width)
+void IVMovement::osLastConfig(Configuration* Config, SixDPos* Pos, int width)
 {
     Configuration* lastConfig = trajectory->get_configuration(trajectory->get_length()-1-width);
     (*Config)[0] = (*lastConfig)[0];
     
-    trajectory->set_configuration(Config, trajectory->get_length()-1);
+    //calculate wrist configuration for new arm configuration.
+    vector<Configuration*>* configs = invK->get_inv_kinematics(Pos, Config);
+    
+    if(configs->size()>0){
+        Configuration* correctConfig =  GetClosestConfiguration(configs, lastConfig);
+        trajectory->set_configuration(correctConfig, trajectory->get_length()-1);
+    }
+    else trajectory->set_configuration(Config, trajectory->get_length()-1);
 }
 
 

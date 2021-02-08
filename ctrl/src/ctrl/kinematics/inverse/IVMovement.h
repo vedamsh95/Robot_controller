@@ -109,7 +109,7 @@ private:
     Configuration* wsInterpolation(Configuration* startConfig, Configuration* curConfig, Configuration* endConfig);
 
     /**
-     * Computes value at wrist singularity if the last available configuration is at singularity and therefore it cant be interpolated.
+     * Computes value at wrist singularity if the last available configuration is at singularity and therefore it can not be interpolated.
      * Calculation is made with the difference of the sums of theta4 and theta6. 
      *
      * @param Config  Configuration that needs to be adjusted
@@ -140,14 +140,16 @@ private:
     Configuration* osInterpolation(Configuration* startConfig, Configuration* curConfig, Configuration* endConfig, SixDPos* posA, SixDPos* posB, SixDPos* posC);
     
     /**
-     * Computes value at overehad singularity if the last available configuration is at singularity and therefore it cant be interpolated.
-     * Theta 1 is set to last known theta1 before the singularity. The configuration is changed in trajectory.
+     * Computes value at overehad singularity if the last available configuration is at singularity and therefore can not be interpolated.
+     * Theta 1 is set to last known theta1 before the singularity and the wrist joints are adjusted accordingly.
+     * The configuration is changed in trajectory.
      *
      * @param Config  Configuration that needs to be adjusted
-     * @param width    Width of the singularity region.
+     * @param width    Width of the singularity region
+     * @param Pos         SixDPos of the singularity
      *
      */
-    void osLastConfig(Configuration* Config, int width);
+    void osLastConfig(Configuration* Config, SixDPos* Pos, int width);
     
     /**
      * Computes new sixDPos at elbow singularity.
