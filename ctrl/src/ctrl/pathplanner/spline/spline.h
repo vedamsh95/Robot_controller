@@ -19,11 +19,9 @@ class Spline {
 public:
 
     Trajectory* get_spline_trajectoy(Configuration* _start_cfg, std::vector<SixDPos*> coordinates_list);
-    void interpolate(double p0, double p5, vector<double>& path, double ts, double te, double as, double ae);
-    std::tuple<double, double> Spline::get_velocity(Configuration *_start_cfg, Configuration *_end_cfg);
-    double trap_prof(double max_velo, double max_acc, double in_angle, double fin_angle, double time, double t_c, double t_fin);
-    double S_Functon(double M1[1][6], double M2[6][1]);
-    void find_best_cfg(SixDPos P0, SixDPos P5, Configuration* cfg1, Configuration* cfg2);
+    void find_P1234(double P0, double P1, double P2, double P3, double P4, double P5, double d0, double ts, double as, double te, double ae);
+    double Interpolate(double t, double P0, double P1, double P2, double P3, double P4, double P5);
+    double compute_1(double max_velo, double max_acc, double in_angle, double fin_angle, double time, double t_c, double t_fin);
 
 };
 
