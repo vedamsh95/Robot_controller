@@ -93,12 +93,19 @@ int main() {
     InvKinematics invKinematics;
     FwKinematics fwKinematics;
     vector<TMatrix*> transformationMatrices;
-   transformationMatrices.push_back(new TMatrix(
+  transformationMatrices.push_back(new TMatrix(
             -5.07791870e-01, 6.35025673e-01, -5.82142433e-01, -7.18376830e+02 / 1000,
             2.62242221e-01, 7.57620537e-01, 5.97695691e-01, 1.89742719e+03 / 1000,
             8.20595171e-01, 1.50842688e-01, -5.51244092e-01, 2.32490439e+02 / 1000,
             0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 1.00000000e+00
             ));
+
+    transformationMatrices.push_back(new TMatrix(
+            7.77699440e-01 ,  4.00749403e-01 , -4.84338204e-01 ,  9.90529917e+02/1000,
+     -5.31889781e-01,   8.80445209e-03,  -8.46767821e-01,  -1.70654360e+03/1000,
+     -3.35077367e-01,   9.16145402e-01 ,  2.20001730e-01,   2.35915900e+03/1000,
+      0.00000000e+00,   0.00000000e+00 ,  0.00000000e+00,   1.00000000e+00
+    ));
 
             transformationMatrices.push_back(new TMatrix(
                     -4.42438962e-02 ,  9.57043695e-01 ,  2.86548154e-01 ,  9.24075420e+01/1000,
@@ -149,8 +156,8 @@ int main() {
              << " R6=" << (*(*configurations)[j])[5]
              << endl;
     }
-    cout << endl;
-*/
+    cout << endl;*/
+
     cout << "This is the entry point of the SDIR programming project" << endl;
     SdirCtrl ctrl;
     float c[6];

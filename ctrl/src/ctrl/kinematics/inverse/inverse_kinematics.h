@@ -29,7 +29,7 @@ public:
     double angles_phi3_forward(double zc,double d1);
     double angles_phi3_backward(double zc, double d1);
     double angles_phi3(double d1);
-    TMatrix R36Matrix();
+   // TMatrix R36Matrix();
     vector<double> othercase_1(double phi1, double d1, double m, double n, double zc);
 
     void checkSingularities();
@@ -55,5 +55,19 @@ public:
     vector<double> limits_forward(double phi1, vector<double> forward_vec, vector<double> backward_vec);
 
     vector<double> limits_backward(double phi1, vector<double> forward_vec, vector<double> backward_vec);
+
+    vector<vector<double>> phi4_5_6(TMatrix *R36);
+
+  //  TMatrix R36Matrix();
+
+    TMatrix R36Matrix_2();
+
+    TMatrix R36Matrix();
+
+
+
+    vector<vector<double>> phi4_5_6(TMatrix *R36, TMatrix *R36_1);
+
+    //vector<vector<double>> solutions_456(TMatrix *R36, TMatrix *R36_1);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H

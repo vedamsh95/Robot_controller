@@ -16,7 +16,7 @@ double m, n, a, b, o, d;
 double alpha1, alpha2, beta;
 vector<double> forward_vec, backward_vec, solution_phi1_1, solution_phi1_2, solution_phi1_3;
 vector<double> solution_limit_f, solution_limit_b;
-vector<vector<double>> *standardsol_1, vec_456;
+vector<vector<double>> *standardsol_1,standardsol_2,standardsol_3, vec_456,sol_456;
 vector<double> set1, set2, set3, set4, set5, set6, set7, set8;
 
 
@@ -33,7 +33,7 @@ vector<Configuration *> *InvKinematics::get_inv_kinematics(SixDPos *_pos) {
     forward_vec.clear(), backward_vec.clear(), solution_phi1_1.clear(), solution_phi1_2.clear(), solution_phi1_3.clear();
     vec_phi4.clear(), vec_phi5.clear(), vec_phi6.clear();
     solution_limit_f.clear(), solution_limit_b.clear();
-    set1.clear(), set2.clear(), set3.clear(), set4.clear(), set5.clear(), set6.clear(), set7.clear(), set8.clear();
+    set1.clear(), set2.clear(), set3.clear(), set4.clear(), set5.clear(), set6.clear(), set7.clear(), set8.clear(),vec_456.clear();
 
     //prepare the result vector for the configurations
     // you should call your inverse kinematics functions here!
@@ -100,30 +100,51 @@ vector<Configuration *> *InvKinematics::get_inv_kinematics(SixDPos *_pos) {
         //    cout << "standard solution -> " << standardsol_1[i];
         //}
     }
-
-
     if (xc == 0 && yc > 0) {
         specialCase1(xc, yc, zc, m, d1);
     } else if (xc == 0 && yc < 0) {
         specialCase2(xc, yc, zc, m, d1);
     }
 
-    R36Matrix();
+  auto  solset_1 =  R36Matrix();
+
+/*
+    if(standardsol_1->size()>3)
+    auto solset_2 = R36Matrix_2();
+
+*/
+
 
     vector<Configuration *> *solutions = new vector<Configuration *>();
+
     //  cout << " phi1 ." << vec_phi1[10];
-   /* for (int x = 0; x < standardsol_1->size(); x++) {
+    for (int x = 0; x < standardsol_1->size(); x++) {
         vector<double> sol = standardsol_1->at(x);
         if (sol.size() < 3) continue;
-        solutions->push_back(
-                new Configuration({sol.at(0), sol.at(1), sol.at(2), vec_phi4[0], vec_phi5[0], vec_phi6[0]}));
-    }*/
+        for (int y = 0; y < vec_456.size(); y++) {
+            solutions->push_back(
+                    new Configuration({sol.at(0), sol.at(1), sol.at(2), vec_456.at(y).at(0), vec_456.at(y).at(1),
+                                       vec_456.at(y).at(2)}));
 
-   for(int x=0 ;x<vec_456.size();x++){
+            if(sol.size()>3){
+                solutions->push_back(
+                        new Configuration({sol.at(3), sol.at(4), sol.at(5), vec_456.at(y).at(0), vec_456.at(y).at(1),
+                                           vec_456.at(y).at(2)}));
+            }
+        }
+    }
+       /* for (int x = 0; x < vec_456.size(); x++) {
 
-       solutions->push_back(
-               new Configuration({standardsol_1->at(0).at(0), standardsol_1->at(0).at(1), standardsol_1->at(0).at(2), vec_456.at(x).at(0), vec_456.at(x).at(1), vec_456.at(x).at(2)}));
-   }
+            solutions->push_back(
+                    new Configuration(
+                            {standardsol_1->at(0).at(0), standardsol_1->at(0).at(1), standardsol_1->at(0).at(2),
+                             vec_456.at(x).at(0), vec_456.at(x).at(1), vec_456.at(x).at(2)}));
+         solutions->push_back(
+                  new Configuration(
+                            {standardsol_1->at(1).at(0), standardsol_1->at(1).at(1), standardsol_1->at(1).at(2),
+                             vec_456.at(x).at(0), vec_456.at(x).at(1), vec_456.at(x).at(2)}));
+        }*/
+
 
     // solutions->push_back(new Configuration({phi1, standardsol_1.at(i), standardsol_1.at(i), 0,0,0}));
 /*    solutions->push_back(new Configuration({1/8 * M_PI,0,1,0,0,0}));
@@ -261,7 +282,6 @@ vector<double> InvKinematics::othercase_1(double phi1, double d1, double m, doub
     vector<double> solution_other1 = angles_backward(phi1, px_dash, py_dash);
     vector<double> solution_lim_other1 = limits_backward(phi1, forward_vec, backward_vec);
 
-
     return solution_lim_other1;
 
 }
@@ -297,7 +317,6 @@ vector<vector<double>> *InvKinematics::standardCase(double phi1, double d1, doub
         double py_dash = zc - n;
         vector<double> solution_stan_1 = angles_forward(phi1, px_dash, py_dash);
         vector<double> solution_lim_stan_1 = limits_forward(phi1, forward_vec, backward_vec);
-
         cout << "solutionstan1 " << solution_lim_stan_1.at(0);
         cout << "solutionstan1 " << solution_lim_stan_1.at(1);
         cout << "solutionstan1 " << solution_lim_stan_1.at(2);
@@ -478,12 +497,13 @@ vector<vector<double>> InvKinematics::phi_case2(double phi1, double xc, double y
 }
 
 TMatrix InvKinematics::R36Matrix() {
+int h;
+
 
 
     TMatrix T01(0, 180 * (M_PI / 180), 0, 0.645);
     cout << "matrix of t01 " << endl;
     T01.print();
-
     TMatrix T12(0 + standardsol_1->at(0).at(0) * (M_PI / 180), 90 * (M_PI / 180), 0.330, 0);
     cout << "matrix of t12 " << endl;
     T12.print();
@@ -517,127 +537,180 @@ TMatrix InvKinematics::R36Matrix() {
     TMatrix *R36 = R03_T->multiply(&R06_1);
     cout << "R36 matrix " << endl;
     R36->print();
+phi4_5_6(R36);
 
+    return *R36;
+}
+TMatrix InvKinematics::R36Matrix_2() {
+    int h;
 
-    double phi4_1_1, phi4_2_1, phi6_1_1, phi6_2_1;
-    //set-1
-    double phi4_1 = atan2((-1) * R36->get(1, 2), (-1) * R36->get(0, 2)) * 180 / M_PI;
-    cout << "set phi4_1 " << phi4_1 << endl;
-    double phi5_1 = atan2(sqrt(1 - (R36->get(2, 2) * R36->get(2, 2))), (-1) * R36->get(2, 2)) * 180 / M_PI;
-    cout << "set phi5_1 " << phi5_1 << endl;
-    double phi6_1 = atan2(R36->get(2, 1), R36->get(2, 0)) * 180 / M_PI;
-    cout << "set phi6_1 " << phi6_1 << endl;
+//if(standardsol_1->size()>3) {
+    TMatrix T01(0, 180 * (M_PI / 180), 0, 0.645);
+    cout << "matrix of t01 " << endl;
+    T01.print();
+    TMatrix T12_1(0 + standardsol_1->at(2).at(0) * (M_PI / 180), 90 * (M_PI / 180), 0.330, 0);
+    cout << "matrix of t12 " << endl;
+    T12_1.print();
+    TMatrix T23_1(0 + standardsol_1->at(2).at(1) * (M_PI / 180), 0, 1.150, 0);
+    cout << "matrix of t23" << endl;
+    T23_1.print();
+    TMatrix T34_1((-90 + standardsol_1->at(2).at(3)) * (M_PI / 180), 90 * (M_PI / 180), 0.115, 0);
+    cout << "matrix of t34 " << endl;
+    T34_1.print();
 
-    atan2((-1) * sqrt(1 - pow(R36->get(2, 2), 2)), (-1) * R36->get(2, 2)) * 180 / M_PI;
-    atan2(sqrt(1 - (R36->get(2, 2) * R36->get(2, 2))), (-1) * R36->get(2, 2)) * 180 / M_PI;
+    TMatrix *R03_1 = T01.multiply((&T12_1))->multiply((&T23_1))->multiply((&T34_1));
+    cout << "r03" << endl;
+    R03_1->print();
+    TMatrix *R03_T_1 = R03_1->transpose();
+    cout << "Transpose of R03" << endl;
+    R03_T_1->print();
+    double bb = R03_T_1->get(3, 3);
+    TMatrix R06_1_2(r_a, r_b, r_c, x, y, z);
+    cout << "R06_1" << endl;
+    R06_1_2.print();
 
-    if (phi4_1 > 0) {
-        phi4_1_1 = phi4_1 - 360;
-        cout << " set phi4_1_1 " << phi4_1_1 << endl;
-    } else {
-        phi4_1_1 = phi4_1 + 360;
-        cout << " set phi4_1_2 " << phi4_1_1 << endl;
-    }
+    /* TMatrix *R06 = (new TMatrix(
+             -5.07791870e-01, 6.35025673e-01, -5.82142433e-01, -7.18376830e+02 / 1000,
+             2.62242221e-01, 7.57620537e-01, 5.97695691e-01, 1.89742719e+03 / 1000,
+             8.20595171e-01, 1.50842688e-01, -5.51244092e-01, 2.32490439e+02 / 1000,
+             0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 1.00000000e+00
+     ));
+     cout << "matrix of R06 " << endl;
+     R06->print();*/
 
-    if (phi6_1 > 0) {
-        phi6_1_1 = phi6_1 - 360;
-        cout << "set phi6_1_1 " << phi6_1_1 << endl;
-    } else {
-        phi6_1_1 = phi6_1 + 360;
-        cout << "set phi6_1_2 " << phi6_1_1 << endl;
-    }
+    TMatrix *R36_1 = R03_T_1->multiply(&R06_1_2);
+    cout << "R36 matrix " << endl;
+    R36_1->print();
+    phi4_5_6(R36_1);
+
+return *R36_1;
+}
+//}
+    vector<vector<double>> InvKinematics::phi4_5_6(TMatrix *R36){
+            double phi4_1_1, phi4_2_1, phi6_1_1, phi6_2_1;
+            //set-1
+            double phi4_1 = atan2((-1) * R36->get(1, 2), (-1) * R36->get(0, 2)) * 180 / M_PI;
+            cout << "set phi4_1 " << phi4_1 << endl;
+            double phi5_1 = atan2(sqrt(1 - (R36->get(2, 2) * R36->get(2, 2))), (-1) * R36->get(2, 2)) * 180 / M_PI;
+            cout << "set phi5_1 " << phi5_1 << endl;
+            double phi6_1 = atan2(R36->get(2, 1), R36->get(2, 0)) * 180 / M_PI;
+            cout << "set phi6_1 " << phi6_1 << endl;
+
+            atan2((-1) * sqrt(1 - pow(R36->get(2, 2), 2)), (-1) * R36->get(2, 2)) * 180 / M_PI;
+            atan2(sqrt(1 - (R36->get(2, 2) * R36->get(2, 2))), (-1) * R36->get(2, 2)) * 180 / M_PI;
+
+            if (phi4_1 > 0) {
+                phi4_1_1 = phi4_1 - 360;
+                cout << " set phi4_1_1 " << phi4_1_1 << endl;
+            } else {
+                phi4_1_1 = phi4_1 + 360;
+                cout << " set phi4_1_2 " << phi4_1_1 << endl;
+            }
+
+            if (phi6_1 > 0) {
+                phi6_1_1 = phi6_1 - 360;
+                cout << "set phi6_1_1 " << phi6_1_1 << endl;
+            } else {
+                phi6_1_1 = phi6_1 + 360;
+                cout << "set phi6_1_2 " << phi6_1_1 << endl;
+            }
 
 
 //set -2
-    double phi4_2 = atan2(R36->get(1, 2), R36->get(0, 2)) * 180 / M_PI;
-    cout << "set phi4_2 " << phi4_2 << endl;
+            double phi4_2 = atan2(R36->get(1, 2), R36->get(0, 2)) * 180 / M_PI;
+            cout << "set phi4_2 " << phi4_2 << endl;
 //double phi5_2 = atan2( (-1)*sqrt(1-(R36->get(3,3)*R36->get(3,3))),(-1)*R36->get(3,3))* 180 /M_PI;
-    double phi5_2 = atan2((-1) * sqrt(1 - pow(R36->get(2, 2), 2)), (-1) * R36->get(2, 2)) * 180 / M_PI;
-    cout << "set phi5_2 " << phi5_2 << endl;
-    double phi6_2 = atan2((-1) * R36->get(2, 1), (-1) * R36->get(2, 0)) * 180 / M_PI;
-    cout << "set phi6_2 " << phi6_2 << endl;
+            double phi5_2 = atan2((-1) * sqrt(1 - pow(R36->get(2, 2), 2)), (-1) * R36->get(2, 2)) * 180 / M_PI;
+            cout << "set phi5_2 " << phi5_2 << endl;
+            double phi6_2 = atan2((-1) * R36->get(2, 1), (-1) * R36->get(2, 0)) * 180 / M_PI;
+            cout << "set phi6_2 " << phi6_2 << endl;
 
-    if (phi4_2 > 0) {
-        phi4_2_1 = phi4_2 - 360;
-        cout << "set phi4_2_1 " << phi4_2_1 << endl;
-    } else {
-        phi4_2_1 = phi4_2 + 360;
-        cout << "set phi4_2_2 " << phi4_2_1 << endl;
+            if (phi4_2 > 0) {
+                phi4_2_1 = phi4_2 - 360;
+                cout << "set phi4_2_1 " << phi4_2_1 << endl;
+            } else {
+                phi4_2_1 = phi4_2 + 360;
+                cout << "set phi4_2_2 " << phi4_2_1 << endl;
+            }
+
+            if (phi6_2 > 0) {
+                phi6_2_1 = phi6_2 - 360;
+                cout << "set phi6_2_1 " << phi6_2_1 << endl;
+            } else {
+                phi6_2_1 = phi6_2 + 360;
+                cout << "set phi6_2_2 " << phi6_2_1 << endl;
+            }
+
+            if (0 < phi5_1 && phi5_1 < 125) {
+                if (-350 <= phi4_1 && phi4_1 < 350) {
+                    if (-350 <= phi6_1 && phi6_1 < 350) {
+                        set1.push_back(phi4_1);
+                        set1.push_back(phi5_1);
+                        set1.push_back(phi6_1);
+                        vec_456.push_back(set1);
+                    }
+                    if (-350 <= phi6_1_1 && phi6_1_1 < 350) {
+                        set2.push_back(phi4_1);
+                        set2.push_back(phi5_1);
+                        set2.push_back(phi6_1_1);
+                        vec_456.push_back(set2);
+                    }
+                }
+                if (-350 <= phi4_1_1 && phi4_1_1 < 350) {
+                    if (-350 <= phi6_1 && phi6_1 < 350) {
+                        set3.push_back(phi4_1_1);
+                        set3.push_back(phi5_1);
+                        set3.push_back(phi6_1);
+                        vec_456.push_back(set3);
+                    }
+                    if (-350 <= phi6_1_1 && phi6_1_1 < 350) {
+                        set4.push_back(phi4_1_1);
+                        set4.push_back(phi5_1);
+                        set4.push_back(phi6_1_1);
+                        vec_456.push_back(set4);
+                    }
+                }
+            }
+            if (-125 < phi5_2 && phi5_2 < 0) {
+                if (-350 <= phi4_2 && phi4_2 < 350) {
+                    if (-350 < phi6_2 && phi6_2 < 350) {
+
+                        set5.push_back(phi4_2);
+                        set5.push_back(phi5_2);
+                        set5.push_back(phi6_2);
+                        vec_456.push_back(set5);
+                    }
+                    if (-350 <= phi6_2_1 && phi6_2_1 < 350) {
+                        set6.push_back(phi4_2);
+                        set6.push_back(phi5_2);
+                        set6.push_back(phi6_2_1);
+                        vec_456.push_back(set6);
+                    }
+                }
+                if (-350 <= phi4_2_1 && phi4_2_1 < 350) {
+                    if (-350 <= phi6_2 && phi6_2 < 350) {
+                        set7.push_back(phi4_2_1);
+                        set7.push_back(phi5_2);
+                        set7.push_back(phi6_2);
+                        vec_456.push_back(set7);
+                    }
+                    if (-350 <= phi6_2_1 && phi6_2_1 < 350) {
+                        set8.push_back(phi4_2_1);
+                        set8.push_back(phi5_2);
+                        set8.push_back(phi6_2_1);
+                        vec_456.push_back(set8);
+                    }
+                }
+            }
+        return vec_456;
     }
 
-    if (phi6_2 > 0) {
-        phi6_2_1 = phi6_2 - 360;
-        cout << "set phi6_2_1 " << phi6_2_1 << endl;
-    } else {
-        phi6_2_1 = phi6_2 + 360;
-        cout << "set phi6_2_2 " << phi6_2_1 << endl;
-    }
-
-    if (0 < phi5_1 && phi5_1 < 125) {
-        if (-350 <= phi4_1 && phi4_1 < 350) {
-            if (-350 <= phi6_1 && phi6_1 < 350) {
-                set1.push_back(phi4_1);
-                set1.push_back(phi5_1);
-                set1.push_back(phi6_1);
-                vec_456.push_back(set1);
-            }
-            if (-350 <= phi6_1_1 && phi6_1_1 < 350) {
-                set2.push_back(phi4_1);
-                set2.push_back(phi5_1);
-                set2.push_back(phi6_1_1);
-                vec_456.push_back(set2);
-            }
-        }
-        if (-350 <= phi4_1_1 && phi4_1_1 < 350) {
-            if (-350 <= phi6_1 && phi6_1 < 350) {
-                set3.push_back(phi4_1_1);
-                set3.push_back(phi5_1);
-                set3.push_back(phi6_1);
-                vec_456.push_back(set3);
-            }
-            if (-350 <= phi6_1_1 && phi6_1_1 < 350) {
-                set4.push_back(phi4_1_1);
-                set4.push_back(phi5_1);
-                set4.push_back(phi6_1_1);
-                vec_456.push_back(set4);
-            }
-        }
-    }
-        if (-125 < phi5_2 && phi5_2 < 0) {
-            if (-350 <= phi4_2 && phi4_2 < 350) {
-                if (-350 < phi6_2 && phi6_2 < 350) {
-
-                    set5.push_back(phi4_2);
-                    set5.push_back(phi5_2);
-                    set5.push_back(phi6_2);
-                    vec_456.push_back(set5);
-                }
-                if (-350 <= phi6_2_1 && phi6_2_1 < 350) {
-                    set6.push_back(phi4_2);
-                    set6.push_back(phi5_2);
-                    set6.push_back(phi6_2_1);
-                    vec_456.push_back(set6);
-                }
-            }
-            if (-350 <= phi4_2_1 && phi4_2_1 < 350) {
-                if (-350 <= phi6_2 && phi6_2 < 350) {
-                    set7.push_back(phi4_2_1);
-                    set7.push_back(phi5_2);
-                    set7.push_back(phi6_2);
-                    vec_456.push_back(set7);
-                }
-                if (-350 <= phi6_2_1 && phi6_2_1 < 350) {
-                    set8.push_back(phi4_2_1);
-                    set8.push_back(phi5_2);
-                    set8.push_back(phi6_2_1);
-                    vec_456.push_back(set8);
-                }
-                }
-            }
-        }
+/*
+vector<vector<double>> InvKinematics:: solutions_456(TMatrix *R36,TMatrix *R36_1){
 
 
-
+}
+*/
     void InvKinematics::checkSingularities() {
 //
 
