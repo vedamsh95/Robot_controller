@@ -266,3 +266,4 @@ double Lin::compute(double max_velo, double max_acc, double in_angle, double fin
         }
     }
 }
+
