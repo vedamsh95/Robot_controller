@@ -11,6 +11,48 @@
 #define max_acc 300.0
 #define max_vel 115.0
 
+vector<double> quintic_bezier_spline(double t, vector<double> t_s, vector<double> a_s, vector<double> t_e, vector<double> a_e, vector<double> p_0, vector<double> p_5)
+{
+    // calculate control points
+    vector<double> p_1 = 1 / 5 * t_s + p_0;
+    vector<double> p_2 = 1 / 20 * a_s + 2 * p_1 - p_0;
+    vector<double> p_4 = p_5 - 1 / 5 * t_e;
+    vector<double> p_3 = 1 / 20 * a_e + 2 * p_4 - p_5;
+    double t_inv = 1 - t;
+    vector<double> s = pow(t_inv, 5) * p_0 
+        + 5 * pow(t_inv, 4) * t * p_1 
+        + 10 * pow(t_inv, 3) * pow(t, 2) * p_2
+        + 10 * pow(t_inv, 2) * pow(t, 3) * p_3
+        + 5 * t_inv * pow(t, 4) * p_4
+        + pow(t, 5) * p_5;
+    return s;
+}
+
+vector<double> calculate_distance(vector<vector<double>> p)
+{
+    vector<double> distances;
+    auto size = p.size();
+    for (i = 0; i < size[0]; i++)
+    {
+        distances[i] = sqrt(pow((p[i][0] - p[i + 1][0]), 2)
+            + pow((p[i][1] - p[i + 1][1]), 2)
+            + pow((p[i][2] - p[i + 1][2]), 2));
+    }
+
+    return distances;
+}
+
+vector<double> calculate_bounds(vector<double> distances)
+{
+    vector<double> bounds;
+    bounds[0] = 0;
+    auto size = distances.size();
+    for (j = 0; j <= size; j++)
+    {
+        bounds[j + 1] = bounds[j] + distances[j];
+    }
+    return bounds;
+}
 
 Trajectory* Spline::get_spline_trajectoy(Configuration* _start_cfg, Configuration* _end_cfg) {
     //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
@@ -19,14 +61,18 @@ Trajectory* Spline::get_spline_trajectoy(Configuration* _start_cfg, Configuratio
     double x_1 = 1000;
     double y_1 = 1000;
     double z_1 = 1000;
+    vector<double> p_s{ x_1, y_1, z_1 };
+    vector<double> t_s{ 0, 0, 0 };
+    vector<double> a_s{ 0, 0, 0 };
 
     double x_2 = 1000;
     double y_2 = 1500;
     double z_2 = 1000;
+    vector<double> p_e{ x_2, y_2, z_2 };
+    vector<double> t_e{ 0, 0, 0 };
+    vector<double> a_e{ 0, 0, 0 };
 
-    double x_3 = 1000;
-    double y_3 = 1500;
-    double z_4 = 1500;
+
 
 
 

@@ -157,16 +157,35 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     }
 
     // Calculate X, Y and Z form Position Matrix
-    double x = Result[0][3];
-    double y = Result[1][3];
-    double z = Result[2][3];
+    double x = Result[0][3]/1000;
+    double y = Result[1][3]/1000;
+    double z = Result[2][3]/1000;
 
-    double roll = atan2(Result[1][0], Result[0][0]);
-    double pitch = atan2(-Result[2][0], sqrt(pow(Result[2][1], 2) + pow(Result[2][2], 2)));
-    double yaw = atan2(Result[2][1], Result[2][2]);
+    double roll = NULL;
+    double pitch = NULL;
+    double yaw = NULL;
 
-    cout << "x:" << x << " y:" << y << " z:" << z << endl;
-    cout << "roll:" << roll << " pitch:" << pitch << " yaw:" << yaw << endl;
+    if (Result[2][0] == -1)
+    {
+        roll = - atan2(-Result[1][2], Result[1][1]);
+        pitch = M_PI_2;
+        yaw = 0;
+    }
+    else if (Result[2][0] == 1)
+    {
+        roll = atan2(-Result[1][2], Result[1][1]);
+        pitch = - M_PI_2;
+        yaw = 0;
+    }
+    else
+    {
+        roll = atan2(Result[1][0], Result[0][0]);
+        pitch = atan2(-Result[2][0], sqrt(pow(Result[2][1], 2) + pow(Result[2][2], 2)));
+        yaw = atan2(Result[2][1], Result[2][2]);
+    }
+
+    //cout << "x:" << x << " y:" << y << " z:" << z << endl;
+    //cout << "roll:" << roll << " pitch:" << pitch << " yaw:" << yaw << endl;
 
     return new SixDPos(x, y, z, roll, pitch, yaw);
 }
