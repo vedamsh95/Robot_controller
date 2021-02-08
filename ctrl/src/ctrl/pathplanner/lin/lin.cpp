@@ -20,34 +20,42 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
 
 
     Trajectory* trajectory = new Trajectory();
+    cout << "Start config: " << (*_start_cfg)[0] << ", " << (*_start_cfg)[1] << ", " << (*_start_cfg)[2] << ", " << (*_start_cfg)[3] << ", " << (*_start_cfg)[4] << ", " << (*_start_cfg)[5] << endl;
+    cout << "End config: " << (*_end_cfg)[0] << ", " << (*_end_cfg)[1] << ", " << (*_end_cfg)[2] << ", " << (*_end_cfg)[3] << ", " << (*_end_cfg)[4] << ", " << (*_end_cfg)[5] << endl;
 
-    FwKinematics fwKinematics_start;
-    SixDPos* new_start_pos = fwKinematics_start.get_fw_kinematics(_start_cfg);
-
-    FwKinematics fwkinematics_end;
-    SixDPos* new_end_pos = fwkinematics_end.get_fw_kinematics(_end_cfg);
+    FwKinematics fwK;
+    SixDPos* new_start_pos = fwK.get_fw_kinematics(_start_cfg);
+    SixDPos* new_end_pos = fwK.get_fw_kinematics(_end_cfg);
 
     
     double start_1 = 1000;
-    double start_2 = 500;
+    double start_2 = 1000;
     double start_3 = 1000;
-    //double start_1 = (*new_start_pos)[0];
-    //double start_2 = (*new_start_pos)[1];
-    //double start_3 = (*new_start_pos)[2];
+    double start_4 = 1.6;
+    double start_5 = 1.8;
+    double start_6 = 2.0;
+/*
+    double start_1 = (*new_start_pos)[0];
+    double start_2 = (*new_start_pos)[1];
+    double start_3 = (*new_start_pos)[2];
     double start_4 = (*new_start_pos)[3];
     double start_5 = (*new_start_pos)[4];
     double start_6 = (*new_start_pos)[5];
-
+*/
     double end_1 = 1500;
-    double end_2 = 1500;
-    double end_3 = 1500;
-    //double end_1 = (*new_end_pos)[0];
-    //double end_2 = (*new_end_pos)[1];
-    //double end_3 = (*new_end_pos)[2];
+    double end_2 = 1600;
+    double end_3 = 1600;
+    double end_4 = 2.2;
+    double end_5 = 1.5;
+    double end_6 = 2.3;
+/*
+    double end_1 = (*new_end_pos)[0];
+    double end_2 = (*new_end_pos)[1];
+    double end_3 = (*new_end_pos)[2];
     double end_4 = (*new_end_pos)[3];
     double end_5 = (*new_end_pos)[4];
     double end_6 = (*new_end_pos)[5];
-
+*/
     cout << "Start position value: " << start_1/1000 << ", " << start_2/1000 << ", " << start_3/1000 << ", " << start_4 << ", " << start_5 << ", " << start_6 << endl;
     cout << "End position value: " << end_1/1000 << ", " << end_2/1000 << ", " << end_3/1000 << ", " << end_4 << ", " << end_5 << ", " << end_6 << endl;
 
@@ -80,25 +88,79 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     new_trajectory_pos.push_back(new SixDPos({ end_1/1000, end_2/1000, end_3/1000, end_4, end_5, end_6 }));
 
     cout << "The size of the trajectory: " << new_trajectory_pos.size() << endl;
-    cout << "The values of trajectory as a SixDPos " << endl;
+
     InvKinematics invkinematics_lin;
     vector<Configuration*>* lin_cfg = new vector<Configuration*>();
     SixDPos* new_pos;
-    vector<Configuration*>* lin_sol;
-    //Configuration* lin_sol;
-    
+    vector<Configuration*> lin_sol;
+    std::vector<double> distance1{ 0,0,0,0,0,0,0,0 };
+    std::vector<double> distance2{ 0,0,0,0,0,0,0,0 };
+    std::vector<double> distance3{ 0,0,0,0,0,0,0,0 };
+    double dis = 0;
+/*
     for (int j = 0; j < new_trajectory_pos.size(); j++)
     {
         new_pos = (new_trajectory_pos[j]);
+        cout << "The values of trajectory as a SixDPos " << endl;
         cout << "X: " << (*new_pos)[0] << ", Y: " << (*new_pos)[1] << ", Z: " << (*new_pos)[2] << ", A: " << (*new_pos)[3] << ", B: " << (*new_pos)[4] << ", C: " << (*new_pos)[5] << endl;
         lin_cfg = invkinematics_lin.get_inv_kinematics(new_pos);
         cout << "Size of the Configuration: " << lin_cfg->size() << endl;
-        lin_sol->push_back(lin_cfg->at(0));
+        lin_sol->push_back(lin_cfg->at(5));
         
     }
-    cout << "Size of the final Configuration: " << lin_sol->size() << endl;
-//setting up a Trajectory here
-    trajectory->set_trajectory({ lin_sol->at(0),lin_sol->at(1),lin_sol->at(2),lin_sol->at(3),lin_sol->at(4),lin_sol->at(5),lin_sol->at(6),lin_sol->at(7),lin_sol->at(8),lin_sol->at(9),lin_sol->at(10),lin_sol->at(11),lin_sol->at(12),lin_sol->at(13),lin_sol->at(14),lin_sol->at(15) });
+*/
+
+    new_pos = (new_trajectory_pos[0]);
+    cout << "The values of trajectory as a SixDPos " << endl;
+    cout << "X: " << (*new_pos)[0] << ", Y: " << (*new_pos)[1] << ", Z: " << (*new_pos)[2] << ", A: " << (*new_pos)[3] << ", B: " << (*new_pos)[4] << ", C: " << (*new_pos)[5] << endl;
+    lin_cfg = invkinematics_lin.get_inv_kinematics(new_pos);
+    cout << "Size of the Configuration: " << lin_cfg->size() << endl;
+    lin_sol.push_back(lin_cfg->at(5));
+    dis = lin_cfg->at(5)->operator[](3) + lin_cfg->at(5)->operator[](4) + lin_cfg->at(5)->operator[](5);
+    //distance2[0] = dis;
+    cout << "Previous distance" << distance2[0] << endl;
+
+    for (int j = 1; j < new_trajectory_pos.size(); j++)
+    {
+        new_pos = (new_trajectory_pos[j]);
+        cout << "The values of trajectory as a SixDPos " << endl;
+        cout << "X: " << (*new_pos)[0] << ", Y: " << (*new_pos)[1] << ", Z: " << (*new_pos)[2] << ", A: " << (*new_pos)[3] << ", B: " << (*new_pos)[4] << ", C: " << (*new_pos)[5] << endl;
+        lin_cfg = invkinematics_lin.get_inv_kinematics(new_pos);
+        cout << "Size of the Configuration: " << lin_cfg->size() << endl;
+        //lin_sol.push_back(lin_cfg->at(5));
+            
+        //cout << "Previous configuration distance value: " << distance2[j-1] << endl;
+        //finding the all the distance
+        for (int i = 0; i < lin_cfg->size(); i++)
+        {
+            distance1[i] = lin_cfg->at(i)->operator[](3) + lin_cfg->at(i)->operator[](4) + lin_cfg->at(i)->operator[](5);
+            cout << "Present configuration distance value: " << distance1[i] << endl;
+            distance3[i] = distance1[i] - dis;
+            cout << "Difference value: " << distance3[i] << endl;
+        }
+            
+        //select min distance
+        double min_dis = distance3[0];
+        int best_sol = 0;
+        for (int k = 0; k < lin_cfg->size(); k++)
+        {
+            if (distance3[k] < min_dis)
+            {
+                min_dis = distance3[k];
+                best_sol = k;
+            }
+        }
+        cout << "Best solution :" << best_sol << endl;
+        lin_sol.push_back(lin_cfg->at(best_sol));
+        dis = lin_cfg->at(best_sol)->operator[](3) + lin_cfg->at(best_sol)->operator[](4) + lin_cfg->at(best_sol)->operator[](5);
+         
+            
+    }
+
+
+     cout << "Size of the final Configuration: " << lin_sol->size() << endl;
+     //setting up a Trajectory here
+     trajectory->set_trajectory({ lin_sol });
 
 /*
     //Dummy trajectory
