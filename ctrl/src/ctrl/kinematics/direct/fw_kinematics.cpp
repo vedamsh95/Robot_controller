@@ -94,10 +94,10 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration* _cfg)
         
         return new SixDPos(M_fin[3], M_fin[7], M_fin[11], asin(-M_fin[1]), -M_fin[8] * M_PI*0.5, 0);
     }
-    else if (M_fin[7] == -1) {
+    else if (M_fin[8] == -1) {
         return new SixDPos(M_fin[3], M_fin[7], M_fin[11], -atan2(-M_fin[6],M_fin[5]), M_PI * 0.5, 0);
     }
-    else if (M_fin[7] == 1) {
+    else if (M_fin[8] == 1) {
         return new SixDPos(M_fin[3], M_fin[7], M_fin[11], atan2(-M_fin[6], M_fin[5]), -M_PI * 0.5, 0);
     }
     else {
