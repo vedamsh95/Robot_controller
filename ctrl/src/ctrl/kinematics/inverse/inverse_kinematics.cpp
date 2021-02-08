@@ -10,11 +10,10 @@ InvKinematics::InvKinematics(){
 
 vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos, bool setJointLimits)
 {
-   //TODO: IMPLEMENT Compute the inverse kinematics for a given position
     solutions = new vector<Configuration*>();
     solutions->clear();
     
-    //TODO: Get first three joints from IVKinPos
+    //get configuration from first three joints from IVKinPos
 	IVKinPos Position;
     vector<array<double, 3>*>* IVpos = Position.get_IVKinPos(_pos);
     
@@ -31,11 +30,12 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos, bool se
     {
         array<double, 3>* actPos = IVpos->at(i);
         
-        //convert actPos from degree to radian
+        //convert actPos from degree to radian.
         for (int j =0; j <3; j++){
             actPos->at(j) = actPos->at(j)*M_PI/180;
         }
         
+        //calculate the possible configurations.
         calcSolutions(&R_06, actPos, setJointLimits);
     }
     
@@ -56,6 +56,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos, array<d
                            _pos->get_Z());
     
     
+    //calculate the possible configurations.
     calcSolutions(&R_06, actPos, true);
     
     return solutions;
@@ -99,9 +100,9 @@ void InvKinematics::calcSolutions(TMatrix* R_06, array<double,3>* actPos, bool s
     //calculate rotation matrix for last 3 joints.
     TMatrix R_36 = (R_03.transpose()).multiply(*R_06);
 
+    //calculation of all possible theta4, thata5 and theta6.
     double theta4[4], theta5[4], theta6[4];
     if( std::abs(acos(R_36.get(2, 2)))<singularityMargin){
-        cout << "wrist singularity " << endl;
         array<double, 3>* wristRotation = CalculateSingularity(R_36);
         for(int i= 0; i < 4; i++){
             theta4[i] = wristRotation->at(0);
@@ -138,7 +139,6 @@ void InvKinematics::calcSolutions(TMatrix* R_06, array<double,3>* actPos, bool s
         {theta4[3], theta5[2], theta6[3]},
     };
     
-    
     if(!setJointLimits)
     {
         for (int j = 0; j < 8;j++)
@@ -158,6 +158,7 @@ void InvKinematics::calcSolutions(TMatrix* R_06, array<double,3>* actPos, bool s
             }
         }
     }
+    //if limits are exceeded the maximal/minimal values for theta5 are returned.
     else
     {
         for(int j=0; j<8; j++){
@@ -199,7 +200,7 @@ void InvKinematics::setToLimits(double* theta5, int j)
     else
         if(*theta5 > 0)
             *theta5=0;
-        else if(std::abs(*theta5-M_PI) < singularityMargin)
+        else if(std::abs(*theta5+M_PI) < singularityMargin)
             *theta5 = M_PI;
         else if(*theta5 < -JOINT_5_MAX)
             *theta5 = -JOINT_5_MAX;

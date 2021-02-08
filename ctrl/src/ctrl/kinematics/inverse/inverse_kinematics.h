@@ -54,24 +54,24 @@ public:
      * Allows the calculation of all available configurations for given values for the arm joints.
      *
      * @param _pos {@ref SixDPos} to compute the configuration for
-     * @param armJoint vector containing the configurations of first three joints
+     * @param armJoint {@ref array<double, 3>}  vector containing the configurations of first three joints
      * @return  a reference to a <code>vector<code> containing all possible configurations for the passed position
      */
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos, array<double, 3>* armJoints);
     
     /**
      * This method computes all available configurations for a given Matrix R_06 and the rotation for the arm joints
-     * and returns them as a vector.
+     * and stores them in the solutions variable.
      *
-     * @param _pos {@ref SixDPos} to compute the configuration for
+     * @param R_06 {@ref Tmatrix} rotation matrix of all joints
+     * @param ActPos  {@ref array<double, 3>} values for the configuration of the first three joints
      * @param setJointLimits when true values for the wrist joints are set to limits if they are exceeded.
-     * @return  a reference to a <code>vector<code> containing all possible configurations for the passed position
      */
     void calcSolutions(TMatrix* R_06, array<double,3>* ActPos, bool setJointLimits);
     
     /**
      *
-     * Calculation of the configurations of wrist joints in case of wrist singularity (theta5 = 0).
+     * Calculation of the configurations of wrist joints in case of wrist singularity (theta5 == 0).
      * The sum of theta4 and theta6 is calculated from the matrix R36.
      * theta4+theta5 = arccos(R36[1][1])
      * and assigns to both of them the half.
@@ -81,6 +81,11 @@ public:
      */
     array<double, 3>* CalculateSingularity(TMatrix R36);
     
+    /**
+     *
+     * Signum function.
+     * @param vaule value to get singum from
+     */
     double sign(double value);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H

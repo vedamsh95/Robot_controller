@@ -11,7 +11,8 @@ Lin::Lin() :plot(false){
 
 Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _end_cfg, double velocity, double acceleration,std::vector<std::vector<SixDPos*>>* loopPoints)
 {
-    //TODO: IMPLEMENT! implement the computation of a lin trajectory with the corresponding velocity profile
+    //choose weather a movement should be appended to achive the given
+    //orientation at the last point.
     bool AdjustOrientation = false;
     
     // Perform the feasibility checks for the two configurations,
@@ -37,7 +38,7 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
                                                                   velocity,
                                                                   acceleration);
     
-    //Get Trajectory of distances from the start pos.
+    //Get trajectory of distances from the start_pos.
     Single_trajectory* StepTrajectory;
     if(type == Single_trajectory::Type::MAX_VEL){
         StepTrajectory = new Max_vel_trajectory(velocity, acceleration, 0, distance);
@@ -50,7 +51,7 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
     size_t cycles = roundf(tmp)+3;
     
     
-    //calculate SixDPoses for trajectory
+    //calculate SixDPoses for trajectory.
     double value, factor;
     double t = 0;
     vector<SixDPos*> points;
@@ -103,10 +104,10 @@ Trajectory* Lin::get_lin_trajectory(Configuration* _start_cfg, Configuration* _e
         //plot 3D path and total velocity.
         Plot(unchangedPoints);
         
-        //Plot joint positions and velocity.
+        //plot joint positions and velocity.
         ptp->plot_movement(*allConfigs);
     }
-
+    
     return trajectory;
 }
 
