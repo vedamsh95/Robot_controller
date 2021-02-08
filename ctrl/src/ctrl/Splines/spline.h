@@ -26,13 +26,16 @@ private:
     double marginpoint = ConfigProvider::getInstance().getmargin_point();
     double config_switch_limit = ConfigProvider::getInstance().getconfig_switch_limit();
     int config_switch_indent = -1;
+    int num_iterations = 0;
+//-----------------------------------------------Special Case for Movement----------------------------------------------
 
+    int movement_case = -1;
 
 public:
     //-------------------create vector to store acceleration and speed of every joint at every time point---------------
     std::vector<vector<double>> joint_velocities_vec;
     std::vector<Configuration*> config_vec;
-    std::vector<Configuration*> temp_vec;
+
 
     Spline(Vector<double,3> start_point, Vector<double,3> start_orientation,std::vector<Vector<double, 3>> *points, double speed, double acceleration, Vector<double, 6> start_config_vec);
     void out();
@@ -43,13 +46,14 @@ public:
     Vector<double, 3> quintic_bezier_function(Vector<double, 3> point0, Vector<double, 3> point1, Vector<double, 3> point2, Vector<double, 3> point3,
                                               Vector<double, 3> point4, Vector<double, 3> point5, double t);
     bool checkconfiglimits(Configuration* config1, Configuration* config2,
-                                   std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
-    void add_middle_cfg(Configuration* config1, Configuration* config2,
-                                         std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
+                           std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps2, bool add_v_to_vec);
+    int add_middle_cfg(Configuration* config1, Configuration* config2,
+                                         std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps, int num_iterations);
     void add_middle_cfg2(Configuration* config1, Configuration* config2,
                                  std::vector<double> *velocities_vec, double a_max, Vector<double, 6> joint_v_max, double timesteps);
+    std::vector<double> Spline::calc_config_difference_to_vec(Configuration* config1, Configuration* config2);
 
-
+    vector<Configuration*>* check_joint1_specialcase(vector<Configuration *> *pVector);
 };
 
 

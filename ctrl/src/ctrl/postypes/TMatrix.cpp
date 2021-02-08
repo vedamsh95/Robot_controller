@@ -209,7 +209,7 @@ return m_transformation[row][column];
  * @ensures:  void terminal output with std::cout
  * */
 void TMatrix::output() {
-    printf("Array contents: \n");
+    printf("Matrix: \n");
 
     for (int h = 0; h < 4; h++)
     {
@@ -219,6 +219,7 @@ void TMatrix::output() {
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 

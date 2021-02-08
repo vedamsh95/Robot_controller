@@ -37,7 +37,7 @@ SixDPos* FwKinematics::get_fw_kinematics(Configuration *_cfg)
     TMatrix mat7((180+theta6),180, 0, -215);        //creation of Matrix 7 for seventh joint
 
     TMatrix res;
-    res = mat1 * mat2 * mat3 * mat4 * mat5 *mat6 * mat7;                   //calculation of final translationmatrix Denavit Hartenberg
+    res = mat1 * mat2 * mat3 * mat4 * mat5 * mat6 * mat7;                   //calculation of final translationmatrix Denavit Hartenberg
 
     res.output();
     a = res.convertToEulerAngles();

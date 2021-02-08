@@ -33,6 +33,24 @@ public:
         return singularity_wrist;
 
     }
+bool wrist_singularity_bool(std::vector<Configuration*>* config_vec){
+
+    for (unsigned int i = 0; i < config_vec->size(); ++i) {
+        if (config_vec->at(i)->get_configuration().operator[](4) == 0){
+            return true;
+        }
+
+    }
+    return false;
+}
+
+bool shoulder_singularity_bool(std::vector<Configuration*>* config_vec){
+    if (config_vec->size() == 1 && config_vec->at(config_vec->size()-1)->get_configuration().operator[](0) == 0){
+        return true;
+    }
+    return false;
+}
+
 
 };
 

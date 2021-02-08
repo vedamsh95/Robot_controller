@@ -23,7 +23,7 @@ private:
     //----------------------------------Joint-Boundaries----------------------------------------------------------------
 
     //Maximum Acceleration for all joints
-    double a_max = 250;     // max acceleration
+    double a_max = 450;     // max acceleration
 
     //Theta 1
     double theta1_lower_border = (-1)*185;
@@ -74,6 +74,7 @@ private:
     double margin_point = 0.2;
     // catch change of configuration type with change of joint angle
     double config_switch_limit = 90;
+
 
 
 public:
