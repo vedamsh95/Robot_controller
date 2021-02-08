@@ -79,7 +79,6 @@ public:
     //margin point for potential singularities
     double margin_point = ConfigProvider::getInstance().getmargin_point();
 
-
     // Functions used for inverse Kinematics
     vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
 

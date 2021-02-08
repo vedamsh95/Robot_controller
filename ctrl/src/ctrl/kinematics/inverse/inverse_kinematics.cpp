@@ -69,12 +69,6 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
     double sz = R36.get_element(2,1);
     double nz = R36.get_element(2,0);
 
-    std::cout << "ax: " << ax << std::endl;
-    std::cout << "ay: " << ay << std::endl;
-    std::cout << "az: " << az << std::endl;
-    std::cout << "sz: " << sz << std::endl;
-    std::cout << "nz: " << nz << std::endl;
-
     // rounding valules to 0
     bool ax_is_0 = false;
     bool ay_is_0 = false;
@@ -193,6 +187,8 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
                       theta5[0],theta5[1],
                       theta6[0],theta6[1],theta6[2],theta6[3]};
     }
+
+    std::cout << "Solutions for theta 4, 5, 6 (without limits check): " << std::endl;
     std::cout << "Theta 4: " << theta4_5_6[0] << std::endl;
     std::cout << "Theta 4: " << theta4_5_6[1] << std::endl;
     std::cout << "Theta 4: " << theta4_5_6[2] << std::endl;
@@ -203,6 +199,7 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
     std::cout << "Theta 6: " << theta4_5_6[7] << std::endl;
     std::cout << "Theta 6: " << theta4_5_6[8] << std::endl;
     std::cout << "Theta 6: " << theta4_5_6[9] << std::endl;
+    std::cout << "  " <<std::endl;
     return theta4_5_6;
 }
 
@@ -216,7 +213,7 @@ TMatrix InvKinematics::transposematrix(TMatrix T03){
 std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double d1, std::array<double, 3> wcp, SixDPos* _pos) {
     std::vector<Configuration*>* sol_theta1_specialcases_vec = new vector<Configuration*>();
     double id = 0;
-    if(-185 < theta1 && theta1 < -175) {
+    if(-185 <= theta1 && theta1 <= -175) {
         std::cout << "theta1: (-185 < theta1 && theta1 < -175)" << std::endl;
         //initialize dpx and dpy (as needed in first if statement)
         double dpx = d1 - m;
@@ -252,8 +249,11 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1 << ")" << std:: endl;
             }
 
+
             //step2
-            double theta1_2 = theta1 + 180;
+            //checking for theta from the other direction
+            std::cout << "Checking for the other direction theta1 + 360" << std::endl;
+            double theta1_2 = theta1 + 360;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -282,7 +282,9 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             }
 
             //step3
-            double theta1_3 = theta1 - 180;
+            //checking for a backwardscase
+            std::cout << "Checking if there is a backwardsolution for theta1 + 180: " << std::endl;
+            double theta1_3 = theta1 + 180;
             dpx = d1 + m;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
@@ -342,8 +344,8 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1 << ")" << std:: endl;
             }
 
-            double theta1_2 = theta1 - 180;
-            dpx = d1 + m;
+            std::cout << "Checking for the other direction theta1 + 360: " << std::endl;
+            double theta1_2 = theta1 + 360;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -371,8 +373,9 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1_2 << ")" << std:: endl;
             }
 
-
+            std::cout << "Checking if there is a backwardsolution for theta1 + 180: " << std::endl;
             double theta1_3 = theta1 + 180;
+            dpx = d1 + m;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
             id = sol_theta1_special1_3.at(0).at(0);
@@ -402,7 +405,8 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
 
         }
     }
-    else if (185 > theta1 && theta1 > 175) {
+
+    else if (185 >= theta1 && theta1 >= 175) {
         std::cout << "theta1: (185 > theta1 && theta1 > 175)" << std::endl;
         double dpx = d1 - m;
         double dpy = wcp[2] - n;
@@ -435,8 +439,9 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1 << ")" << std:: endl;
             }
 
-
-            double theta1_2 = theta1 - 180;
+            //checking for theta from the other direction
+            std::cout << "Checking for the other direction theta1 - 360: " << std::endl;
+            double theta1_2 = theta1 - 360;
             theta2_theta3 = inv_forwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -464,8 +469,9 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1_2 << ")" << std:: endl;
             }
 
-
-            double theta1_3 = theta1 + 180;
+            //Checking for a backwardscase
+            std::cout << "Checking if there is a backwardsolution for theta1 - 180: " << std::endl;
+            double theta1_3 = theta1 - 180;
             dpx = d1 + m;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
@@ -526,8 +532,8 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1 << ")" << std:: endl;
             }
 
-            double theta1_2 = theta1 - 180;
-            dpx = d1 + m;
+            std::cout << "Checking for the other direction theta1 - 360: " << std::endl;
+            double theta1_2 = theta1 - 360;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_2 = inv_checklimits_theta1_2_3(theta1_2, theta2_theta3);
             id = sol_theta1_special1_2.at(0).at(0);
@@ -555,9 +561,9 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1_2 << ")" << std:: endl;
             }
 
-
-
-            double theta1_3 = theta1 + 180;
+            std::cout << "Checking if there is a backwardsolution for theta1 - 180: " << std::endl;
+            double theta1_3 = theta1 - 180;
+            dpx = d1 + m;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
             id = sol_theta1_special1_3.at(0).at(0);
@@ -586,7 +592,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
             }
         }
     }
-    else if (-5 < theta1 && 5 > theta1) {
+    else if (-5 <= theta1 && 5 >= theta1) {
         double dpx = d1 - m;
         double dpy = wcp[2] - n;
         std::cout << "Theta 1: -5 < theta1 && 5 > theta1." << std::endl;
@@ -621,7 +627,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1 << ")" << std:: endl;
             }
 
-
+            std::cout << "Checking if there is a backwardsolution for theta1 - 180: " << std::endl;
             double theta1_2 = theta1 - 180;
             dpx = d1 + m;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
@@ -650,7 +656,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 > m && z > n) (theta: " << theta1_2 << ")" << std:: endl;
             }
 
-
+            std::cout << "Checking if there is a backwardsolution for theta1 + 180: " << std::endl;
             double theta1_3 = theta1 + 180;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
@@ -709,6 +715,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1 << ")" << std:: endl;
             }
 
+            std::cout << "Checking if there is a backwardsolution for theta1 - 180: " << std::endl;
             double theta1_2 = theta1 - 180;
             dpx = d1 + m;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
@@ -737,8 +744,7 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
                 std::cout << "No configuration added to sol_theta1_specialcases_vec for (d1 < m) (theta: " << theta1_2 << ")" << std:: endl;
             }
 
-
-
+            std::cout << "Checking if there is a backwardsolution for theta1 + 180: " << std::endl;
             double theta1_3 = theta1 + 180;
             theta2_theta3 = inv_backwardcase(dpx, dpy);
             sol_theta1_special1_3 = inv_checklimits_theta1_2_3(theta1_3, theta2_theta3);
@@ -769,25 +775,24 @@ std::vector<Configuration*>* InvKinematics::inv_checktheta(double theta1, double
         }
 
     }
+    std::cout << "  " <<std::endl;
     return sol_theta1_specialcases_vec;
 }
 
 /* Calculating for the standardcases
  * @requires:   Theta1  :   Rotation of the first joint in degree
- *              d1      :   distnance between the rootjoint and the wcp in mm
+ *              d1      :   distance between the rootjoint and the wcp in mm
  *              wcp     :   Position of the robots wrist center point (x,y,z)
  * @ensures:    sol_standard :   a vector inside a vector that contains all possible solutions for the first three joints
  * */
 std::vector<std::vector<double>> InvKinematics::inv_standardcase(double theta1, double d1, std::array<double, 3> wcp) {
     double id = 0;
    //standard cases
-    if ((d1 > m) && (-175 < theta1 && theta1 < 175))                                                                               //calculating all the forward cases
+    if ((d1 > m) && (-175 < theta1 && theta1 < 175))
     {
         std::cout << "forward case " << std::endl;
-        double dpx = d1 - m;                                                                                            //calculating the x and y components of the
-        cout << "dpx: " << dpx << endl;
+        double dpx = d1 - m;
         double dpy = wcp[2] - n;
-        cout << "dpy: " << dpy << endl;
 
         theta2_theta3 = inv_forwardcase(dpx, dpy);
         sol_standard = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
@@ -804,15 +809,13 @@ std::vector<std::vector<double>> InvKinematics::inv_standardcase(double theta1, 
         else if(id == 4){
             std::cout << "No possible configuration for the robot" << endl;
         }
-    }                                                         //distance between the second joint and wcp
+    }
 
-    else if ((d1 < m) && (-175 < theta1 && theta1 < 175))                     //calculating all the backward cases
+    else if ((d1 < m) && (-175 < theta1 && theta1 < 175))
     {
         std::cout << "backward case " << std::endl;
-        double dpx = m - d1;                                  //calculating the x and y components of the
-        std::cout << "dpx: " << dpx << std::endl;
-        double dpy = wcp[2] - n;                              //distnance between the second joint and wcp
-        std::cout << "dpy: " << dpy << std::endl;
+        double dpx = m - d1;
+        double dpy = wcp[2] - n;
 
         theta2_theta3 = inv_backwardcase(dpx, dpy);
         sol_standard = inv_checklimits_theta1_2_3(theta1, theta2_theta3);
@@ -840,28 +843,19 @@ std::vector<std::vector<double>> InvKinematics::inv_standardcase(double theta1, 
  * */
 std::array<double, 4> InvKinematics::inv_forwardcase(double dpx, double dpy){
 
-    double d3 = sqrt(dpx * dpx + dpy * dpy);                                                                        //direct distance between joint and wcp
-    std::cout << "d3: " << d3 << std::endl;
+    double d3 = sqrt(dpx * dpx + dpy * dpy);
     double d2 = sqrt(o * o + b * b);
-    std::cout << "d2: " << d2 << std::endl;
     double beta = (acos(((d3 * d3) - (a * a) - (d2 * d2)) / ((-1)*2 * a * d2)));
-    std::cout << "beta: " <<  beta << std::endl;
     double pre_alpha1 = sin(beta)*(d2/d3);
-    std::cout << "pre_alpha1: " << pre_alpha1 << endl;
     double alpha1 = (asin(pre_alpha1)*180/M_PI);
-    std::cout << "alpha1: " << alpha1 << std::endl;
     double alpha2 = (asin(dpy / d3))*180/M_PI;
-    std::cout << "alpha2: " << alpha2 << std::endl;
 
     double theta2_f_u = (-1) * (alpha1 + alpha2);                                                                       //for forward elbow up
-    cout << "theta2_f_u: " << theta2_f_u << endl;
     double theta2_f_d = (-1) * (alpha2 - alpha1);                                                                       //for forward elbow down
-    cout << "theta2_f_d: " << theta2_f_d << endl;
 
-    double theta3_f_u = 360 - (beta * 180 / M_PI) - (asin(b / d2) * 180 / M_PI) - 90;                                                            //for forward elbow up
-    cout << "theta3_f_u: " << theta3_f_u << endl;
-    double theta3_f_d = (beta * 180 / M_PI) - ((asin(b / d2)) * 180 / M_PI) - 90;                                                                  //for forward elbow down
-    cout << "theta3_f_d: " << theta3_f_d << endl;
+
+    double theta3_f_u = 360 - (beta * 180 / M_PI) - (asin(b / d2) * 180 / M_PI) - 90;                               //for forward elbow up
+    double theta3_f_d = (beta * 180 / M_PI) - ((asin(b / d2)) * 180 / M_PI) - 90;                                   //for forward elbow down
 
     theta2_theta3 = {theta2_f_u, theta2_f_d, theta3_f_u, theta3_f_d};
 
@@ -874,26 +868,18 @@ std::array<double, 4> InvKinematics::inv_forwardcase(double dpx, double dpy){
  * @ensures:    theta2_theta3 :   double array[4] that contains all solutions for theta 2 and theta 3
  * */
 std::array<double, 4> InvKinematics::inv_backwardcase(double dpx, double dpy) {
-    double d3 = sqrt(dpx * dpx + dpy * dpy);                   //direct distance between joint and wcp
-    std::cout << "d3: " << d3 << std::endl;
+
+    double d3 = sqrt(dpx * dpx + dpy * dpy);
     double d2 = sqrt(o * o + b * b);
-    std::cout << "d2: " << d2 << std::endl;
     double beta = (acos(((d3 * d3) - (a * a) - (d2 * d2)) / ((-1)*2 * a * d2)));
-    std::cout << "beta: " <<  beta << std::endl;
     double alpha1 = (asin(sin(beta) * (d2 / d3)))*180/M_PI;
-    std::cout << "alpha1: " << alpha1 << std::endl;
     double alpha2 = (asin(dpy / d3))*180/M_PI;
-    std::cout << "alpha2: " << alpha2 << std::endl;
 
-    double theta2_b_u = (-1) * (180 - (alpha1 + alpha2));          //for backwards elbow up
-    std::cout << "theta2_b_u: " << theta2_b_u << std::endl;
-    double theta2_b_d = (-1) * (180 - (alpha2 - alpha1));          //for backwards elbow down
-    std::cout << "theta2_b_d: " << theta2_b_d << std::endl;
+    double theta2_b_u = (-1) * (180 - (alpha1 + alpha2));                                                               //for backwards elbow up
+    double theta2_b_d = (-1) * (180 - (alpha2 - alpha1));                                                               //for backwards elbow down
 
-    double theta3_b_u = (-1) * (90 - (beta * 180 / M_PI - asin(b / d2) * 180 / M_PI));              //for backwards elbow up
-    std::cout << "theta3_b_u: " << theta3_b_u << std::endl;
-    double theta3_b_d = 270 - beta * 180 / M_PI - (asin(b / d2) * 180 / M_PI);                                                             //double theta3_b_d = -1 * (90 - (beta - asin(b / d2)*180/M_PI));        //for backwards elbow down
-    std::cout << "theta3_b_d: " << theta3_b_d << std::endl;
+    double theta3_b_u = (-1) * (90 - (beta * 180 / M_PI - asin(b / d2) * 180 / M_PI));                              //for backwards elbow up
+    double theta3_b_d = 270 - beta * 180 / M_PI - (asin(b / d2) * 180 / M_PI);                                      //for backwards elbow down
 
     theta2_theta3 = {theta2_b_u, theta2_b_d, theta3_b_u, theta3_b_d};
 
@@ -915,6 +901,7 @@ std::vector<double> elbow_down_vec;
 elbow_down_vec.clear();
 elbow_up_vec.clear();
 solution.clear();
+std::cout << "Solutions for theta 1,2,3 that are in the Robotslimits: " << std::endl;
 
     if (theta1_l <= theta1 && theta1 <= theta1_u) {
         std::cout << "theta1 in limits: " << theta1 << std::endl;
@@ -980,6 +967,7 @@ solution.clear();
 
         solution.push_back(no_solution);
     }
+    std::cout << "  " << std::endl;
     return solution;
 }
 
@@ -1001,9 +989,8 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
     Configuration *single_config;
     solution_standard = solutions_vec;
     id = solution_standard.at(0).at(0);
-    std::cout << id << endl;
 
-    //Case of both elbow configurations are true (elbow and elbow down)
+    //Case of both elbow configurations are true (elbow up and elbow down)
     if (id == 111 || id == 211) {
 
         //Starting calculation of theta 4,5,6 for upwards case
@@ -1020,9 +1007,12 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
 
         TMatrix T03_1;
         TMatrix T03_2;
+
+        //Calculating Transformation matrix for the first 3 Joints
         T03_1 = mat1_1*mat2_1*mat3_1*mat4_1;
         T03_2 = mat1_2*mat2_2*mat3_2*mat4_2;
 
+        //Transpose T03
        TMatrix T03_1_invert = transposematrix(T03_1);
        TMatrix T03_2_invert = transposematrix(T03_2);
 
@@ -1054,6 +1044,7 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
                           << upward_config->get_configuration().at(5)
                           << endl;
             }
+        std::cout << "  " << std::endl;
 
 
             for (int i = 1; i <= num_config2; i++){
@@ -1064,7 +1055,7 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
                                                    sol_theta_4_5_6_T03_2.at(i).at(1)*M_PI/180,
                                                    sol_theta_4_5_6_T03_2.at(i).at(2)*M_PI/180});
                     config_vec->push_back(downward_config);
-                    //std::cout << "Test" << std::endl;
+
                     std::cout << "Configuration downward: " << i << ": " << downward_config->get_configuration().at(0) << ", "
                     << downward_config->get_configuration().at(1) << ", "
                               << downward_config->get_configuration().at(2) << ", "
@@ -1072,6 +1063,7 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
                               << downward_config->get_configuration().at(4) << ", "
                               << downward_config->get_configuration().at(5) << std::endl;
                 }
+        std::cout << "  " << std::endl;
 
         }
 
@@ -1079,7 +1071,6 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
     else if (id == 102 || id == 103 || id == 202 || id == 203) {
 
         //Starting calculation of theta 4,5,6 for either upward or backward
-
         TMatrix mat1(0, 180, 0, 645);
         TMatrix mat2((0 + solution_standard.at(0).at(1)), 90, 330, 0);
         TMatrix mat3((0 + solution_standard.at(0).at(2)), 0, 1150, 0);
@@ -1087,7 +1078,11 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
 
         TMatrix T03;
         TMatrix T03_invert;
+
+        //Calculating Transformation matrix for the first 3 Joints
         T03 = mat1*mat2*mat3*mat4;
+
+        //Transpose T03
         T03_invert = transposematrix(T03);
 
         std::vector<std::vector<double>> sol_theta_4_5_6_T03 = inv_vec_sol_theta4_5_6(T03_invert, _pos);
@@ -1109,8 +1104,11 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
                     << single_config->get_configuration().at(2) << ", "<< single_config->get_configuration().at(3) << ", "
                     << single_config->get_configuration().at(4) << ", "<< single_config->get_configuration().at(5) << endl;
         }
+        std::cout << "  " << std::endl;
+
 
     }
+
     //Case of no possible elbow configuration
     else if (id == 104 || id == 204) {
         std::cout << id << " is Not a possible configuration!" << std::endl;
@@ -1126,8 +1124,10 @@ std::vector<Configuration*>* InvKinematics::inv_add_case_to_vec(double theta1, d
  * */
 std::vector<std::vector<double>> InvKinematics::inv_vec_sol_theta4_5_6(TMatrix R03_invert, SixDPos* _pos){
 
+    //Getting Rotationmatrix for the whole Robot
     TMatrix R06(_pos->get_A(), _pos->get_B(), _pos->get_C(),0,0,0);
 
+    //Calculating R36
     TMatrix R36 = R03_invert * R06;
     std::array<double, 10> solution_standard_4_5_6;
     solution_standard_4_5_6 = inv_gettheta4_5_6(R36);
@@ -1175,6 +1175,7 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
         solution_standard_4_5_6[5] = 1000;
         solution_standard_4_5_6[8] = 1000;
     }
+
     if(theta5_l <= solution_standard_4_5_6[4] && solution_standard_4_5_6[4] <=  theta5_u){
         if(theta4_l <= solution_standard_4_5_6[0] && solution_standard_4_5_6[0] <= theta4_u){
             if(theta6_l <= solution_standard_4_5_6[6] && solution_standard_4_5_6[6] <= theta6_u){
@@ -1254,7 +1255,6 @@ std::vector<std::vector<double>> InvKinematics::inv_checklimits_theta4_5_6(std::
     }
 
     sol_theta_4_5_6.at(0).at(0) = id;
-    std::cout << "id: " << id << std::endl;
     return sol_theta_4_5_6;
 }
 
@@ -1376,7 +1376,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     std::cout << "B of sixDPos " <<_pos->get_B() << std::endl;
     std::cout << "C of sixDPos " <<_pos->get_C() << std::endl;
 
-    //Position and Orientation ot the Tool Center Point (TCP)
+    //Position and Orientation of the Tool Center Point (TCP)
     TMatrix TCP(_pos->get_A(),_pos->get_B(),_pos->get_C(),
                 _pos->get_X()*1000,_pos->get_Y()*1000,_pos->get_Z()*1000);                                                            //Transformation Matrix for the TCP inside of the global coordinate system
                                                                                                                                                     //Calculation of wrist center point
@@ -1391,6 +1391,7 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
     for (int i = 0; i < 3; ++i) {
         std::cout << "wcp :" << wcp[i] << std::endl;
     }
+    std::cout << "  " << std::endl;
 
     //Checking for elbow singularity
     double X = sqrt(pow(wcp[0],2) + pow(wcp[1],2)) - m;
@@ -1412,7 +1413,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         theta1= ((-1) * atan(wcp[1] / wcp[0])) * 180 / M_PI;
         cout << "theta1: " << theta1 << endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
-        std::cout << "d1: " << d1 << std::endl;
 
         if(-185 < theta1 && theta1 < -175 || 185 > theta1 && theta1 > 175 || -5 < theta1 && theta1 < 5){
             solution_vec = inv_checktheta(theta1, d1, wcp, _pos);
@@ -1451,7 +1451,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         theta1= 180 - atan(wcp[1] / wcp[0]) * 180 / M_PI;
         cout << "theta1: " << theta1 << endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
-        std::cout << "d1: " << d1 << std::endl;
 
         if((-185 < theta1 && theta1 < -175) || (185 > theta1 && theta1 > 175) || (-5 < theta1 && theta1 < 5)){
             solution_vec = inv_checktheta(theta1, d1, wcp, _pos);
@@ -1490,7 +1489,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         theta1= (-1) * atan(wcp[1] / wcp[0]) * 180 / M_PI;
         std::cout << "theta1: " << theta1 << std::endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
-        std::cout << "d1: " << d1 << std::endl;
 
         if((-185 < theta1 && theta1 < -175) || (185 > theta1 && theta1 > 175) || (-5 < theta1 && theta1 < 5)){
             solution_vec = inv_checktheta(theta1, d1, wcp, _pos);
@@ -1530,7 +1528,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
         theta1= (-1)*(180 - atan(wcp[1] / (-1 * wcp[0])) * 180 / M_PI);
         std::cout << "theta1: " << theta1 << std::endl;
         double d1= sqrt(wcp.at(0)*wcp.at(0)+wcp.at(1)*wcp.at(1));
-        std::cout << "d1: " << d1 << std::endl;
 
         if((-185 < theta1 && theta1 < -175) || (185 > theta1 && theta1 > 175) || (-5 < theta1 && theta1 < 5)){
             solution_vec = inv_checktheta(theta1, d1, wcp, _pos);
@@ -1844,7 +1841,6 @@ vector<Configuration*>* InvKinematics::get_inv_kinematics(SixDPos* _pos)
             solution_standard = inv_standardcase(theta1, d1, wcp);
             solution_vec = inv_add_case_to_vec(theta1, d1, wcp, _pos, solution_standard);
     }
-
 
     std::cout << "There are " << solution_vec->size() << " possible configurations." << std::endl;
 
