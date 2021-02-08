@@ -219,7 +219,7 @@ void Splines::plotSpline(vector<Splines::Position>& _points, vector<double> _tVa
 	plt::xlabel("index");
 	plt::ylabel("tValues");
 	plt::legend();
-	plt::show();
+	//plt::show();
 
 	std::cout << "plotSpline - Done" << endl;
 #else
