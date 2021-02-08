@@ -73,12 +73,12 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
     //to get t_fin we need fin-in,t_fin =t_c+(fin-in)/max_vel
     //common distance
     double d = ((fin[0] - in[0]) * (fin[0] - in[0])) + ((fin[1] - in[1]) * (fin[1] - in[1])) + ((fin[2] - in[2]) * (fin[2] - in[2]));
-    cout << "\nd:" << d;
+    //std::cout << "\nd:" << d;
     double dist = sqrt(d);
-    cout << "\ndist:" << dist;
+    //std::cout << "\ndist:" << dist;
     t_fin = t_c + dist / max_vel;
-    cout << "\ntc:" << t_c;
-    cout << "t_fin" << t_fin;
+    //std::cout << "\ntc:" << t_c;
+    //std::cout << "t_fin" << t_fin;
 
     //t_fin_x = t_c + (fin[0] - in[0]) / max_vel;
     //t_fin_y = t_c + (fin[1] - in[1]) / max_vel;
@@ -114,7 +114,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
         y = compute(max_vel, max_acc, in[1], fin[1], i, t_c, t_fin);
         z = compute(max_vel, max_acc, in[2], fin[2], i, t_c, t_fin);
 
-        cout << "\n x : y : z \n" << x << " " << y << " " << z << endl;
+        //std::cout << "\n x : y : z \n" << x << " " << y << " " << z << endl;
 
         x_array.push_back(x);
         y_array.push_back(y);
@@ -140,11 +140,17 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
 
         if (inversekinematics.get_inv_kinematics(new SixDPos(x_array[0], y_array[0], z_array[0], in[3], in[4], in[5])) == nullptr)
         {
-            //Where do you check for singularities?? overhead needs to be handled by you, discuss with sreenath what value to excpect for singularities
+            
             std::cout << "'No solution returned from Inverse Kinematics";
         }
         else
         {
+            
+            if(x_array[i]==0&& y_array[i]==0)
+            {
+                x_array[i] = 0.01;
+                y_array[i] = 0.02;
+            }
             SixDPos* pos = new SixDPos({ x_array[i], y_array[i], z_array[i], in[3], in[4], in[5] });
             config_1 = inversekinematics.get_inv_kinematics(pos);
             int max_distance = 2701;
@@ -155,7 +161,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             int solution_number = 0;
             int best_solution_number = 0;
             double number_of_solutions = config_1->size();
-            cout << number_of_solutions;
+            //std::cout << number_of_solutions;
             if (i == 0)
             {
                 for (int j = 0; j < number_of_solutions; j++)
@@ -164,9 +170,9 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
                     //cout <<"\n FLAGGGGGGG\n"<<" **"<<_start_cfg<< " **" << _start_cfg->get_configuration().at(1) << " **" <<_start_cfg->get_configuration().at(2) << " **" <<_start_cfg->get_configuration().at(3) << " **" << _start_cfg->get_configuration().at(4) <<" **"<< _start_cfg->get_configuration().at(5);
                     temporary_distance_start = _start_cfg->get_configuration().at(0) + _start_cfg->get_configuration().at(1) + _start_cfg->get_configuration().at(2) + _start_cfg->get_configuration().at(3) + _start_cfg->get_configuration().at(4) + _start_cfg->get_configuration().at(5);
                     temporary_distance = config_1->at(solution_number)->operator[](0) + config_1->at(solution_number)->operator[](1) + config_1->at(solution_number)->operator[](2) + config_1->at(solution_number)->operator[](3) + config_1->at(solution_number)->operator[](4) + config_1->at(solution_number)->operator[](5);
-                    cout << "\ntemp dist: " << temporary_distance;
+                    //std::cout << "\ntemp dist: " << temporary_distance;
                     temporary_difference = temporary_distance_start - temporary_distance;
-                    cout << "\ntemp dist: " << temporary_difference;
+                    //std::cout << "\ntemp dist: " << temporary_difference;
                     //solution_number++;
                     if (temporary_difference < max_distance)
                     {
@@ -180,7 +186,7 @@ Trajectory* Lin::get_lin_trajectoy(Configuration* _start_cfg, Configuration* _en
             config_2.push_back(config_1->at(best_solution_number));
             config_1_2->push_back(config_1->at(best_solution_number));
 
-            cout << "\n Best Solution no:" << best_solution_number;
+            //std::cout << "\n Best Solution no:" << best_solution_number;
 
             if (i > 0)
             {
@@ -266,4 +272,3 @@ double Lin::compute(double max_velo, double max_acc, double in_angle, double fin
         }
     }
 }
-
