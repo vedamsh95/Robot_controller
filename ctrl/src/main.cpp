@@ -75,7 +75,7 @@ simxInt Initial() {
     return clientID;
 }
 
-vector<SixDPos*> spline_path;
+vector<SixDPos *> spline_path;
 
 int main() {
     // Example for forward kinematics
@@ -92,27 +92,35 @@ int main() {
     // Example for inverse kinematics
     InvKinematics invKinematics;
     FwKinematics fwKinematics;
-    vector<TMatrix*> transformationMatrices;
-  transformationMatrices.push_back(new TMatrix(
+    vector<TMatrix *> transformationMatrices;
+    transformationMatrices.push_back(new TMatrix(
             -5.07791870e-01, 6.35025673e-01, -5.82142433e-01, -7.18376830e+02 / 1000,
             2.62242221e-01, 7.57620537e-01, 5.97695691e-01, 1.89742719e+03 / 1000,
             8.20595171e-01, 1.50842688e-01, -5.51244092e-01, 2.32490439e+02 / 1000,
             0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 1.00000000e+00
-            ));
+    ));
 
     transformationMatrices.push_back(new TMatrix(
-            7.77699440e-01 ,  4.00749403e-01 , -4.84338204e-01 ,  9.90529917e+02/1000,
-     -5.31889781e-01,   8.80445209e-03,  -8.46767821e-01,  -1.70654360e+03/1000,
-     -3.35077367e-01,   9.16145402e-01 ,  2.20001730e-01,   2.35915900e+03/1000,
-      0.00000000e+00,   0.00000000e+00 ,  0.00000000e+00,   1.00000000e+00
+            7.77699440e-01, 4.00749403e-01, -4.84338204e-01, 9.90529917e+02 / 1000,
+            -5.31889781e-01, 8.80445209e-03, -8.46767821e-01, -1.70654360e+03 / 1000,
+            -3.35077367e-01, 9.16145402e-01, 2.20001730e-01, 2.35915900e+03 / 1000,
+            0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 1.00000000e+00
     ));
 
-            transformationMatrices.push_back(new TMatrix(
-                    -4.42438962e-02 ,  9.57043695e-01 ,  2.86548154e-01 ,  9.24075420e+01/1000,
-     -9.74010246e-01  , 2.24551327e-02 , -2.25388126e-01 , -6.68540585e+02/1000,
-     -2.22140762e-01 , -2.89072887e-01 ,  9.31176862e-01 ,  2.74134524e+03/1000,
-     0.00000000e+00 ,  0.00000000e+00 ,  0.00000000e+00 ,  1.00000000e+00
+    transformationMatrices.push_back(new TMatrix(
+            -4.42438962e-02, 9.57043695e-01, 2.86548154e-01, 9.24075420e+01 / 1000,
+            -9.74010246e-01, 2.24551327e-02, -2.25388126e-01, -6.68540585e+02 / 1000,
+            -2.22140762e-01, -2.89072887e-01, 9.31176862e-01, 2.74134524e+03 / 1000,
+            0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 1.00000000e+00
     ));
+    /*
+transformationMatrices.push_back(new TMatrix(
+    2.58343520e-01,  -9.28688786e-01,   2.66074735e-01,   3.14099985e+02/1000,
+9.39694139e-01 ,  3.05474825e-01 ,  1.53818259e-01   ,3.13148732e+01/1000,
+-2.24128425e-01 ,  2.10290919e-01  , 9.51600850e-01 ,  2.93478492e+03/1000,
+0.00000000e+00 ,  0.00000000e+00 ,  0.00000000e+00 ,  1.00000000e+00
+));*/
+
 
     for (int i = 0; i < transformationMatrices.size(); i++) {
         TMatrix *transformationMatrix = transformationMatrices[i];
@@ -133,12 +141,12 @@ int main() {
         for (int j = 0; j < configurations->size(); j++) {
             cout << fixed << setprecision(2)
                  << "R1=" << (*(*configurations)[j])[0]
-                    << " R2=" << (*(*configurations)[j])[1]
-                    << " R3=" << (*(*configurations)[j])[2]
-                    << " R4=" << (*(*configurations)[j])[3]
-                    << " R5=" << (*(*configurations)[j])[4]
-                    << " R6=" << (*(*configurations)[j])[5]
-                    << endl;
+                 << " R2=" << (*(*configurations)[j])[1]
+                 << " R3=" << (*(*configurations)[j])[2]
+                 << " R4=" << (*(*configurations)[j])[3]
+                 << " R5=" << (*(*configurations)[j])[4]
+                 << " R6=" << (*(*configurations)[j])[5]
+                 << endl;
         }
         cout << endl;
     }
@@ -176,7 +184,8 @@ int main() {
                 SixDPos pos(jsonHandler.get_data()[0]);
                 Configuration cfg0(jsonHandler.get_data()[1]);
 //                cout << jsonHandler.get_json_string(&pos) << endl;
-                vector<Configuration *> *result_cfg = new vector<Configuration *>({ctrl.get_next_config_from_pos(&cfg0, &pos)});
+                vector<Configuration *> *result_cfg = new vector<Configuration *>(
+                        {ctrl.get_next_config_from_pos(&cfg0, &pos)});
                 string json_return_string = jsonHandler.get_json_string(result_cfg);
 //                cout << json_return_string << endl;
                 simxSetStringSignal(ID, "returnsignal",
@@ -290,7 +299,7 @@ int main() {
             }
             if (jsonHandler.get_op_mode() == OpMode::SPLINE_ADD) {
                 cout << "SPLINE_ADD" << endl;
-                SixDPos* next_pos = new SixDPos((jsonHandler.get_data())[0]);
+                SixDPos *next_pos = new SixDPos((jsonHandler.get_data())[0]);
                 spline_path.push_back(next_pos);
                 // TODO: return signal
                 /*string size = to_string(spline_path.size() - 1);
@@ -300,7 +309,7 @@ int main() {
             }
             if (jsonHandler.get_op_mode() == OpMode::SPLINE_MOVE) {
                 cout << "SPLINE_MOVE" << endl;
-                SixDPos* start_pos = new SixDPos((jsonHandler.get_data())[0]);
+                SixDPos *start_pos = new SixDPos((jsonHandler.get_data())[0]);
                 spline_path[0] = start_pos;
                 Trajectory *trajectory = ctrl.move_robot_spline(spline_path);
                 for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {

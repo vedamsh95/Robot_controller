@@ -21,36 +21,25 @@ public:
      * @param _pos {@ref SixDPos} to compute the configuration for
      * @return  a reference to a <code>vector<code> containing all possible configurations for the passed position
      */
-    vector<Configuration*>* get_inv_kinematics(SixDPos* _pos);
+    vector<Configuration *> *get_inv_kinematics(SixDPos *_pos);
 
-    double angles_phi1(double xc,double yc, double d1,std::vector<double>& vec_phi1);
-    double angles_phi2_forward(double zc,double d1);
-    double angles_phi2_backward(double zc,double d1);
-    double angles_phi3_forward(double zc,double d1);
-    double angles_phi3_backward(double zc, double d1);
-    double angles_phi3(double d1);
-   // TMatrix R36Matrix();
     vector<double> othercase_1(double phi1, double d1, double m, double n, double zc);
 
-    void checkSingularities();
-
-
     vector<double> angles_backward(double phi1, double px_dash, double py_dash);
+
     vector<double> angles_forward(double phi1, double px_dash, double py_dash);
 
     vector<double> othercase_2(double phi1, double d1, double m, double n, double zc);
 
-    vector<double> standardCase(double phi1, double d1,double m);
+    vector<vector<double>> *specialCase1(double xc, double yc, double zc, double m, double d1);
 
-    vector<double> specialCase1( double xc, double yc, double zc, double m, double d1);
-
-    vector<double> specialCase2( double xc, double yc, double zc, double m, double d1);
+    vector<vector<double>> *specialCase2(double xc, double yc, double zc, double m, double d1);
 
     vector<vector<double>> phi_case1(double phi1, double xc, double yc, double zc);
 
     vector<vector<double>> phi_case2(double phi1, double xc, double yc, double zc);
 
-    vector<vector<double>>* standardCase(double phi1, double d1, double m, double xc, double yc, double zc);
+    vector<vector<double>> *standardCase(double phi1, double d1, double m, double xc, double yc, double zc);
 
     vector<double> limits_forward(double phi1, vector<double> forward_vec, vector<double> backward_vec);
 
@@ -58,18 +47,7 @@ public:
 
     vector<vector<double>> phi4_5_6(TMatrix *R36);
 
-  //  TMatrix R36Matrix();
-
-    TMatrix R36Matrix_2();
-
-
-
-
-
-    vector<vector<double>> phi4_5_6(TMatrix *R36, TMatrix *R36_1);
-
-    //vector<vector<double>> solutions_456(TMatrix *R36, TMatrix *R36_1);
-
     TMatrix R36Matrix(int solNum, int solOffset);
 };
+
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H

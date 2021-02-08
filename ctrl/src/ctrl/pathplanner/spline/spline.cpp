@@ -12,10 +12,9 @@ const double MAX_ACCELERATION[6] = {300, 300, 300, 300, 300, 300}; // in °/s²
 
 const double TO_RAD = M_PI / 180;
 
-Trajectory* Spline::get_spline_trajectory(vector<SixDPos*> path)
-{
+Trajectory *Spline::get_spline_trajectory(vector<SixDPos *> path) {
     //computation of a ptp trajectory with the corresponding velocity profile
-    Trajectory* trajectory = new Trajectory();
+    Trajectory *trajectory = new Trajectory();
     vector<Configuration *> config;
 
     // TODO:

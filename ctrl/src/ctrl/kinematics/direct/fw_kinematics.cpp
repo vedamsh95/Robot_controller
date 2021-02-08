@@ -60,7 +60,7 @@ SixDPos *FwKinematics::get_fw_kinematics(Configuration *_cfg) {
     );
 }
 
-array<double, 3> FwKinematics::calculate_euler_angles(TMatrix* transformationMatrix) {
+array<double, 3> FwKinematics::calculate_euler_angles(TMatrix *transformationMatrix) {
     double roll = 0; // phi
     double pitch = 0; // theta
     double yaw = 0; // psi
