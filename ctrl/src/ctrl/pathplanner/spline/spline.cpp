@@ -76,7 +76,7 @@ Trajectory *Spline::get_spline_trajectory(Configuration *start, vector<SixDPos *
         vector<Configuration *> *new_cfg = invKinematics.get_inv_kinematics(solvedPath.at(i));
         Configuration *bestConfiguration = nullptr;
         double bestDistance = DBL_MAX;
-        for (int i = 0; i < new_cfg->size(); i++) {
+        for (int i = 1; i < new_cfg->size(); i++) {
             double distance = 0;
             for (int j = 0; j < 6; j++) {
                 distance += abs((*(*new_cfg)[i])[j] - (*solvedPath.at(i - 1))[j]) * MAX_VELOCITY[j];

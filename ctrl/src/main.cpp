@@ -291,6 +291,7 @@ transformationMatrices.push_back(new TMatrix(
 
                 Trajectory *trajectory = ctrl.move_robot_lin(&start_cfg, &end_cfg);
                 for (Configuration *cur_cfg : *(trajectory->get_all_configuration())) {
+                    if (cur_cfg == NULL) continue;
                     c[0] = (*cur_cfg)[0];
                     c[1] = (*cur_cfg)[1];
                     c[2] = (*cur_cfg)[2];
