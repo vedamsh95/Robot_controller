@@ -16,6 +16,8 @@ JsonHandler::JsonHandler(string _json_string) {
         case 3: this->m_op_mode = PTPSYNC;
 				break;
 		case 4: this->m_op_mode = LIN;
+                break;
+        case 5: this->m_op_mode = SPLINE;
             break;
     }
 
