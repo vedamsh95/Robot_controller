@@ -216,7 +216,7 @@ int main() {
 
                 
 
-                Trajectory* trajectory = ctrl.move_robot_spline(&start_cfg, points);
+                Trajectory* trajectory = ctrl.move_robot_spline(&start_cfg, &points);
                 for (Configuration* cur_cfg : *(trajectory->get_all_configuration())) {
                     c[0] = (*cur_cfg)[0];
                     c[1] = (*cur_cfg)[1];
