@@ -93,7 +93,7 @@ int main() {
     InvKinematics invKinematics;
     FwKinematics fwKinematics;
     vector<TMatrix*> transformationMatrices;
-    transformationMatrices.push_back(new TMatrix(
+   transformationMatrices.push_back(new TMatrix(
             -5.07791870e-01, 6.35025673e-01, -5.82142433e-01, -7.18376830e+02 / 1000,
             2.62242221e-01, 7.57620537e-01, 5.97695691e-01, 1.89742719e+03 / 1000,
             8.20595171e-01, 1.50842688e-01, -5.51244092e-01, 2.32490439e+02 / 1000,
@@ -135,7 +135,7 @@ int main() {
         }
         cout << endl;
     }
-
+/*
     auto configurations = invKinematics.get_inv_kinematics(new SixDPos(2.2150217743250376, 0.44999663348281566, 2.359973741582353, -1.8268180825737412, 2.0207665616890536, -1.8268161754190866));
     cout << "Inverse Kinematics sample that breaks: " << endl;
     cout << configurations->size() << " Solutions:" << endl;
@@ -150,7 +150,7 @@ int main() {
              << endl;
     }
     cout << endl;
-
+*/
     cout << "This is the entry point of the SDIR programming project" << endl;
     SdirCtrl ctrl;
     float c[6];

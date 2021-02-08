@@ -51,5 +51,9 @@ public:
     vector<vector<double>> phi_case2(double phi1, double xc, double yc, double zc);
 
     vector<vector<double>>* standardCase(double phi1, double d1, double m, double xc, double yc, double zc);
+
+    vector<double> limits_forward(double phi1, vector<double> forward_vec, vector<double> backward_vec);
+
+    vector<double> limits_backward(double phi1, vector<double> forward_vec, vector<double> backward_vec);
 };
 #endif //SDRI_CTRL2019_INVERSE_KINEMATICS_H
