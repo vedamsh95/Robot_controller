@@ -100,8 +100,9 @@ cout << "/n-----------------------------------/n" << endl;
     for (int i = 0; i < 1; i++)
     {
 
-        if ((-175 < (theta1_arr[i]) && (theta1_arr[i]) < 175))
+        if ((-175 < (theta1_arr[i]) && (theta1_arr[i]) < 175 && (theta1_arr[i]) != -90 && (theta1_arr[i]) != 90))
         {
+            //from -175 to -91, from -89 to 89, from 91 to 175
             if (d1 > m)
             {
                 Px_dash = d1 - m;
@@ -241,6 +242,189 @@ cout << "/n-----------------------------------/n" << endl;
             }
 
         }
+
+        else if ((theta1_arr[i]) == -90)
+        {
+            if (Y_c > m)
+            {
+                d1 = Y_c;
+                Px_dash = d1 - m;
+                forward_calc(Px_dash, Py_dash, theta2_arr, theta3_arr);
+                for (int j = 0; j < theta2_arr.size(); j++)
+                {
+                    if ((-140 < theta2_arr[j]) && (theta2_arr[j] < -5) && (-120 < theta3_arr[j]) && (theta3_arr[j] < 168))
+                    {
+                        cout << "Theta1: " << theta1_arr[i] << ", Theta2: " << theta2_arr[j] << ", Theta3: " << theta3_arr[j] << endl;
+                        theta1_f.push_back(theta1_arr[i]);
+                        theta2_f.push_back(theta2_arr[j]);
+                        theta3_f.push_back(theta3_arr[j]);
+                    }
+                }
+
+                if ((theta1_arr[i+1]) == 90)
+                {
+                    Px_dash = d1 + m;
+                    backward_calc(Px_dash, Py_dash, theta2_arr, theta3_arr);
+                    if (theta2_arr.size() == 2 || theta2_arr.size() == 1)
+                        break;
+                    int k;
+                    if (theta2_arr.size() == 3)
+                    {
+                        k = theta2_arr.size() - 1;
+                    }
+                    else if (theta2_arr.size() == 4)
+                    {
+                        k = theta2_arr.size() - 2;
+                    }
+                    for (int j = k; j < theta2_arr.size(); j++)
+                    {
+                        if ((-140 < theta2_arr[j]) && (theta2_arr[j] < -5) && (-120 < theta3_arr[j]) && (theta3_arr[j] < 168))
+                        {
+                            cout << "Theta1: " << theta1_arr[i + 1] << ", Theta2: " << theta2_arr[j] << ", Theta3: " << theta3_arr[j] << endl;
+                            theta1_f.push_back(theta1_arr[i + 1]);
+                            theta2_f.push_back(theta2_arr[j]);
+                            theta3_f.push_back(theta3_arr[j]);
+                        }
+                    }
+                }    
+            }
+            else if (Y_c < m)
+            {
+                d1 = Y_c;
+                Px_dash = m - d1;
+                backward_calc(Px_dash, Py_dash, theta2_arr, theta3_arr);
+                for (int j = 0; j < theta2_arr.size(); j++)
+                {
+                    if ((-140 < theta2_arr[j]) && (theta2_arr[j] < -5) && (-120 < theta3_arr[j]) && (theta3_arr[j] < 168))
+                    {
+                        cout << "Theta1: " << theta1_arr[i] << ", Theta2: " << theta2_arr[j] << ", Theta3: " << theta3_arr[j] << endl;
+                        theta1_f.push_back(theta1_arr[i]);
+                        theta2_f.push_back(theta2_arr[j]);
+                        theta3_f.push_back(theta3_arr[j]);
+                    }
+                }
+
+                if ((theta1_arr[i+1]) == 90)
+                {
+                    Px_dash = d1 + m;
+                    backward_calc(Px_dash, Py_dash, theta2_arr, theta3_arr);
+                    if (theta2_arr.size() == 2 || theta2_arr.size() == 1)
+                        break;
+                    int k;
+                    if (theta2_arr.size() == 3)
+                    {
+                        k = theta2_arr.size() - 1;
+                    }
+                    else if (theta2_arr.size() == 4)
+                    {
+                        k = theta2_arr.size() - 2;
+                    }
+                    for (int j = k; j < theta2_arr.size(); j++)
+                    {
+                        if ((-140 < theta2_arr[j]) && (theta2_arr[j] < -5) && (-120 < theta3_arr[j]) && (theta3_arr[j] < 168))
+                        {
+                            cout << "Theta1: " << theta1_arr[i + 1] << ", Theta2: " << theta2_arr[j] << ", Theta3: " << theta3_arr[j] << endl;
+                            theta1_f.push_back(theta1_arr[i + 1]);
+                            theta2_f.push_back(theta2_arr[j]);
+                            theta3_f.push_back(theta3_arr[j]);
+                        }
+                    }
+                }
+            }
+        }
+
+        else if ((theta1_arr[i]) == 90)
+        {
+            if (Y_c > m)
+            {
+                d1 = Y_c;
+                Px_dash = d1 - m;
+                forward_calc(Px_dash, Py_dash, theta2_arr, theta3_arr);
+                for (int j = 0; j < theta2_arr.size(); j++)
+                {
+                    if ((-140 < theta2_arr[j]) && (theta2_arr[j] < -5) && (-120 < theta3_arr[j]) && (theta3_arr[j] < 168))
+                    {
+                        cout << "Theta1: " << theta1_arr[i] << ", Theta2: " << theta2_arr[j] << ", Theta3: " << theta3_arr[j] << endl;
+                        theta1_f.push_back(theta1_arr[i]);
+                        theta2_f.push_back(theta2_arr[j]);
+                        theta3_f.push_back(theta3_arr[j]);
+                    }
+                }
+
+                if ((theta1_arr[i + 1]) == -90)
+                {
+                    Px_dash = d1 + m;
+                    backward_calc(Px_dash, Py_dash, theta2_arr, theta3_arr);
+                    if (theta2_arr.size() == 2 || theta2_arr.size() == 1)
+                        break;
+                    int k;
+                    if (theta2_arr.size() == 3)
+                    {
+                        k = theta2_arr.size() - 1;
+                    }
+                    else if (theta2_arr.size() == 4)
+                    {
+                        k = theta2_arr.size() - 2;
+                    }
+                    for (int j = k; j < theta2_arr.size(); j++)
+                    {
+                        if ((-140 < theta2_arr[j]) && (theta2_arr[j] < -5) && (-120 < theta3_arr[j]) && (theta3_arr[j] < 168))
+                        {
+                            cout << "Theta1: " << theta1_arr[i + 1] << ", Theta2: " << theta2_arr[j] << ", Theta3: " << theta3_arr[j] << endl;
+                            theta1_f.push_back(theta1_arr[i + 1]);
+                            theta2_f.push_back(theta2_arr[j]);
+                            theta3_f.push_back(theta3_arr[j]);
+                        }
+                    }
+                }
+            }
+            else if (Y_c < m)
+            {
+                d1 = Y_c;
+                Px_dash = m - d1;
+                backward_calc(Px_dash, Py_dash, theta2_arr, theta3_arr);
+                for (int j = 0; j < theta2_arr.size(); j++)
+                {
+                    if ((-140 < theta2_arr[j]) && (theta2_arr[j] < -5) && (-120 < theta3_arr[j]) && (theta3_arr[j] < 168))
+                    {
+                        cout << "Theta1: " << theta1_arr[i] << ", Theta2: " << theta2_arr[j] << ", Theta3: " << theta3_arr[j] << endl;
+                        theta1_f.push_back(theta1_arr[i]);
+                        theta2_f.push_back(theta2_arr[j]);
+                        theta3_f.push_back(theta3_arr[j]);
+                    }
+                }
+
+                if ((theta1_arr[i + 1]) == -90)
+                {
+                    Px_dash = d1 + m;
+                    backward_calc(Px_dash, Py_dash, theta2_arr, theta3_arr);
+                    if (theta2_arr.size() == 2 || theta2_arr.size() == 1)
+                        break;
+                    int k;
+                    if (theta2_arr.size() == 3)
+                    {
+                        k = theta2_arr.size() - 1;
+                    }
+                    else if (theta2_arr.size() == 4)
+                    {
+                        k = theta2_arr.size() - 2;
+                    }
+                    for (int j = k; j < theta2_arr.size(); j++)
+                    {
+                        if ((-140 < theta2_arr[j]) && (theta2_arr[j] < -5) && (-120 < theta3_arr[j]) && (theta3_arr[j] < 168))
+                        {
+                            cout << "Theta1: " << theta1_arr[i + 1] << ", Theta2: " << theta2_arr[j] << ", Theta3: " << theta3_arr[j] << endl;
+                            theta1_f.push_back(theta1_arr[i + 1]);
+                            theta2_f.push_back(theta2_arr[j]);
+                            theta3_f.push_back(theta3_arr[j]);
+                        }
+                    }
+                }
+            }
+
+        }
+
+
         else if ((-185 < (theta1_arr[i]) && (theta1_arr[i]) < -175))
         {
             if (d1 > m)
@@ -549,7 +733,7 @@ cout << "/n-----------------------------------/n" << endl;
 
     //Compute the theta2 and theta3 here
     //std::vector<int>::size_type sz = theta1_arr.size();
-
+    int k = 0;
     for (int j = 0; j < theta1_f.size(); j++)
     {
         // Here we are finding base rotational matrix R0_3
@@ -620,14 +804,20 @@ cout << "/n-----------------------------------/n" << endl;
                 cout << "\n---------Final output---------\n" << endl;
                 
 
-                for (int i = theta4_arr.size()-8; i < theta4_arr.size(); i++)
+                for (int i = k; i < theta4_arr.size(); i++)
                 {
 
-                    cout << "[ " << theta1_f[j] << " " << theta2_f[j] << " " << theta3_f[j] << " " << theta4_arr[i] << " " << theta5_arr[i] << " " << theta6_arr[i] << " ]" << endl;
+                    //cout << "[ " << theta1_f[j] << " " << theta2_f[j] << " " << theta3_f[j] << " " << theta4_arr[i] << " " << theta5_arr[i] << " " << theta6_arr[i] << " ]" << endl;
+                     cout << "[ " << theta1_f[j] * PI / 180 << " " << theta2_f[j] * PI / 180 << " " << theta3_f[j] * PI / 180 << " " << theta4_arr[i] * PI / 180 << " " << theta5_arr[i] * PI / 180 << " " << theta6_arr[i] * PI / 180 << " ]" << endl;
                     solutions->push_back(new Configuration({ theta1_f[j] * PI / 180,theta2_f[j] * PI / 180,theta3_f[j] * PI / 180,theta4_arr[i] * PI / 180,theta5_arr[i] * PI / 180,theta6_arr[i] * PI / 180 }));
                 }
                 cout << "/n-----------------------------------/n" << endl;
+   }
 
+
+    theta4_arr.clear();
+    theta5_arr.clear();
+    theta6_arr.clear();
 
 
     /*
@@ -689,12 +879,13 @@ std::vector<double> find_theta1(double X_c, double Y_c)
         }
         else if (X_c == 0 && Y_c > 0) {
             arr.push_back(theta1);
-            //arr.push_back(180 - theta1);
+            arr.push_back(theta1 + 180);
+
 
         }
         else if (X_c == 0 && Y_c < 0) {
             arr.push_back(-theta1);
-            //arr.push_back(-(180 + theta1));
+            arr.push_back(theta1 - 180);
 
         }
     }
