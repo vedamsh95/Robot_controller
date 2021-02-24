@@ -15,6 +15,7 @@ if (UNIX)
 endif (UNIX)
 
 add_subdirectory(src/ctrl)
+add_subdirectory(test)
 
 add_executable(sdir_ctrl2020 src/main.cpp)
 
